@@ -21,6 +21,13 @@ type CalculatorContext = {
 	/** Switch to using degrees */
 	degsOn(): void;
 
+	/** Settings page visibility */
+	showSettings: boolean;
+	/** Show settings page */
+	openSettings(): void;
+	/** Hide settings page */
+	closeSettings(): void;
+
 	/**
 	 * Crunch the numbers!
 	 *
@@ -48,6 +55,7 @@ export function useCalculator() {
 
 export default function CalculatorProvider({ children }: PropsWithChildren) {
 	const [angleUnit, setAngleUnit] = useState<AngleUnit>("deg");
+	const [showSettings, setShowSettings] = useState(false);
 	const buffer = useBuffer();
 	const memory = useMemory();
 
@@ -89,6 +97,14 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 				degsOn() {
 					buffer.makeDirty();
 					setAngleUnit("deg");
+				},
+
+				showSettings,
+				openSettings() {
+					setShowSettings(true);
+				},
+				closeSettings() {
+					setShowSettings(false);
 				},
 			}}
 		>

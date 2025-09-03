@@ -1,6 +1,5 @@
 import Input from "./input";
 
-import RadDegToggle from "./rad-deg-toggle";
 import Result from "./result";
 import ErrorIcon from "./error-icon";
 
@@ -20,7 +19,6 @@ export default function Screen() {
 				<Result />
 				<Input />
 				<ErrorIcon />
-				<RadDegToggle />
 			</div>
 		</>
 	);

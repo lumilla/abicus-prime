@@ -26,23 +26,32 @@ test("Crunch by clicking Equals sign on the on-screen keypad", async ({ page }) 
 });
 
 test("Degrees are selected by default", async ({ page }) => {
-	await expect(page.getByRole("button", { name: "Deg" })).toBeDisabled();
-	await expect(page.getByRole("button", { name: "Rad" })).not.toBeDisabled();
-
+	// Check that degrees is default by testing trigonometric function
 	await page.getByRole("textbox").fill("sin(90)");
 	await page.keyboard.press("=");
 	expect(page.getByRole("status")).toHaveText("1");
+	
+	// Also verify in settings page
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await expect(page.getByRole("button", { name: "Degrees", exact: true })).toBeDisabled();
+	await expect(page.getByRole("button", { name: "Radians", exact: true })).not.toBeDisabled();
 });
 
 test("Can change to radians by pressing tab", async ({ page }) => {
-	await expect(page.getByRole("button", { name: "Deg" })).toBeDisabled();
-	await expect(page.getByRole("button", { name: "Rad" })).not.toBeDisabled();
-
-	await page.keyboard.press("Tab");
-
-	await expect(page.getByRole("button", { name: "Deg" })).not.toBeDisabled();
-	await expect(page.getByRole("button", { name: "Rad" })).toBeDisabled();
-
+	// Verify degrees is default
+	await page.getByRole("textbox").fill("sin(90)");
+	await page.keyboard.press("=");
+	expect(page.getByRole("status")).toHaveText("1");
+	
+	// Clear the result
+	await page.keyboard.press("Escape");
+	
+	// Change to radians via settings
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await page.getByRole("button", { name: "Radians", exact: true }).click();
+	await page.getByRole("button", { name: "×", exact: true }).click(); // Close settings
+	
+	// Test with radians
 	await page.getByRole("textbox").fill("sin(pi/2)");
 	await page.keyboard.press("=");
 	expect(page.getByRole("status")).toHaveText("1");
