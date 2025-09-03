@@ -80,7 +80,7 @@ export default function Input() {
 				"transition-all",
 				// Focus is shown by the parent so it's safe to disable here
 				"focus:outline-none",
-				shouldShowOutput ? "text-slate-500 text-sm" : "text-black",
+				shouldShowOutput ? "text-slate-500 dark:text-slate-400 text-sm" : "text-black dark:text-white",
 			]}
 			// Safari bug workaround:
 			// As of writing this, translating an input in safari without using `translate3d`

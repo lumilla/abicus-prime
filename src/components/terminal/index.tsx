@@ -92,9 +92,9 @@ export default function Terminal() {
 			x={[
 				"w-96",
 				"h-[456px]",
-				"bg-white",
+				"bg-white dark:bg-gray-800",
 				"rounded-md",
-				"border border-abi-dgrey",
+				"border border-abi-dgrey dark:border-abi-dark-dgrey",
 				"flex flex-col",
 				"font-mono",
 			]}
@@ -103,12 +103,12 @@ export default function Terminal() {
 			<div
 				x={[
 					"px-4 py-2",
-					"bg-gray-50",
-					"border-b border-abi-lgrey",
+					"bg-gray-50 dark:bg-gray-700",
+					"border-b border-abi-lgrey dark:border-abi-dark-lgrey",
 					"rounded-t-md",
 				]}
 			>
-				<div x={["text-sm text-abi-dgrey"]}>Abicus Terminal v1.0.6</div>
+				<div x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>Abicus Terminal v1.0.6</div>
 			</div>
 
 			{/* Terminal Content */}
@@ -120,15 +120,16 @@ export default function Terminal() {
 					"px-4 py-2",
 					"text-sm",
 					"space-y-1",
+					"text-black dark:text-white",
 				]}
 			>
 				{history.map((item) => (
 					<div key={item.timestamp} x={["space-y-1"]}>
 						<div x={["flex items-center"]}>
-							<span x={["text-abi-dgrey mr-2"]}>▶</span>
+							<span x={["text-abi-dgrey dark:text-abi-dark-dgrey mr-2"]}>▶</span>
 							<span>{item.expression}</span>
 						</div>
-						<div x={["ml-4", "text-abi-dgrey"]}>
+						<div x={["ml-4", "text-abi-dgrey dark:text-abi-dark-dgrey"]}>
 							{item.result}
 						</div>
 					</div>
@@ -141,12 +142,12 @@ export default function Terminal() {
 					x={[
 						"flex items-center",
 						"px-4 py-3",
-						"border-t border-abi-lgrey",
-						"bg-gray-50",
+						"border-t border-abi-lgrey dark:border-abi-dark-lgrey",
+						"bg-gray-50 dark:bg-gray-700",
 						"rounded-b-md",
 					]}
 				>
-					<span x={["text-abi-dgrey mr-2"]}>▶</span>
+					<span x={["text-abi-dgrey dark:text-abi-dark-dgrey mr-2"]}>▶</span>
 					<input
 						ref={inputRef}
 						type="text"
@@ -159,7 +160,8 @@ export default function Terminal() {
 							"bg-transparent",
 							"outline-none",
 							"text-sm",
-							"placeholder-abi-dgrey",
+							"text-black dark:text-white",
+							"placeholder-abi-dgrey dark:placeholder-abi-dark-dgrey",
 						]}
 					/>
 				</div>

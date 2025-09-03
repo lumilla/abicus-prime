@@ -15,13 +15,13 @@ export default function Result() {
 				"flex items-center justify-between",
 				"transition-all",
 				"px-4 py-1",
-				"bg-slate-100",
+				"bg-slate-100 dark:bg-slate-700",
 				shouldShowOutput ? "translate-y-0" : "translate-y-full",
 			]}
 		>
-			<span x="pointer-events-none text-slate-500">{"="}</span>
+			<span x="pointer-events-none text-slate-500 dark:text-slate-400">{"="}</span>
 			{shouldShowOutput && (
-				<output role="status" aria-live="polite">{formattedOutput}</output>
+				<output role="status" aria-live="polite" className="text-black dark:text-white">{formattedOutput}</output>
 			)}
 		</div>
 	);

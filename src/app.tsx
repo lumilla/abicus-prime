@@ -20,7 +20,7 @@ export default function App() {
 								"top-0 right-0",
 								"z-10",
 								"p-2",
-								"text-abi-dgrey hover:text-black",
+								"text-abi-dgrey hover:text-black dark:text-abi-dark-dgrey dark:hover:text-white",
 								"transition-colors",
 								"text-xl font-bold",
 							]}

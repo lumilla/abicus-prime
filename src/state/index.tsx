@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { createContext, PropsWithChildren, useContext, useState } from "react";
+import { createContext, PropsWithChildren, useContext, useState, useEffect } from "react";
 import { AngleUnit, calculate } from "#/calculator";
 
 import useBuffer, { BufferHandle } from "./internal-buffer";
@@ -36,6 +36,11 @@ type CalculatorContext = {
 	/** Set interface mode */
 	setInterfaceMode(mode: InterfaceMode): void;
 
+	/** Dark mode preference */
+	isDarkMode: boolean;
+	/** Set dark mode to a specific value */
+	setDarkMode: (value: boolean) => void;
+
 	/** Settings page visibility */
 	showSettings: boolean;
 	/** Show settings page */
@@ -71,10 +76,49 @@ export function useCalculator() {
 export default function CalculatorProvider({ children }: PropsWithChildren) {
 	const [angleUnit, setAngleUnit] = useState<AngleUnit>("deg");
 	const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("pocket");
+	
+	// Initialize dark mode with OS preference or saved preference
+	const [isDarkMode, setIsDarkMode] = useState(() => {
+		if (typeof window === 'undefined') return false;
+		
+		const saved = localStorage.getItem('abicus-dark-mode');
+		if (saved !== null) {
+			return JSON.parse(saved);
+		}
+		
+		// Use OS preference if no saved preference
+		return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+	});
+	
 	const [showSettings, setShowSettings] = useState(false);
 	const [terminalHistory, setTerminalHistory] = useState<{ expression: string; result: string; timestamp: number }[]>([]);
 	const buffer = useBuffer();
 	const memory = useMemory();
+
+	// Apply dark mode class to document
+	useEffect(() => {
+		if (isDarkMode) {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+		}
+	}, [isDarkMode]);
+
+	// Listen for OS color scheme changes (only if no saved preference exists)
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		
+		const savedPreference = localStorage.getItem('abicus-dark-mode');
+		if (savedPreference !== null) return; // Don't listen if user has saved preference
+		
+		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+		const handleChange = (e: MediaQueryListEvent) => {
+			setIsDarkMode(e.matches);
+		};
+		
+		mediaQuery.addEventListener('change', handleChange);
+		return () => mediaQuery.removeEventListener('change', handleChange);
+	}, []); // Run once on mount
 
 	function clearAll() {
 		buffer.empty();
@@ -129,6 +173,13 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 
 				interfaceMode,
 				setInterfaceMode,
+
+				isDarkMode,
+				setDarkMode: (value: boolean) => {
+					setIsDarkMode(value);
+					// Save preference to localStorage when manually set
+					localStorage.setItem('abicus-dark-mode', JSON.stringify(value));
+				},
 
 				showSettings,
 				openSettings() {

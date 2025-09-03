@@ -169,3 +169,141 @@ test("Angle unit change affects trigonometric calculations", async ({ page }) =>
 	await page.keyboard.press("=");
 	expect(page.getByRole("status")).toHaveText("1");
 });
+
+test("Can switch theme in settings", async ({ page }) => {
+	// Open settings
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	
+	// Should have theme section and buttons
+	await expect(page.getByText("Theme")).toBeVisible();
+	await expect(page.getByRole("button", { name: "Light", exact: true })).toBeVisible();
+	await expect(page.getByRole("button", { name: "Dark", exact: true })).toBeVisible();
+	
+	// Initially should be in light mode (or follow OS preference)
+	const initialState = await page.locator('html').getAttribute('class');
+	const isInitiallyDark = initialState?.includes('dark');
+	
+	if (isInitiallyDark) {
+		// If initially dark, switch to light
+		await page.getByRole("button", { name: "Light", exact: true }).click();
+		await expect(page.getByRole("button", { name: "Light", exact: true })).toBeDisabled();
+		await expect(page.getByRole("button", { name: "Dark", exact: true })).not.toBeDisabled();
+		
+		// HTML should not have dark class
+		await expect(page.locator('html')).not.toHaveClass(/.*dark.*/);
+		
+		// Switch back to dark
+		await page.getByRole("button", { name: "Dark", exact: true }).click();
+		await expect(page.getByRole("button", { name: "Dark", exact: true })).toBeDisabled();
+		await expect(page.getByRole("button", { name: "Light", exact: true })).not.toBeDisabled();
+		
+		// HTML should have dark class
+		await expect(page.locator('html')).toHaveClass(/.*dark.*/);
+	} else {
+		// If initially light, switch to dark
+		await page.getByRole("button", { name: "Dark", exact: true }).click();
+		await expect(page.getByRole("button", { name: "Dark", exact: true })).toBeDisabled();
+		await expect(page.getByRole("button", { name: "Light", exact: true })).not.toBeDisabled();
+		
+		// HTML should have dark class
+		await expect(page.locator('html')).toHaveClass(/.*dark.*/);
+		
+		// Switch back to light
+		await page.getByRole("button", { name: "Light", exact: true }).click();
+		await expect(page.getByRole("button", { name: "Light", exact: true })).toBeDisabled();
+		await expect(page.getByRole("button", { name: "Dark", exact: true })).not.toBeDisabled();
+		
+		// HTML should not have dark class
+		await expect(page.locator('html')).not.toHaveClass(/.*dark.*/);
+	}
+});
+
+test("Theme setting persists after closing settings", async ({ page }) => {
+	// Open settings and switch to dark mode
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await page.getByRole("button", { name: "Dark", exact: true }).click();
+	
+	// Close settings
+	await page.getByRole("button", { name: "×", exact: true }).click();
+	
+	// Verify dark mode is still active
+	await expect(page.locator('html')).toHaveClass(/.*dark.*/);
+	
+	// Open settings again - dark should still be selected
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await expect(page.getByRole("button", { name: "Dark", exact: true })).toBeDisabled();
+	await expect(page.getByRole("button", { name: "Light", exact: true })).not.toBeDisabled();
+});
+
+test("Theme setting persists after page reload", async ({ page }) => {
+	// Set dark mode
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await page.getByRole("button", { name: "Dark", exact: true }).click();
+	await page.getByRole("button", { name: "×", exact: true }).click();
+	
+	// Reload the page
+	await page.reload();
+	
+	// Dark mode should still be active
+	await expect(page.locator('html')).toHaveClass(/.*dark.*/);
+	
+	// Settings should reflect dark mode is selected
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await expect(page.getByRole("button", { name: "Dark", exact: true })).toBeDisabled();
+	await expect(page.getByRole("button", { name: "Light", exact: true })).not.toBeDisabled();
+});
+
+test("Dark mode affects visual appearance", async ({ page }) => {
+	// Open settings first
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	
+	// Check current state and ensure we start in a known state
+	const lightButton = page.getByRole("button", { name: "Light", exact: true });
+	const darkButton = page.getByRole("button", { name: "Dark", exact: true });
+	
+	const isLightDisabled = await lightButton.isDisabled();
+	
+	if (!isLightDisabled) {
+		// Currently in dark mode, switch to light first
+		await lightButton.click();
+	}
+	
+	// Now we should be in light mode, close settings to get body color
+	await page.getByRole("button", { name: "×", exact: true }).click();
+	
+	// Get light mode background color
+	const lightBodyColor = await page.locator('body').evaluate(el => 
+		window.getComputedStyle(el).backgroundColor
+	);
+	
+	// Switch to dark mode
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await page.getByRole("button", { name: "Dark", exact: true }).click();
+	await page.getByRole("button", { name: "×", exact: true }).click();
+	
+	// Get dark mode background color
+	const darkBodyColor = await page.locator('body').evaluate(el => 
+		window.getComputedStyle(el).backgroundColor
+	);
+	
+	// Colors should be different
+	expect(lightBodyColor).not.toBe(darkBodyColor);
+	
+	// Extract RGB values to compare brightness
+	const lightMatch = lightBodyColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+	const darkMatch = darkBodyColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+	
+	expect(lightMatch).toBeTruthy();
+	expect(darkMatch).toBeTruthy();
+	
+	if (lightMatch && darkMatch) {
+		// Calculate brightness (simple formula: (R + G + B) / 3)
+		const lightBrightness = (parseInt(lightMatch[1]) + parseInt(lightMatch[2]) + parseInt(lightMatch[3])) / 3;
+		const darkBrightness = (parseInt(darkMatch[1]) + parseInt(darkMatch[2]) + parseInt(darkMatch[3])) / 3;
+		
+		// Dark mode should have significantly lower brightness
+		expect(darkBrightness).toBeLessThan(lightBrightness);
+		// Dark mode brightness should be less than 100 (quite dark)
+		expect(darkBrightness).toBeLessThan(100);
+	}
+});
