@@ -1,11 +1,9 @@
 import { useCalculator } from "#/state";
-import { useState } from "react";
 
 const APP_VERSION = "1.0.6"; // TODO: Get this from package.json dynamically
 
 export default function SettingsPage() {
-	const { angleUnit, degsOn, radsOn, clearAll, closeSettings } = useCalculator();
-	const [interfaceMode, setInterfaceMode] = useState<"pocket" | "terminal">("pocket");
+	const { angleUnit, degsOn, radsOn, interfaceMode, setInterfaceMode, clearAll, clearTerminalHistory, closeSettings } = useCalculator();
 
 	return (
 		<div
@@ -84,7 +82,7 @@ export default function SettingsPage() {
 					</div>
 				</div>
 
-				{/* Interface ModeS Toggle */}
+				{/* Interface Mode Toggle */}
 				<div>
 					<h3 x={["text-sm font-medium text-black mb-2"]}>Interface Mode</h3>
 					<div
@@ -128,7 +126,7 @@ export default function SettingsPage() {
 				{/* Clear Button */}
 				<div>
 					<button
-						onClick={clearAll}
+						onClick={() => { clearAll(); clearTerminalHistory(); }}
 						x={[
 							"w-full",
 							"px-4 py-2",

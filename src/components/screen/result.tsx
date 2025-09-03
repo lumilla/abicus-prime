@@ -20,7 +20,9 @@ export default function Result() {
 			]}
 		>
 			<span x="pointer-events-none text-slate-500">{"="}</span>
-			{shouldShowOutput && <output>{formattedOutput}</output>}
+			{shouldShowOutput && (
+				<output role="status" aria-live="polite">{formattedOutput}</output>
+			)}
 		</div>
 	);
 }

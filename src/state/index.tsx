@@ -5,6 +5,10 @@ import { AngleUnit, calculate } from "#/calculator";
 import useBuffer, { BufferHandle } from "./internal-buffer";
 import useMemory, { MemoryHandle } from "./internal-memory";
 
+type InterfaceMode = "pocket" | "terminal";
+
+export type TerminalHistoryItem = { expression: string; result: string; timestamp: number };
+
 type CalculatorContext = {
 	/** Handle to the calculator's input buffer */
 	buffer: BufferHandle;
@@ -13,6 +17,12 @@ type CalculatorContext = {
 
 	/** Clear the input buffer and all memory registers */
 	clearAll(): void;
+	/** Terminal history persisted across mounts */
+	terminalHistory: TerminalHistoryItem[];
+	/** Push an item into terminal history */
+	pushTerminalHistory(item: TerminalHistoryItem): void;
+	/** Clear terminal history */
+	clearTerminalHistory(): void;
 
 	/** Unit to use in trigonometric functions */
 	angleUnit: AngleUnit;
@@ -20,6 +30,11 @@ type CalculatorContext = {
 	radsOn(): void;
 	/** Switch to using degrees */
 	degsOn(): void;
+
+	/** Interface mode - pocket or terminal */
+	interfaceMode: InterfaceMode;
+	/** Set interface mode */
+	setInterfaceMode(mode: InterfaceMode): void;
 
 	/** Settings page visibility */
 	showSettings: boolean;
@@ -55,13 +70,23 @@ export function useCalculator() {
 
 export default function CalculatorProvider({ children }: PropsWithChildren) {
 	const [angleUnit, setAngleUnit] = useState<AngleUnit>("deg");
+	const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("pocket");
 	const [showSettings, setShowSettings] = useState(false);
+	const [terminalHistory, setTerminalHistory] = useState<{ expression: string; result: string; timestamp: number }[]>([]);
 	const buffer = useBuffer();
 	const memory = useMemory();
 
 	function clearAll() {
 		buffer.empty();
 		memory.empty();
+	}
+
+	function pushTerminalHistory(item: { expression: string; result: string; timestamp: number }) {
+		setTerminalHistory(prev => [...prev, item]);
+	}
+
+	function clearTerminalHistory() {
+		setTerminalHistory([]);
 	}
 
 	function crunch(saveToInd = false) {
@@ -87,6 +112,9 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 				buffer,
 				memory,
 				clearAll,
+				terminalHistory,
+				pushTerminalHistory,
+				clearTerminalHistory,
 				crunch,
 
 				angleUnit,
@@ -98,6 +126,9 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 					buffer.makeDirty();
 					setAngleUnit("deg");
 				},
+
+				interfaceMode,
+				setInterfaceMode,
 
 				showSettings,
 				openSettings() {

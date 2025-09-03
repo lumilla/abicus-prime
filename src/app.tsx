@@ -1,10 +1,11 @@
 import Keypad from "#/components/keypad";
 import Screen from "#/components/screen";
 import SettingsPage from "#/components/settings-page";
+import Terminal from "#/components/terminal";
 import { useCalculator } from "#/state";
 
 export default function App() {
-	const { showSettings, openSettings } = useCalculator();
+	const { showSettings, interfaceMode, openSettings } = useCalculator();
 
 	return (
 		<>
@@ -31,6 +32,8 @@ export default function App() {
 					<main x={["flex flex-col gap-4"]}>
 						{showSettings ? (
 							<SettingsPage />
+						) : interfaceMode === "terminal" ? (
+							<Terminal />
 						) : (
 							<>
 								<Screen />
