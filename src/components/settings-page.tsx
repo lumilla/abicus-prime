@@ -3,7 +3,7 @@ import { useCalculator } from "#/state";
 const APP_VERSION = __APP_VERSION__;
 
 export default function SettingsPage() {
-	const { angleUnit, degsOn, radsOn, interfaceMode, setInterfaceMode, isDarkMode, setDarkMode, clearAll, clearTerminalHistory, closeSettings } = useCalculator();
+	const { angleUnit, degsOn, radsOn, interfaceMode, setInterfaceMode, isDarkMode, setDarkMode, clearAll, clearTerminalHistory, closeSettings, buffer, sharedHistory } = useCalculator();
 
 	return (
 		<div
@@ -95,7 +95,17 @@ export default function SettingsPage() {
 						]}
 					>
 						<button
-							onClick={() => setInterfaceMode("pocket")}
+							onClick={() => {
+								setInterfaceMode("pocket");
+								// Set buffer to last expression when switching to pocket mode
+								if (sharedHistory.length > 0) {
+									const lastExpression = sharedHistory[sharedHistory.length - 1]?.expression;
+									if (lastExpression) {
+										buffer.set(lastExpression);
+										buffer.clean(); // Mark as clean so result shows
+									}
+								}
+							}}
 							disabled={interfaceMode === "pocket"}
 							x={[
 								"flex-1 px-4 py-2",

@@ -12,22 +12,20 @@ type HistoryItem = {
 };
 
 export default function Terminal() {
-	const { memory, angleUnit, terminalHistory, pushTerminalHistory, clearTerminalHistory } = useCalculator();
-	const history = terminalHistory as HistoryItem[];
-	const [currentInput, setCurrentInput] = useState("");
+	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory } = useCalculator();
+	const history = sharedHistory as HistoryItem[];
 	const [historyIndex, setHistoryIndex] = useState(-1);
 	const [tempInput, setTempInput] = useState("");
 	const terminalRef = useRef<HTMLDivElement>(null);
-	const inputRef = useRef<HTMLInputElement>(null);
 	const prevAnsRef = useRef<import("decimal.js").default | null>(null);
 	const prevIndRef = useRef<import("decimal.js").default | null>(null);
 
 	// Auto-focus the input
 	useEffect(() => {
-		if (inputRef.current) {
-			inputRef.current.focus();
+		if (buffer.ref.current) {
+			buffer.ref.current.focus();
 		}
-	}, []);
+	}, [buffer.ref]);
 
 	// Auto-scroll to bottom when history changes
 	useEffect(() => {
@@ -50,25 +48,25 @@ export default function Terminal() {
 		if ((prevAns && !prevAns.isZero() || prevInd && !prevInd.isZero()) && ansIsZero && indIsZero) {
 			// Real clear detected
 			if (history.length > 0) {
-				clearTerminalHistory();
+				clearSharedHistory();
 			}
 		}
 
 		// Update previous refs for next render
 		prevAnsRef.current = memory.ans;
 		prevIndRef.current = memory.ind;
-	}, [memory.ans, memory.ind, history.length, clearTerminalHistory]);
+	}, [memory.ans, memory.ind, history.length, clearSharedHistory]);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!currentInput.trim()) return;
+		if (!buffer.value.trim()) return;
 
 		// Handle special commands
-		const trimmedInput = currentInput.trim().toLowerCase();
+		const trimmedInput = buffer.value.trim().toLowerCase();
 		
 		if (trimmedInput === "clear" || trimmedInput === "cls") {
-			clearTerminalHistory();
-			setCurrentInput("");
+			clearSharedHistory();
+			buffer.empty();
 			setHistoryIndex(-1);
 			setTempInput("");
 			return;
@@ -77,7 +75,7 @@ export default function Terminal() {
 
 
 		// Calculate directly without using the shared buffer
-		const calculationResult = calculate(currentInput, memory.ans, memory.ind, angleUnit);
+		const calculationResult = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
 		
 		let resultString: string;
 		if (calculationResult.isOk()) {
@@ -89,20 +87,20 @@ export default function Terminal() {
 			resultString = "Error";
 		}
 		
-		pushTerminalHistory({
-			expression: currentInput,
+		pushSharedHistory({
+			expression: buffer.value,
 			result: resultString,
 			timestamp: Date.now(),
 		});
 
-		setCurrentInput("");
+		buffer.empty();
 		setHistoryIndex(-1);
 		setTempInput("");
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Escape") {
-			setCurrentInput("");
+			buffer.empty();
 			setHistoryIndex(-1);
 			setTempInput("");
 		}
@@ -112,12 +110,12 @@ export default function Terminal() {
 			if (history.length > 0) {
 				if (historyIndex === -1) {
 					// Save current input before starting history navigation
-					setTempInput(currentInput);
+					setTempInput(buffer.value);
 					setHistoryIndex(history.length - 1);
-					setCurrentInput(history[history.length - 1]?.expression || "");
+					buffer.set(history[history.length - 1]?.expression || "");
 				} else if (historyIndex > 0) {
 					setHistoryIndex(historyIndex - 1);
-					setCurrentInput(history[historyIndex - 1]?.expression || "");
+					buffer.set(history[historyIndex - 1]?.expression || "");
 				}
 			}
 		}
@@ -126,11 +124,11 @@ export default function Terminal() {
 			if (historyIndex >= 0) {
 				if (historyIndex < history.length - 1) {
 					setHistoryIndex(historyIndex + 1);
-					setCurrentInput(history[historyIndex + 1]?.expression || "");
+					buffer.set(history[historyIndex + 1]?.expression || "");
 				} else {
 					// Back to original input
 					setHistoryIndex(-1);
-					setCurrentInput(tempInput);
+					buffer.set(tempInput);
 					setTempInput("");
 				}
 			}
@@ -138,49 +136,49 @@ export default function Terminal() {
 		// Tab completion for commands
 		if (e.key === "Tab") {
 			e.preventDefault();
-			const input = currentInput.toLowerCase();
+			const input = buffer.value.toLowerCase();
 			if (input === "c" || input === "cl") {
-				setCurrentInput("clear");
+				buffer.set("clear");
 			}
 		}
 		// Ctrl+N to clear terminal history
 		if (e.ctrlKey && e.key === "n") {
 			e.preventDefault();
-			clearTerminalHistory();
+			clearSharedHistory();
 		}
 		// Ctrl+K to clear current input
 		if (e.ctrlKey && e.key === "k") {
 			e.preventDefault();
-			setCurrentInput("");
+			buffer.empty();
 			setHistoryIndex(-1);
 			setTempInput("");
 		}
 	};
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setCurrentInput(e.target.value);
+		buffer.set(e.target.value);
 		// Reset history navigation when user manually types
 		setHistoryIndex(-1);
 		setTempInput("");
 	};
 
 	const handleDoubleClickExpression = (expression: string) => {
-		setCurrentInput(expression);
+		buffer.set(expression);
 		setHistoryIndex(-1);
 		setTempInput("");
-		if (inputRef.current) {
-			inputRef.current.focus();
+		if (buffer.ref.current) {
+			buffer.ref.current.focus();
 		}
 	};
 
 	const handleDoubleClickResult = (result: string) => {
 		// Remove the "= " prefix if it exists, and put the result in input
 		const cleanResult = result.startsWith("= ") ? result.slice(2) : result;
-		setCurrentInput(cleanResult);
+		buffer.set(cleanResult);
 		setHistoryIndex(-1);
 		setTempInput("");
-		if (inputRef.current) {
-			inputRef.current.focus();
+		if (buffer.ref.current) {
+			buffer.ref.current.focus();
 		}
 	};
 
@@ -256,9 +254,9 @@ export default function Terminal() {
 				>
 					<span x={["text-abi-dgrey dark:text-abi-dark-dgrey mr-2"]}>▶</span>
 					<input
-						ref={inputRef}
+						ref={buffer.ref}
 						type="text"
-						value={currentInput}
+						value={buffer.value}
 						onChange={handleInputChange}
 						onKeyDown={handleKeyDown}
 						placeholder="Enter calculation..."

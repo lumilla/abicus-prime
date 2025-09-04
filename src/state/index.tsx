@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
 import { createContext, PropsWithChildren, useContext, useState, useEffect } from "react";
 import { AngleUnit, calculate } from "#/calculator";
+import { formatResult } from "#/utils/format-result";
 
 import useBuffer, { BufferHandle } from "./internal-buffer";
 import useMemory, { MemoryHandle } from "./internal-memory";
@@ -17,11 +18,17 @@ type CalculatorContext = {
 
 	/** Clear the input buffer and all memory registers */
 	clearAll(): void;
-	/** Terminal history persisted across mounts */
+	/** Shared history between pocket and terminal modes */
+	sharedHistory: TerminalHistoryItem[];
+	/** Push an item into shared history */
+	pushSharedHistory(item: TerminalHistoryItem): void;
+	/** Clear shared history */
+	clearSharedHistory(): void;
+	/** Terminal history persisted across mounts (legacy - keeping for compatibility) */
 	terminalHistory: TerminalHistoryItem[];
-	/** Push an item into terminal history */
+	/** Push an item into terminal history (legacy - keeping for compatibility) */
 	pushTerminalHistory(item: TerminalHistoryItem): void;
-	/** Clear terminal history */
+	/** Clear terminal history (legacy - keeping for compatibility) */
 	clearTerminalHistory(): void;
 
 	/** Unit to use in trigonometric functions */
@@ -92,6 +99,7 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 	
 	const [showSettings, setShowSettings] = useState(false);
 	const [terminalHistory, setTerminalHistory] = useState<{ expression: string; result: string; timestamp: number }[]>([]);
+	const [sharedHistory, setSharedHistory] = useState<{ expression: string; result: string; timestamp: number }[]>([]);
 	const buffer = useBuffer();
 	const memory = useMemory();
 
@@ -123,6 +131,7 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 	function clearAll() {
 		buffer.empty();
 		memory.empty();
+		clearSharedHistory();
 	}
 
 	function pushTerminalHistory(item: { expression: string; result: string; timestamp: number }) {
@@ -130,6 +139,17 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 	}
 
 	function clearTerminalHistory() {
+		setTerminalHistory([]);
+	}
+
+	function pushSharedHistory(item: { expression: string; result: string; timestamp: number }) {
+		setSharedHistory(prev => [...prev, item]);
+		// Also update terminal history for backward compatibility
+		setTerminalHistory(prev => [...prev, item]);
+	}
+
+	function clearSharedHistory() {
+		setSharedHistory([]);
 		setTerminalHistory([]);
 	}
 
@@ -147,6 +167,16 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 		memory.setAns(value);
 		if (saveToInd) memory.setInd(value);
 
+		// Add to shared history when in pocket mode
+		if (interfaceMode === "pocket" && buffer.value.trim()) {
+			const resultString = "= " + formatResult(value);
+			pushSharedHistory({
+				expression: buffer.value,
+				result: resultString,
+				timestamp: Date.now(),
+			});
+		}
+
 		return value;
 	}
 
@@ -156,6 +186,9 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 				buffer,
 				memory,
 				clearAll,
+				sharedHistory,
+				pushSharedHistory,
+				clearSharedHistory,
 				terminalHistory,
 				pushTerminalHistory,
 				clearTerminalHistory,

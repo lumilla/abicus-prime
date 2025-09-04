@@ -484,3 +484,75 @@ test("Terminal Mode: Manual typing resets history navigation", async ({ page }) 
 	await input.press("ArrowUp");
 	await expect(input).toHaveValue("2+2");
 });
+
+// Mode Switching and Persistence Tests
+
+test("Terminal Mode: Calculation result persists when switching to pocket mode", async ({ page }) => {
+	// Perform calculation in terminal mode
+	await submitTerminalInput(page, "1+1");
+	await expect(page.locator("text== 2").first()).toBeVisible();
+	
+	// Switch to pocket mode
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await page.getByRole("button", { name: "Pocket", exact: true }).click();
+	await page.getByRole("button", { name: "×", exact: true }).click();
+	
+	// Pocket mode input should show the expression (prettified)
+	const pocketInput = page.getByRole("textbox");
+	await expect(pocketInput).toHaveValue("1 + 1");
+	
+	// Pocket mode result should show the answer in the result area
+	await expect(page.getByRole("status")).toHaveText("2");
+});
+
+test("Terminal Mode: Pocket calculation result persists when switching to terminal mode", async ({ page }) => {
+	// First switch to pocket mode
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await page.getByRole("button", { name: "Pocket", exact: true }).click();
+	await page.getByRole("button", { name: "×", exact: true }).click();
+	
+	// Perform calculation in pocket mode
+	const pocketInput = page.getByRole("textbox");
+	await pocketInput.fill("3+3");
+	await page.getByRole("button", { name: "=" }).click();
+	
+	// Switch back to terminal mode
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await page.getByRole("button", { name: "Terminal", exact: true }).click();
+	await page.getByRole("button", { name: "×", exact: true }).click();
+	
+	// Terminal should show the calculation in history
+	await expect(page.locator("text=3+3").first()).toBeVisible();
+	await expect(page.locator("text== 6").first()).toBeVisible();
+});
+
+test("Terminal Mode: Multiple mode switches preserve latest calculation", async ({ page }) => {
+	// Terminal calculation
+	await submitTerminalInput(page, "5*5");
+	await expect(page.locator("text== 25").first()).toBeVisible();
+	
+	// Switch to pocket
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await page.getByRole("button", { name: "Pocket", exact: true }).click();
+	await page.getByRole("button", { name: "×", exact: true }).click();
+	
+	// Verify pocket shows terminal result (prettified)
+	const pocketInput = page.getByRole("textbox");
+	await expect(pocketInput).toHaveValue("5 × 5");
+	await expect(page.getByRole("status")).toHaveText("25");
+	
+	// Do calculation in pocket
+	await pocketInput.fill("10*10");
+	await page.getByRole("button", { name: "=" }).click();
+	
+	// Switch back to terminal
+	await page.getByRole("button", { name: "*", exact: true }).click();
+	await page.getByRole("button", { name: "Terminal", exact: true }).click();
+	await page.getByRole("button", { name: "×", exact: true }).click();
+	
+	// Terminal should show both calculations in history
+	await expect(page.locator("text=5*5").first()).toBeVisible();
+	await expect(page.locator("text== 25").first()).toBeVisible();
+	await expect(page.locator("text=10*10").first()).toBeVisible(); // Pocket calculation stored as raw input
+	await expect(page.locator("text== 100").first()).toBeVisible();
+});
