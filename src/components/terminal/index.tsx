@@ -110,7 +110,7 @@ export default function Terminal() {
 					"rounded-t-md",
 				]}
 			>
-				<div x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>Abicus Terminal v{APP_VERSION}</div>
+				<div x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>Abicus Prime Terminal v{APP_VERSION}</div>
 			</div>
 
 			{/* Terminal Content */}

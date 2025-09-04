@@ -186,7 +186,7 @@ export default function SettingsPage() {
 
 				{/* Version Information */}
 				<div x={["pt-2"]}>
-					<p x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>Abicus Calculator</p>
+					<p x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>Abicus Prime Calculator</p>
 					<p x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>v{APP_VERSION}</p>
 				</div>
 			</div>

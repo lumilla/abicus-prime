@@ -63,7 +63,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build -- --base=/abicus/
+        run: npm run build -- --base=/abicus-prime/
 
       - name: Upload Pages artefact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
@@ -92,13 +92,13 @@ jobs:
         uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076
 
       - name: Pull Dev Image
-        run: docker pull ${{ steps.login-ecr.outputs.registry }}/abicus:${{ github.ref_name }}
+        run: docker pull ${{ steps.login-ecr.outputs.registry }}/abicus-prime:${{ github.ref_name }}
 
       - name: Tag Dev Image as Prod Image
-        run: docker tag ${{ steps.login-ecr.outputs.registry }}/abicus:${{ github.ref_name }} ${{ steps.login-ecr.outputs.registry }}/abicus-prod:${{ github.ref_name }}
+        run: docker tag ${{ steps.login-ecr.outputs.registry }}/abicus-prime:${{ github.ref_name }} ${{ steps.login-ecr.outputs.registry }}/abicus-prime-prod:${{ github.ref_name }}
 
       - name: Push Prod Image
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/abicus-prod:${{ github.ref_name }}
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/abicus-prime-prod:${{ github.ref_name }}
 
   build-binaries:
     needs: run-tests
@@ -157,9 +157,9 @@ jobs:
           args: ${{ matrix.args }}
           releaseDraft: false
           tagName: ${{ github.ref_name }}
-          releaseName: Abicus v__VERSION__
+          releaseName: Abicus Prime v__VERSION__
           releaseBody: |
-            <img alt="logo" height="100" src="https://github.com/digabi/abicus/blob/master/app-icon.png" />
+            <img alt="logo" height="100" src="https://github.com/J3r0github/abicus-prime/blob/prime/app-icon.png" />
 
             ### Precompiled binaries
 
@@ -173,12 +173,12 @@ jobs:
                 <td>
                   <ul>
                     <li>
-                      <a href="https://github.com/digabi/abicus/releases/download/v__VERSION__/abicus___VERSION___amd64.AppImage">
+                      <a href="https://github.com/J3r0github/abicus-prime/releases/download/v__VERSION__/abicus-prime___VERSION___amd64.AppImage">
                         AppImage (x64)
                       </a>
                     </li>
                     <li>
-                      <a href="https://github.com/digabi/abicus/releases/download/v__VERSION__/abicus___VERSION___amd64.deb">
+                      <a href="https://github.com/J3r0github/abicus-prime/releases/download/v__VERSION__/abicus-prime___VERSION___amd64.deb">
                         Debian (x64 <code>.deb</code>)
                       </a>
                     </li>
@@ -187,7 +187,7 @@ jobs:
                 <td>
                   <ul>
                     <li>
-                      <a href="https://github.com/digabi/abicus/releases/download/v__VERSION__/Abicus___VERSION___x64-setup.exe">
+                      <a href="https://github.com/J3r0github/abicus-prime/releases/download/v__VERSION__/Abicus_Prime___VERSION___x64-setup.exe">
                         Windows Installer (x64 <code>.exe</code>)
                       </a>
                     </li>
@@ -196,22 +196,22 @@ jobs:
                 <td>
                   <ul>
                     <li>
-                      <a href="https://github.com/digabi/abicus/releases/download/v__VERSION__/Abicus_aarch64.app.tar.gz">
+                      <a href="https://github.com/J3r0github/abicus-prime/releases/download/v__VERSION__/Abicus_Prime_aarch64.app.tar.gz">
                         Mac-computers with Apple-processors (<code>.app</code>)
                       </a>
                     </li>
                     <li>
-                      <a href="https://github.com/digabi/abicus/releases/download/v__VERSION__/Abicus_x64.app.tar.gz">
+                      <a href="https://github.com/J3r0github/abicus-prime/releases/download/v__VERSION__/Abicus_Prime_x64.app.tar.gz">
                         Mac-computers with Intel-processors (<code>.app</code>)
                       </a>
                     </li>
                     <li>
-                      <a href="https://github.com/digabi/abicus/releases/download/v__VERSION__/Abicus___VERSION___aarch64.dmg">
+                      <a href="https://github.com/J3r0github/abicus-prime/releases/download/v__VERSION__/Abicus_Prime___VERSION___aarch64.dmg">
                         Mac-computers with Apple-processors (<code>.dmg</code>)
                       </a>
                     </li>
                     <li>
-                      <a href="https://github.com/digabi/abicus/releases/download/v__VERSION__/Abicus___VERSION___x64.dmg">
+                      <a href="https://github.com/J3r0github/abicus-prime/releases/download/v__VERSION__/Abicus_Prime___VERSION___x64.dmg">
                         Mac-computers with Intel-processors (<code>.dmg</code>)
                       </a>
                     </li>
