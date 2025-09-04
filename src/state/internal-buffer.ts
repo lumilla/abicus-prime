@@ -1,5 +1,4 @@
-import { SetStateAction, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import { useRef, useState } from "preact/hooks";
 
 import prettify from "#/utils/prettify-expression";
 
@@ -30,27 +29,25 @@ export default function useBuffer() {
 		setErr(false);
 	}
 
-	function set(value: SetStateAction<string>) {
+	function set(value: string | ((prev: string) => string)) {
 		setBuffer(value);
 		setDirty(true);
 		setErr(false);
 	}
 
 	function del() {
-		flushSync(() => {
-			set(v => {
-				const [l, r] = getSelection();
+		set((v: string) => {
+			const [l, r] = getSelection();
 
-				const lhs = l !== r ? v.slice(0, l) : v.slice(0, l).replace(/\s*([a-z]+|.)$/i, "");
-				const rhs = v.slice(r);
+			const lhs = l !== r ? v.slice(0, l) : v.slice(0, l).replace(/\s*([a-z]+|.)$/i, "");
+			const rhs = v.slice(r);
 
-				setTimeout(() => {
-					if (!ref.current) return;
-					ref.current.selectionStart = ref.current.selectionEnd = lhs.length;
-				});
-
-				return `${lhs}${rhs}`;
+			setTimeout(() => {
+				if (!ref.current) return;
+				ref.current.selectionStart = ref.current.selectionEnd = lhs.length;
 			});
+
+			return `${lhs}${rhs}`;
 		});
 	}
 
@@ -67,22 +64,20 @@ export default function useBuffer() {
 
 		const [curLhs, curRhs] = getSelection();
 
-		flushSync(() => {
-			set(v => {
-				const bufLhs = v.slice(0, curLhs);
-				const bufRhs = v.slice(curRhs);
-				const bufSel = v.slice(curLhs, curRhs);
+		set((v: string) => {
+			const bufLhs = v.slice(0, curLhs);
+			const bufRhs = v.slice(curRhs);
+			const bufSel = v.slice(curLhs, curRhs);
 
-				const newTxt = action === "replace" ? `${inpLhs}${inpRhs}` : `${inpLhs}${bufSel}${inpRhs}`;
+			const newTxt = action === "replace" ? `${inpLhs}${inpRhs}` : `${inpLhs}${bufSel}${inpRhs}`;
 
-				setTimeout(() => {
-					if (!ref.current) return;
+			setTimeout(() => {
+				if (!ref.current) return;
 
-					ref.current.selectionStart = ref.current.selectionEnd = bufLhs.length + newTxt.length + cursorOffset;
-				});
-
-				return `${bufLhs}${newTxt}${bufRhs}`;
+				ref.current.selectionStart = ref.current.selectionEnd = bufLhs.length + newTxt.length + cursorOffset;
 			});
+
+			return `${bufLhs}${newTxt}${bufRhs}`;
 		});
 	}
 

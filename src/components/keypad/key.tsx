@@ -1,4 +1,4 @@
-import { ReactNode, MouseEvent } from "react";
+import { ComponentChildren, JSX } from "preact";
 import { match } from "ts-pattern";
 
 import { useCalculator } from "#/state";
@@ -7,7 +7,7 @@ import { useCalculator } from "#/state";
 
 export type RawKeyProps<O extends string = never> = Omit<
 	{
-		label: ReactNode;
+		label: ComponentChildren;
 		onClick: () => void;
 		tint?: "none" | "d-blue" | "l-blue" | "grey";
 		className?: any;
@@ -18,7 +18,7 @@ export type RawKeyProps<O extends string = never> = Omit<
 export function RawKey({ onClick: propsOnClick, tint = "none", label, className }: RawKeyProps) {
 	const { buffer } = useCalculator();
 
-	function onMouseDown(e: MouseEvent<HTMLButtonElement>) {
+	function onMouseDown(e: JSX.TargetedMouseEvent<HTMLButtonElement>) {
 		e.preventDefault();
 		buffer.ref.current?.focus();
 	}
@@ -56,7 +56,7 @@ export function RawKey({ onClick: propsOnClick, tint = "none", label, className 
 
 /*****************************************************************************/
 
-type BasicKeyProps = RawKeyProps<"onClick" | "label"> & { input: string; label?: ReactNode };
+type BasicKeyProps = RawKeyProps<"onClick" | "label"> & { input: string; label?: ComponentChildren };
 
 export function BasicKey({ input, label = input, ...props }: BasicKeyProps) {
 	const { buffer } = useCalculator();

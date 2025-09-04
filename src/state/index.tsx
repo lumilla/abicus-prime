@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
-import { createContext, PropsWithChildren, useContext, useState, useEffect } from "react";
+import { createContext, ComponentChildren } from "preact";
+import { useContext, useState, useEffect } from "preact/hooks";
 import { AngleUnit, calculate } from "#/calculator";
 import { formatResult } from "#/utils/format-result";
 
@@ -80,7 +81,7 @@ export function useCalculator() {
 	return handle;
 }
 
-export default function CalculatorProvider({ children }: PropsWithChildren) {
+export default function CalculatorProvider({ children }: { children: ComponentChildren }) {
 	const [angleUnit, setAngleUnit] = useState<AngleUnit>("deg");
 	const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("pocket");
 	

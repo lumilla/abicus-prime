@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { useState } from "react";
+import { useState } from "preact/hooks";
 
 function zero() {
 	return new Decimal(0);

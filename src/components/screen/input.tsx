@@ -1,4 +1,5 @@
-import { KeyboardEvent, FocusEvent, useEffect, ChangeEvent } from "react";
+import { JSX } from "preact";
+import { useEffect } from "preact/hooks";
 
 import { useCalculator } from "#/state";
 import { match } from "ts-pattern";
@@ -9,12 +10,13 @@ export default function Input() {
 
 	const shouldShowOutput = !buffer.isDirty && !buffer.isErr;
 
-	function onChange(e: ChangeEvent<HTMLInputElement>) {
-		(window as any)[EXPR_DEBUG] = e.target.value;
-		buffer.set(e.target.value);
+	function onChange(e: JSX.TargetedEvent<HTMLInputElement>) {
+		const target = e.target as HTMLInputElement;
+		(window as any)[EXPR_DEBUG] = target.value;
+		buffer.set(target.value);
 	}
 
-	function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+	function onKeyDown(e: JSX.TargetedKeyboardEvent<HTMLInputElement>) {
 		const handled = match(e.key)
 			.with("Enter", "=", "ArrowDown", () => {
 				crunch();
@@ -55,10 +57,11 @@ export default function Input() {
 			.otherwise(() => false);
 
 		if (handled) e.preventDefault();
-	}	function onBlur(e: FocusEvent<HTMLInputElement>) {
+	}	function onBlur(e: JSX.TargetedFocusEvent<HTMLInputElement>) {
 		// Timeout needed because of Safari (of course)
 		setTimeout(() => {
-			e.target.scrollLeft = e.target.scrollWidth;
+			const target = e.target as HTMLInputElement;
+			target.scrollLeft = target.scrollWidth;
 		}, 0);
 	}
 
@@ -80,7 +83,7 @@ export default function Input() {
 			autoFocus
 			ref={buffer.ref}
 			value={buffer.value}
-			onChange={onChange}
+			onInput={onChange}
 			onKeyDown={onKeyDown}
 			onBlur={onBlur}
 			x={[

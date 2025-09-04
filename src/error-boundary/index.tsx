@@ -1,11 +1,11 @@
-import { Component, PropsWithChildren } from "react";
+import { Component, ComponentChildren } from "preact";
 
 import errorImgSrc from "./error-img.svg";
 import { BUFFER_DEBUG, EXPR_DEBUG, INPUT_DEBUG } from "./constants";
 
 // Currently no way to write Error Boundaries as function components :(
 
-type Props = PropsWithChildren;
+type Props = { children: ComponentChildren };
 
 export default class ErrorBoundary extends Component<Props, { error: any; stack: any }> {
 	constructor(props: Props) {

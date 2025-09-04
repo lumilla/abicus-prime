@@ -2,7 +2,7 @@
 /// <reference types="vitest" />
 
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import preact from "@preact/preset-vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import * as child from "child_process";
 import { readFileSync } from "fs";
@@ -16,7 +16,7 @@ const appVersion = packageJson.version;
 export default defineConfig(async () => ({
 	plugins: [
 		tsconfigPaths(),
-		react({
+		preact({
 			babel: {
 				plugins: [
 					/** See `./src/_clsx-jsx.d.ts` for more details on these two plugins */

@@ -1,6 +1,7 @@
 import { useCalculator } from "#/state";
 import { formatResult } from "#/utils/format-result";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "preact/hooks";
+import { JSX } from "preact";
 import { calculate } from "#/calculator";
 
 const APP_VERSION = __APP_VERSION__;
@@ -57,7 +58,7 @@ export default function Terminal() {
 		prevIndRef.current = memory.ind;
 	}, [memory.ans, memory.ind, history.length, clearSharedHistory]);
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
 		e.preventDefault();
 		if (!buffer.value.trim()) return;
 
@@ -98,7 +99,7 @@ export default function Terminal() {
 		setTempInput("");
 	};
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+	const handleKeyDown = (e: JSX.TargetedKeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Escape") {
 			buffer.empty();
 			setHistoryIndex(-1);
@@ -155,8 +156,9 @@ export default function Terminal() {
 		}
 	};
 
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		buffer.set(e.target.value);
+	const handleInputChange = (e: JSX.TargetedEvent<HTMLInputElement>) => {
+		const target = e.target as HTMLInputElement;
+		buffer.set(target.value);
 		// Reset history navigation when user manually types
 		setHistoryIndex(-1);
 		setTempInput("");
@@ -224,7 +226,7 @@ export default function Terminal() {
 							<span x={["text-abi-dgrey dark:text-abi-dark-dgrey mr-2"]}>▶</span>
 							<span 
 								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
-								onDoubleClick={() => handleDoubleClickExpression(item.expression)}
+								onDblClick={() => handleDoubleClickExpression(item.expression)}
 							>
 								{item.expression}
 							</span>
@@ -232,7 +234,7 @@ export default function Terminal() {
 						<div x={["ml-3", "text-abi-dgrey dark:text-abi-dark-dgrey"]}>
 							<span 
 								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
-								onDoubleClick={() => handleDoubleClickResult(item.result)}
+								onDblClick={() => handleDoubleClickResult(item.result)}
 							>
 								{item.result}
 							</span>
@@ -257,7 +259,7 @@ export default function Terminal() {
 						ref={buffer.ref}
 						type="text"
 						value={buffer.value}
-						onChange={handleInputChange}
+						onInput={handleInputChange}
 						onKeyDown={handleKeyDown}
 						placeholder="Enter calculation..."
 						x={[
