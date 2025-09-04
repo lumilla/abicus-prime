@@ -22,8 +22,10 @@ export type ClassDictionary = Record<string, any>;
 export type ClassArray = ClassValue[];
 export type ClassPrimitive = string | number | bigint | null | boolean | undefined;
 
-declare module "react" {
-	interface HTMLAttributes {
-		x?: ClassValue;
+declare module "preact" {
+	namespace JSX {
+		interface HTMLAttributes {
+			x?: ClassValue;
+		}
 	}
 }

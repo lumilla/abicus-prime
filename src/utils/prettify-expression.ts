@@ -51,6 +51,7 @@ function* prettiedCharacters(tokens: Token[]) {
 			.with({ type: "oper", name: "*" }, () => "×")
 			.with({ type: "oper", name: "-" }, () => "−")
 			.with({ type: "oper", name: any }, token => token.name)
+			.with({ type: "fact" }, () => "!")
 			.with({ type: "func", name: any }, token =>
 				match(token.name)
 					.with("sqrt", () => "√")
@@ -65,7 +66,7 @@ function* prettiedCharacters(tokens: Token[]) {
 
 		yield formattedToken;
 
-		// Decide whether we want a space between the *current* and *left-hand-side* tokens:
+		// Decide whether we want a space between the *current* and *right-hand-side* tokens:
 		const shouldHaveSpace =
 			(lhs || rhs) &&
 			match([lhs, cur, rhs])
@@ -75,8 +76,10 @@ function* prettiedCharacters(tokens: Token[]) {
 					[any, any, { type: "rbrk" }],
 					// No space between function name and opening brakcet: "sin(…"
 					[any, { type: "func" }, { type: "lbrk" }],
+					// No space before factorial operator: "5!"
+					[any, any, { type: "fact" }],
 					// Negative numbers: e.g. "-5" and "-5 + 5" instead of "- 5" and "- 5 + 5"
-					[not({ type: union("litr", "cons", "memo", "rbrk") }), { type: "oper", name: "-" }, any],
+					[not({ type: union("litr", "cons", "memo", "rbrk", "fact") }), { type: "oper", name: "-" }, any],
 					// No space at the end
 					[any, any, null],
 					() => false,

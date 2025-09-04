@@ -67,7 +67,7 @@ export default function evaluate(tokens: Token[], ans: Decimal, ind: Decimal, an
 		const token = peek();
 
 		if (!token) return err("UNEXPECTED_EOF");
-		if (!isMatching(pattern, token)) return err("UNEXPECTED_TOKEN");
+		if (!isMatching(pattern)(token)) return err("UNEXPECTED_TOKEN");
 
 		next();
 
@@ -122,31 +122,41 @@ export default function evaluate(tokens: Token[], ans: Decimal, ind: Decimal, an
 							if (args.length < 1) return err("NOT_ENOUGH_ARGS" as const);
 							if (args.length > 1) return err("TOO_MANY_ARGS" as const);
 
-							const func = Decimal[funcName].bind(Decimal);
 							const arg = args[0]!;
 
 							const { any, union } = P;
 
 							return match([angleUnit, funcName])
-								.with(["deg", union("sin", "cos")], () => ok(func(degToRad(arg))))
-								.with(["deg", union("asin", "acos", "atan")], () => ok(radToDeg(func(arg))))
-								.with([any, "tan"], () => {
-									const argInRads = angleUnit === "deg" ? degToRad(arg) : arg;
-
-									// Tangent is undefined when the tangent line is parallel to the x-axis,
-									// since parallel lines, by definition, don't cross.
-									// The tangent is parallel when the argument is $ pi/2 + n × pi $ where
-									// $ n $ is an integer. Since we use an approximation for pi, we can only
-									// check if the argument is "close enough" to being an integer.
-									const coefficient = argInRads.sub(PI.div(2)).div(PI);
-									const distFromCriticalPoint = coefficient.sub(coefficient.round()).abs();
-									const isArgCritical = distFromCriticalPoint.lt(TAN_PRECISION);
-
-									if (isArgCritical) return err("TRIG_PRECISION" as const);
-
-									return ok(func(argInRads));
+								.with([any, "fact"], () => {
+									if (arg.isNeg() || !arg.isInteger()) {
+										return err("NOT_A_NUMBER" as const);
+									}
+									return ok(factorial(arg));
 								})
-								.otherwise(() => ok(func(arg)));
+								.otherwise(() => {
+									const func = (Decimal as any)[funcName].bind(Decimal);
+
+									return match([angleUnit, funcName])
+										.with(["deg", union("sin", "cos")], () => ok(func(degToRad(arg))))
+										.with(["deg", union("asin", "acos", "atan")], () => ok(radToDeg(func(arg))))
+										.with([any, "tan"], () => {
+											const argInRads = angleUnit === "deg" ? degToRad(arg) : arg;
+
+											// Tangent is undefined when the tangent line is parallel to the x-axis,
+											// since parallel lines, by definition, don't cross.
+											// The tangent is parallel when the argument is $ pi/2 + n × pi $ where
+											// $ n $ is an integer. Since we use an approximation for pi, we can only
+											// check if the argument is "close enough" to being an integer.
+											const coefficient = argInRads.sub(PI.div(2)).div(PI);
+											const distFromCriticalPoint = coefficient.sub(coefficient.round()).abs();
+											const isArgCritical = distFromCriticalPoint.lt(TAN_PRECISION);
+
+											if (isArgCritical) return err("TRIG_PRECISION" as const);
+
+											return ok(func(argInRads));
+										})
+										.otherwise(() => ok(func(arg)));
+								});
 						}),
 				),
 			)
@@ -168,6 +178,12 @@ export default function evaluate(tokens: Token[], ans: Decimal, ind: Decimal, an
 				.with({ type: "oper", name: "*" }, () => evalExpr(3).map(right => left.value.mul(right)))
 				.with({ type: "oper", name: "/" }, () => evalExpr(3).map(right => left.value.div(right)))
 				.with({ type: "oper", name: "^" }, () => evalExpr(3).map(right => left.value.pow(right)))
+				.with({ type: "fact" }, () => {
+					if (left.value.isNeg() || !left.value.isInteger()) {
+						return err("NOT_A_NUMBER" as const);
+					}
+					return ok(factorial(left.value));
+				})
 				// Right bracket should never get parsed by anything else than the left bracket parselet
 				.with({ type: "rbrk" }, () => err("NO_LHS_BRACKET" as const))
 				.otherwise(() => err("UNEXPECTED_TOKEN"))
@@ -224,6 +240,7 @@ function lbp(token: Token) {
 		.with({ type: "oper", name: P.union("*", "/") }, () => 3)
 		.with({ type: "oper", name: "^" }, () => 4)
 		.with({ type: "func" }, () => 5)
+		.with({ type: "fact" }, () => 6)
 		.exhaustive();
 }
 
@@ -235,4 +252,24 @@ function degToRad(deg: Decimal) {
 /** Converts the argument from radians to degrees */
 function radToDeg(rad: Decimal) {
 	return rad.mul(RAD_DEG_RATIO);
+}
+
+/** Calculates the factorial of a non-negative integer */
+function factorial(n: Decimal): Decimal {
+	if (n.isNeg() || !n.isInteger()) {
+		throw new Error("Factorial is only defined for non-negative integers");
+	}
+
+	if (n.eq(0) || n.eq(1)) {
+		return ONE;
+	}
+
+	let result = ONE;
+	let i = TWO;
+	while (i.lte(n)) {
+		result = result.mul(i);
+		i = i.add(1);
+	}
+
+	return result;
 }

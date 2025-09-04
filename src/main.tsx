@@ -1,18 +1,17 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
+import { render } from "preact";
 
 import ErrorBoundary from "#/error-boundary";
 import CalculatorProvider from "#/state";
 import App from "#/app";
 
 import "#/main.css";
+import "#/init-jsx";
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+render(
 	<ErrorBoundary>
-		<React.StrictMode>
-			<CalculatorProvider>
-				<App />
-			</CalculatorProvider>
-		</React.StrictMode>
+		<CalculatorProvider>
+			<App />
+		</CalculatorProvider>
 	</ErrorBoundary>,
+	document.getElementById("root") as HTMLElement,
 );

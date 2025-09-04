@@ -124,6 +124,7 @@ const tokenMatchers = [
 				/^((a(rc)?)?(sin|cos|tan))/,
 				/^(log|lg|ln)/,
 				/^(root|sqrt|√)/,
+				/^(fact)/,
 			]
 				.map(subRegex => subRegex.source)
 				.join("|"),
@@ -138,10 +139,16 @@ const tokenMatchers = [
 				.with("arcsin", () => "asin" as const)
 				.with("arccos", () => "acos" as const)
 				.with("arctan", () => "atan" as const)
+				.with("fact", () => "fact" as const)
 				.otherwise(name => {
 					throw Error(`Programmer error: neglected function "${name}"`);
 				}),
 		}),
+	],
+	[
+		// Factorial operator: "!"
+		/^!/,
+		_ => ({ type: "fact" as const }),
 	],
 ] satisfies [RegExp, (str: string) => { type: string }][];
 
@@ -158,7 +165,170 @@ const tokenMatchers = [
  * ```
  */
 export default function tokenise(expression: string): Result<Token[], LexicalError> {
-	return Result.combine([...tokens(expression)]);
+	// Preprocess a few common shorthand notations before tokenising:
+	// 1) Superscript exponents: "3⁵" -> "3^5", "12⁴⁵" -> "12^45"
+	//    Only transform when the superscript run is attached to a base token (e.g. digit or ")").
+	// 2) Inverse trig notation: "sin^(-1)(x)" -> "arcsin(x)" (same for cos/tan)
+	// 3) Function power notation: "sin^(2)(x)" -> "sin(x)^(2)" (so it's parsed as (sin(x))^2)
+	const preprocessed = preprocessFunctionPowers(preprocessSuperscripts(expression));
+
+	return Result.combine([...tokens(preprocessed)]);
+}
+
+/**
+ * Rewrites runs of superscript characters into ^<digits> sequences.
+ * Example: "3⁵" -> "3^5", "12⁴⁵" -> "12^45".
+ * Only rewrites when attached to a non-whitespace base; standalone superscripts
+ * are left unchanged to trigger lexical errors.
+ */
+function preprocessSuperscripts(input: string) {
+	const supers = /(?:[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺])+/g;
+
+	const map: Record<string, string> = {
+		"⁰": "0",
+		"¹": "1",
+		"²": "2",
+		"³": "3",
+		"⁴": "4",
+		"⁵": "5",
+		"⁶": "6",
+		"⁷": "7",
+		"⁸": "8",
+		"⁹": "9",
+		"⁻": "-",
+		"⁺": "+",
+	};
+
+	return input.replace(supers, function (match: string, offset: number, s: string) {
+		if (offset === 0) return match;
+
+		const prev = s[offset - 1] ?? "";
+		// Allow any non-whitespace base; defer semantic validation.
+		if (!/\S/.test(prev)) return match;
+
+		const converted = Array.from(match)
+			.map(ch => map[ch] ?? ch)
+			.join("");
+
+		// Skip sign-only runs to avoid orphaned operators.
+		if (/^[+-]+$/.test(converted)) return match;
+
+		// Handle expressions in exponents (e.g., 5⁵⁺⁵ -> 5^(5+5)) or signed exponents (e.g., 2⁻³ -> ^-3).
+		const hasInternalPlusMinus = /[+-]/.test(converted.slice(1));
+		if (hasInternalPlusMinus) return "^(" + converted + ")";
+
+		return "^" + converted;
+	});
+}
+
+/**
+ * Rewrites occurrences of f^(n)(arg) into f(arg)^(n), and rewrites f^(-1)(arg)
+ * for sin/cos/tan into arcsin/arccos/arctan(arg). The operation is string-level
+ * and preserves other characters verbatim.
+ */
+function preprocessFunctionPowers(input: string) {
+	const funcs = /\b(?:arcsin|arccos|arctan|asin|acos|atan|sin|cos|tan|sqrt|root|√|log|lg|ln|fact)\b/gi;
+
+	let expr = input;
+	let m: RegExpExecArray | null;
+
+	// Helper to find the matching closing parenthesis for a '(' at `start`.
+	function findClosingParen(s: string, start: number) {
+		let depth = 0;
+		for (let i = start; i < s.length; i++) {
+			if (s[i] === "(") depth++;
+			else if (s[i] === ")") {
+				depth--;
+				if (depth === 0) return i;
+			}
+		}
+		return -1;
+	}
+
+	// We use exec in a loop, but because we mutate `expr` we must reset lastIndex each iteration.
+	while ((m = funcs.exec(expr)) !== null) {
+		const nameStart = m.index;
+		const name = m[0];
+		let nameEnd = nameStart + name.length;
+
+		// Skip any whitespace between name and the following characters
+		const wsMatch = /^\s*/.exec(expr.slice(nameEnd))?.[0] ?? "";
+		nameEnd += wsMatch.length;
+
+		// Check for a power annotation of the form ^(...)
+		if (expr[nameEnd] !== "^") {
+			// continue search after this match
+			funcs.lastIndex = nameEnd;
+			continue;
+		}
+
+		const expOpen = nameEnd + 1;
+		if (expr[expOpen] !== "(") {
+			funcs.lastIndex = nameEnd + 1;
+			continue;
+		}
+
+		const expClose = findClosingParen(expr, expOpen);
+		if (expClose === -1) {
+			// malformed, skip
+			funcs.lastIndex = nameEnd + 1;
+			continue;
+		}
+
+		const exponent = expr.slice(expOpen + 1, expClose);
+
+		// After the exponent closing paren there may be whitespace before the arg paren
+		let afterExp = expClose + 1;
+		const wsAfterExp = /^\s*/.exec(expr.slice(afterExp))?.[0] ?? "";
+		afterExp += wsAfterExp.length;
+
+		// Expect a '(' for the function's argument list
+		if (expr[afterExp] !== "(") {
+			funcs.lastIndex = afterExp;
+			continue;
+		}
+
+		const argOpen = afterExp;
+		const argClose = findClosingParen(expr, argOpen);
+		if (argClose === -1) {
+			funcs.lastIndex = afterExp;
+			continue;
+		}
+
+		// Special-case: sin^(-1)(x) -> arcsin(x) (and similarly for cos/tan)
+		const lowerName = name.toLowerCase();
+		const trimmedExp = exponent.trim();
+		if (trimmedExp === "-1" && (lowerName === "sin" || lowerName === "cos" || lowerName === "tan")) {
+			const arcMap: Record<string, string> = { sin: "arcsin", cos: "arccos", tan: "arctan" };
+			const arcName = arcMap[lowerName];
+			const newSub = arcName + expr.slice(argOpen, argClose + 1);
+
+			expr = expr.slice(0, nameStart) + newSub + expr.slice(argClose + 1);
+
+			// Continue scanning after the replacement
+			funcs.lastIndex = nameStart + newSub.length;
+			continue;
+		}
+
+		// General case: move the ^(exponent) after the function argument: f^(n)(arg) -> f(arg)^n
+		const origSubEnd = argClose + 1;
+		const exponentTrim = exponent.trim();
+
+		// If the exponent is a single simple number (e.g. 2 or 1.5), we can safely drop the
+		// parentheses so the final expression becomes `f(arg)^2`. For more complex exponents
+		// (like `1+1`) keep the parentheses to preserve grouping.
+		const simpleNumber = /^[-+]?\d+(?:[.,]\d+)?$/.test(exponentTrim);
+		const powSuffix = simpleNumber ? "^" + exponentTrim : "^(" + exponent + ")";
+
+		const newSub = name + expr.slice(argOpen, origSubEnd) + powSuffix;
+
+		expr = expr.slice(0, nameStart) + newSub + expr.slice(origSubEnd);
+
+		// Continue scanning after the replacement
+		funcs.lastIndex = nameStart + newSub.length;
+	}
+
+	return expr;
 }
 
 /**

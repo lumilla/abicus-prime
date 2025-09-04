@@ -2,29 +2,23 @@
 /// <reference types="vitest" />
 
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import preact from "@preact/preset-vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import * as child from "child_process";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 
 const commitHash = process.env.GIT_HASH || child.execSync("git rev-parse HEAD").toString();
+const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf-8"));
+const appVersion = packageJson.version;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-	plugins: [
-		tsconfigPaths(),
-		react({
-			babel: {
-				plugins: [
-					/** See `./src/_clsx-jsx.d.ts` for more details on these two plugins */
-					["transform-jsx-classnames", { attributes: ["x"] }],
-					["babel-plugin-rename-jsx-attribute", { attributes: { x: "className" } }],
-				],
-			},
-		}),
-	],
+	plugins: [tsconfigPaths(), preact()],
 
 	define: {
 		__GIT_HASH__: JSON.stringify(commitHash),
+		__APP_VERSION__: JSON.stringify(appVersion),
 	},
 
 	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

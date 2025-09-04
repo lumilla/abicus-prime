@@ -46,6 +46,14 @@ describe("Arithmetic character rewrites", () => {
 	test("Times", () => expect(prettify("5*5")).toBe("5 × 5"));
 });
 
+run("Factorial formatting", [
+	["5!", "5!"],
+	["0!", "0!"],
+	["(3+2)!", "(3 + 2)!"],
+	["3!+4!", "3! + 4!"],
+	["3!!", "3!!"],
+]);
+
 function run(title: string, cases: [string, string][]) {
 	describe(title, () => {
 		for (const [input, expected] of cases) {

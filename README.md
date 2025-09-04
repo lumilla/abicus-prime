@@ -17,17 +17,17 @@ Before any contribution is accepted to the codebase, to clarify the intellectual
 - Organizations or corporations should sign and send the [Corporate CLA](https://digabi.fi/YTL%20Corporate%20CLA.pdf) to the same address.
 
 ---
-  
+
 <h1 align="center">
   <img alt="logo" height="100" src="./app-icon.png" />
-  <div>Abicus</div>
+  <div>Abicus Prime</div>
 </h1>
 
 <div align="center">
   
-Abicus is a simple **scientific calculator** built on web technologies.
+Abicus Prime is a simple **scientific calculator** built on web technologies.
 
-Abicus does not include any symbolic computation capabilities.  
+Abicus Prime does not include any symbolic computation capabilities.  
 It is built for use in the Finnish digital matriculation examinations.
 
 </div>

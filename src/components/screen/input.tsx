@@ -1,4 +1,5 @@
-import { KeyboardEvent, FocusEvent, useEffect, ChangeEvent } from "react";
+import { JSX } from "preact";
+import { useEffect } from "preact/hooks";
 
 import { useCalculator } from "#/state";
 import { match } from "ts-pattern";
@@ -9,44 +10,59 @@ export default function Input() {
 
 	const shouldShowOutput = !buffer.isDirty && !buffer.isErr;
 
-	function onChange(e: ChangeEvent<HTMLInputElement>) {
-		(window as any)[EXPR_DEBUG] = e.target.value;
-		buffer.set(e.target.value);
+	function onChange(e: JSX.TargetedEvent<HTMLInputElement>) {
+		const target = e.target as HTMLInputElement;
+		(window as any)[EXPR_DEBUG] = target.value;
+		buffer.set(target.value);
 	}
 
-	function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-		match(e.key)
+	function onKeyDown(e: JSX.TargetedKeyboardEvent<HTMLInputElement>) {
+		const handled = match(e.key)
 			.with("Enter", "=", "ArrowDown", () => {
 				crunch();
+				return true;
 			})
 			.with("(", () => {
 				buffer.input.openBrackets();
+				return true;
 			})
 			.with(")", () => {
 				buffer.input.closeBrackets();
+				return true;
 			})
 			.with("^", "/", "+", symbol => {
 				buffer.input.oper(symbol);
+				return true;
 			})
 			.with("-", () => {
 				buffer.input.oper("−");
+				return true;
 			})
 			.with("*", () => {
 				buffer.input.oper("×");
+				return true;
 			})
 			.with("Escape", () => {
 				buffer.empty();
+				return true;
 			})
 			.with("Tab", () => {
-				angleUnit === "deg" ? radsOn() : degsOn();
+				if (angleUnit === "deg") {
+					radsOn();
+				} else {
+					degsOn();
+				}
+				return true;
 			})
-			.otherwise(() => true) || e.preventDefault();
-	}
+			.otherwise(() => false);
 
-	function onBlur(e: FocusEvent<HTMLInputElement>) {
+		if (handled) e.preventDefault();
+	}
+	function onBlur(e: JSX.TargetedFocusEvent<HTMLInputElement>) {
 		// Timeout needed because of Safari (of course)
 		setTimeout(() => {
-			e.target.scrollLeft = e.target.scrollWidth;
+			const target = e.target as HTMLInputElement;
+			target.scrollLeft = target.scrollWidth;
 		}, 0);
 	}
 
@@ -68,7 +84,7 @@ export default function Input() {
 			autoFocus
 			ref={buffer.ref}
 			value={buffer.value}
-			onChange={onChange}
+			onInput={onChange}
 			onKeyDown={onKeyDown}
 			onBlur={onBlur}
 			x={[
@@ -80,7 +96,7 @@ export default function Input() {
 				"transition-all",
 				// Focus is shown by the parent so it's safe to disable here
 				"focus:outline-none",
-				shouldShowOutput ? "text-slate-500 text-sm" : "text-black",
+				shouldShowOutput ? "text-slate-500 dark:text-slate-400 text-sm" : "text-black dark:text-white",
 			]}
 			// Safari bug workaround:
 			// As of writing this, translating an input in safari without using `translate3d`

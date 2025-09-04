@@ -45,10 +45,10 @@ jobs:
 
       - name: Assert matching Tag and Version
         run: |
-          ABICUS_VERSION=$(jq -r '.version' package.json)
-          if [[ "v$ABICUS_VERSION" != "${{ github.ref_name }}" ]]; then
+          ABICUS_PRIME_VERSION=$(jq -r '.version' package.json)
+          if [[ "v$ABICUS_PRIME_VERSION" != "${{ github.ref_name }}" ]]; then
             echo "Version in package.json does not match tag!"
-            echo "Version in package.json: \"v$ABICUS_VERSION\""
+            echo "Version in package.json: \"v$ABICUS_PRIME_VERSION\""
             echo "Version given as tag:    \"${{ github.ref_name }}\""
             exit 1
           fi
@@ -72,7 +72,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076
 
       - name: Tag Docker Image
-        run: docker tag ${{ steps.docker-build.outputs.imageid }} ${{ steps.login-ecr.outputs.registry }}/abicus:${{ github.ref_name }}
+        run: docker tag ${{ steps.docker-build.outputs.imageid }} ${{ steps.login-ecr.outputs.registry }}/abicus-prime:${{ github.ref_name }}
 
       - name: Push Docker Image
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/abicus:${{ github.ref_name }}
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/abicus-prime:${{ github.ref_name }}

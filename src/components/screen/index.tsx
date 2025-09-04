@@ -1,6 +1,5 @@
 import Input from "./input";
 
-import RadDegToggle from "./rad-deg-toggle";
 import Result from "./result";
 import ErrorIcon from "./error-icon";
 
@@ -13,14 +12,13 @@ export default function Screen() {
 					"h-24",
 					"text-xl",
 					"rounded-md overflow-hidden",
-					"border border-abi-dgrey has-[:focus]:border-transparent",
-					"has-[:focus]:ring-2 ring-blue-400",
+					"border border-abi-dgrey dark:border-abi-dark-dgrey has-[:focus]:border-transparent",
+					"has-[:focus]:ring-2 ring-blue-400 dark:ring-blue-500",
 				]}
 			>
 				<Result />
 				<Input />
 				<ErrorIcon />
-				<RadDegToggle />
 			</div>
 		</>
 	);

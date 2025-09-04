@@ -15,6 +15,7 @@ export const T = {
 	lbrk: () => ({ type: "lbrk" }),
 	rbrk: () => ({ type: "rbrk" }),
 	semi: () => ({ type: "semi" }),
+	fact: () => ({ type: "fact" }),
 } satisfies Record<TokenId, (...args: any[]) => Token>;
 
 /**
@@ -39,6 +40,8 @@ export const t = {
 	log10: T.func("log10"),
 	sqrt: T.func("sqrt"),
 	root: T.func("root"),
+	fact: T.fact(),
+	factFunc: T.func("fact"),
 	ans: T.memo("ans"),
 	ind: T.memo("ind"),
 	lbrk: T.lbrk(),

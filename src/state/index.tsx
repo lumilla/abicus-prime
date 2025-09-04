@@ -1,9 +1,16 @@
 import Decimal from "decimal.js";
-import { createContext, PropsWithChildren, useContext, useState } from "react";
+import { createContext, ComponentChildren } from "preact";
+import { useContext, useState, useEffect } from "preact/hooks";
 import { AngleUnit, calculate } from "#/calculator";
+import { formatResult } from "#/utils/format-result";
 
 import useBuffer, { BufferHandle } from "./internal-buffer";
 import useMemory, { MemoryHandle } from "./internal-memory";
+
+type InterfaceMode = "pocket" | "terminal";
+type Language = "fi" | "sv" | "en";
+
+export type TerminalHistoryItem = { expression: string; result: string; timestamp: number };
 
 type CalculatorContext = {
 	/** Handle to the calculator's input buffer */
@@ -13,6 +20,18 @@ type CalculatorContext = {
 
 	/** Clear the input buffer and all memory registers */
 	clearAll(): void;
+	/** Shared history between pocket and terminal modes */
+	sharedHistory: TerminalHistoryItem[];
+	/** Push an item into shared history */
+	pushSharedHistory(item: TerminalHistoryItem): void;
+	/** Clear shared history */
+	clearSharedHistory(): void;
+	/** Terminal history persisted across mounts (legacy - keeping for compatibility) */
+	terminalHistory: TerminalHistoryItem[];
+	/** Push an item into terminal history (legacy - keeping for compatibility) */
+	pushTerminalHistory(item: TerminalHistoryItem): void;
+	/** Clear terminal history (legacy - keeping for compatibility) */
+	clearTerminalHistory(): void;
 
 	/** Unit to use in trigonometric functions */
 	angleUnit: AngleUnit;
@@ -20,6 +39,28 @@ type CalculatorContext = {
 	radsOn(): void;
 	/** Switch to using degrees */
 	degsOn(): void;
+
+	/** Interface mode - pocket or terminal */
+	interfaceMode: InterfaceMode;
+	/** Set interface mode */
+	setInterfaceMode(mode: InterfaceMode): void;
+
+	/** Dark mode preference */
+	isDarkMode: boolean;
+	/** Set dark mode to a specific value */
+	setDarkMode: (value: boolean) => void;
+
+	/** Current language */
+	language: Language;
+	/** Set language */
+	setLanguage: (language: Language) => void;
+
+	/** Settings page visibility */
+	showSettings: boolean;
+	/** Show settings page */
+	openSettings(): void;
+	/** Hide settings page */
+	closeSettings(): void;
 
 	/**
 	 * Crunch the numbers!
@@ -46,14 +87,91 @@ export function useCalculator() {
 	return handle;
 }
 
-export default function CalculatorProvider({ children }: PropsWithChildren) {
+export default function CalculatorProvider({ children }: { children: ComponentChildren }) {
 	const [angleUnit, setAngleUnit] = useState<AngleUnit>("deg");
+	const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("pocket");
+
+	// Initialize language with saved preference or default to Finnish
+	const [language, setLanguageState] = useState<Language>(() => {
+		if (typeof window === "undefined") return "fi";
+		const saved = localStorage.getItem("abicus-language");
+		return (saved as Language) || "fi";
+	});
+
+	// Initialize dark mode with OS preference or saved preference
+	const [isDarkMode, setIsDarkMode] = useState(() => {
+		if (typeof window === "undefined") return false;
+
+		const saved = localStorage.getItem("abicus-dark-mode");
+		if (saved !== null) {
+			return JSON.parse(saved);
+		}
+
+		// Use OS preference if no saved preference
+		return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+	});
+
+	const [showSettings, setShowSettings] = useState(false);
+	const [terminalHistory, setTerminalHistory] = useState<{ expression: string; result: string; timestamp: number }[]>(
+		[],
+	);
+	const [sharedHistory, setSharedHistory] = useState<{ expression: string; result: string; timestamp: number }[]>([]);
 	const buffer = useBuffer();
 	const memory = useMemory();
+
+	// Apply dark mode class to document
+	useEffect(() => {
+		if (isDarkMode) {
+			document.documentElement.classList.add("dark");
+		} else {
+			document.documentElement.classList.remove("dark");
+		}
+	}, [isDarkMode]);
+
+	// Listen for OS color scheme changes (only if no saved preference exists)
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+
+		const savedPreference = localStorage.getItem("abicus-dark-mode");
+		if (savedPreference !== null) return; // Don't listen if user has saved preference
+
+		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+		const handleChange = (e: MediaQueryListEvent) => {
+			setIsDarkMode(e.matches);
+		};
+
+		mediaQuery.addEventListener("change", handleChange);
+		return () => mediaQuery.removeEventListener("change", handleChange);
+	}, []); // Run once on mount
 
 	function clearAll() {
 		buffer.empty();
 		memory.empty();
+		clearSharedHistory();
+	}
+
+	function pushTerminalHistory(item: { expression: string; result: string; timestamp: number }) {
+		setTerminalHistory(prev => [...prev, item]);
+	}
+
+	function clearTerminalHistory() {
+		setTerminalHistory([]);
+	}
+
+	function pushSharedHistory(item: { expression: string; result: string; timestamp: number }) {
+		setSharedHistory(prev => [...prev, item]);
+		// Also update terminal history for backward compatibility
+		setTerminalHistory(prev => [...prev, item]);
+	}
+
+	function clearSharedHistory() {
+		setSharedHistory([]);
+		setTerminalHistory([]);
+	}
+
+	function setLanguage(value: Language) {
+		setLanguageState(value);
+		localStorage.setItem("abicus-language", value);
 	}
 
 	function crunch(saveToInd = false) {
@@ -70,6 +188,16 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 		memory.setAns(value);
 		if (saveToInd) memory.setInd(value);
 
+		// Add to shared history when in pocket mode
+		if (interfaceMode === "pocket" && buffer.value.trim()) {
+			const resultString = "= " + formatResult(value);
+			pushSharedHistory({
+				expression: buffer.value,
+				result: resultString,
+				timestamp: Date.now(),
+			});
+		}
+
 		return value;
 	}
 
@@ -79,6 +207,12 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 				buffer,
 				memory,
 				clearAll,
+				sharedHistory,
+				pushSharedHistory,
+				clearSharedHistory,
+				terminalHistory,
+				pushTerminalHistory,
+				clearTerminalHistory,
 				crunch,
 
 				angleUnit,
@@ -89,6 +223,27 @@ export default function CalculatorProvider({ children }: PropsWithChildren) {
 				degsOn() {
 					buffer.makeDirty();
 					setAngleUnit("deg");
+				},
+
+				interfaceMode,
+				setInterfaceMode,
+
+				isDarkMode,
+				setDarkMode: (value: boolean) => {
+					setIsDarkMode(value);
+					// Save preference to localStorage when manually set
+					localStorage.setItem("abicus-dark-mode", JSON.stringify(value));
+				},
+
+				language,
+				setLanguage,
+
+				showSettings,
+				openSettings() {
+					setShowSettings(true);
+				},
+				closeSettings() {
+					setShowSettings(false);
 				},
 			}}
 		>

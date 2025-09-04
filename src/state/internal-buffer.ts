@@ -1,7 +1,5 @@
-import { SetStateAction, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import { useRef, useState } from "preact/hooks";
 
-import { BUFFER_DEBUG, INPUT_DEBUG } from "#/error-boundary/constants";
 import prettify from "#/utils/prettify-expression";
 
 export type BufferHandle = ReturnType<typeof useBuffer>;
@@ -11,8 +9,6 @@ export default function useBuffer() {
 	const [isErr, setErr] = useState(false);
 
 	const ref = useRef<HTMLInputElement>(null);
-
-	(window as any)[BUFFER_DEBUG] = buffer;
 
 	function getSelection(): [lhs: number, rhs: number] {
 		if (!ref.current) return [0, 0];
@@ -28,32 +24,30 @@ export default function useBuffer() {
 	}
 
 	function clean() {
-		setBuffer(prettify);
+		setBuffer(buffer => prettify(buffer) ?? buffer);
 		setDirty(false);
 		setErr(false);
 	}
 
-	function set(value: SetStateAction<string>) {
+	function set(value: string | ((prev: string) => string)) {
 		setBuffer(value);
 		setDirty(true);
 		setErr(false);
 	}
 
 	function del() {
-		flushSync(() => {
-			set(v => {
-				const [l, r] = getSelection();
+		set((v: string) => {
+			const [l, r] = getSelection();
 
-				const lhs = l !== r ? v.slice(0, l) : v.slice(0, l).replace(/\s*([a-z]+|.)$/i, "");
-				const rhs = v.slice(r);
+			const lhs = l !== r ? v.slice(0, l) : v.slice(0, l).replace(/\s*([a-z]+|.)$/i, "");
+			const rhs = v.slice(r);
 
-				setTimeout(() => {
-					if (!ref.current) return;
-					ref.current.selectionStart = ref.current.selectionEnd = lhs.length;
-				});
-
-				return `${lhs}${rhs}`;
+			setTimeout(() => {
+				if (!ref.current) return;
+				ref.current.selectionStart = ref.current.selectionEnd = lhs.length;
 			});
+
+			return `${lhs}${rhs}`;
 		});
 	}
 
@@ -68,26 +62,22 @@ export default function useBuffer() {
 	function rawInput(inpLhs: string, inpRhs: string, action: "replace" | "wrap", cursorOffset: number) {
 		// This was exactly as "fun" to figure out how to write as it is to read through
 
-		(window as any)[INPUT_DEBUG] = JSON.stringify({ inpLhs, inpRhs, action, cursorOffset });
-
 		const [curLhs, curRhs] = getSelection();
 
-		flushSync(() => {
-			set(v => {
-				const bufLhs = v.slice(0, curLhs);
-				const bufRhs = v.slice(curRhs);
-				const bufSel = v.slice(curLhs, curRhs);
+		set((v: string) => {
+			const bufLhs = v.slice(0, curLhs);
+			const bufRhs = v.slice(curRhs);
+			const bufSel = v.slice(curLhs, curRhs);
 
-				const newTxt = action === "replace" ? `${inpLhs}${inpRhs}` : `${inpLhs}${bufSel}${inpRhs}`;
+			const newTxt = action === "replace" ? `${inpLhs}${inpRhs}` : `${inpLhs}${bufSel}${inpRhs}`;
 
-				setTimeout(() => {
-					if (!ref.current) return;
+			setTimeout(() => {
+				if (!ref.current) return;
 
-					ref.current.selectionStart = ref.current.selectionEnd = bufLhs.length + newTxt.length + cursorOffset;
-				});
-
-				return `${bufLhs}${newTxt}${bufRhs}`;
+				ref.current.selectionStart = ref.current.selectionEnd = bufLhs.length + newTxt.length + cursorOffset;
 			});
+
+			return `${bufLhs}${newTxt}${bufRhs}`;
 		});
 	}
 
@@ -176,6 +166,10 @@ export default function useBuffer() {
 				} else {
 					rawInput("^ 2", "", "replace", 0);
 				}
+			},
+
+			factorial() {
+				rawInput("!", "", "replace", 0);
 			},
 		},
 	} as const;

@@ -1,4 +1,4 @@
-import { ReactNode, MouseEvent } from "react";
+import { ComponentChildren, JSX } from "preact";
 import { match } from "ts-pattern";
 
 import { useCalculator } from "#/state";
@@ -7,7 +7,7 @@ import { useCalculator } from "#/state";
 
 export type RawKeyProps<O extends string = never> = Omit<
 	{
-		label: ReactNode;
+		label: ComponentChildren;
 		onClick: () => void;
 		tint?: "none" | "d-blue" | "l-blue" | "grey";
 		className?: any;
@@ -18,7 +18,7 @@ export type RawKeyProps<O extends string = never> = Omit<
 export function RawKey({ onClick: propsOnClick, tint = "none", label, className }: RawKeyProps) {
 	const { buffer } = useCalculator();
 
-	function onMouseDown(e: MouseEvent<HTMLButtonElement>) {
+	function onMouseDown(e: JSX.TargetedMouseEvent<HTMLButtonElement>) {
 		e.preventDefault();
 		buffer.ref.current?.focus();
 	}
@@ -31,16 +31,17 @@ export function RawKey({ onClick: propsOnClick, tint = "none", label, className 
 		<button
 			x={[
 				"h-9",
-				"rounded-sm border border-abi-dgrey",
+				"rounded-sm border border-abi-dgrey dark:border-abi-dark-dgrey",
 				[
 					"transition-all duration-75",
 					"shadow scale-100",
 					"active:shadow-none active:scale-95",
+					"text-black dark:text-white",
 					match(tint)
-						.with("none", () => "bg-white active:bg-slate-100")
-						.with("d-blue", () => "bg-abi-blue-2 active:bg-blue-300")
-						.with("l-blue", () => "bg-abi-blue-3 active:bg-blue-100")
-						.with("grey", () => "bg-abi-lgrey active:bg-slate-300")
+						.with("none", () => "bg-white dark:bg-gray-700 active:bg-slate-100 dark:active:bg-gray-600")
+						.with("d-blue", () => "bg-abi-blue-2 dark:bg-abi-dark-blue-2 active:bg-blue-300 dark:active:bg-blue-600")
+						.with("l-blue", () => "bg-abi-blue-3 dark:bg-abi-dark-blue-3 active:bg-blue-100 dark:active:bg-blue-800")
+						.with("grey", () => "bg-abi-lgrey dark:bg-abi-dark-lgrey active:bg-slate-300 dark:active:bg-slate-500")
 						.exhaustive(),
 				],
 				className,
@@ -55,7 +56,7 @@ export function RawKey({ onClick: propsOnClick, tint = "none", label, className 
 
 /*****************************************************************************/
 
-type BasicKeyProps = RawKeyProps<"onClick" | "label"> & { input: string; label?: ReactNode };
+type BasicKeyProps = RawKeyProps<"onClick" | "label"> & { input: string; label?: ComponentChildren };
 
 export function BasicKey({ input, label = input, ...props }: BasicKeyProps) {
 	const { buffer } = useCalculator();
