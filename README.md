@@ -17,7 +17,7 @@ Before any contribution is accepted to the codebase, to clarify the intellectual
 - Organizations or corporations should sign and send the [Corporate CLA](https://digabi.fi/YTL%20Corporate%20CLA.pdf) to the same address.
 
 ---
-  
+
 <h1 align="center">
   <img alt="logo" height="100" src="./app-icon.png" />
   <div>Abicus Prime</div>

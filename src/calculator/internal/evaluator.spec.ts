@@ -151,15 +151,15 @@ run("Factorial", [
 	[[litr(1), t.fact], d(1)],
 	[[litr(5), t.fact], d(120)],
 	[[litr(10), t.fact], d(3628800)],
-	
+
 	// Factorial with brackets
 	[[t.lbrk, litr(3), t.add, litr(2), t.rbrk, t.fact], d(120)],
 	[[t.lbrk, litr(6), t.div, litr(2), t.rbrk, t.fact], d(6)],
-	
+
 	// Factorial in expressions
 	[[litr(5), t.fact, t.add, litr(10)], d(130)],
 	[[litr(3), t.fact, t.mul, litr(4), t.fact], d(144)],
-	
+
 	// Nested factorial expressions
 	[[litr(3), t.fact, t.fact], d(720)],
 ]);
@@ -362,7 +362,7 @@ describe("Syntax Errors", () => {
 		[litr(-5), t.fact],
 		[t.factFunc, t.lbrk, litr(-1), t.rbrk],
 		[t.factFunc, t.lbrk, litr(-5), t.rbrk],
-		
+
 		// Non-integers
 		[litr(3.5), t.fact],
 		[litr(2.1), t.fact],

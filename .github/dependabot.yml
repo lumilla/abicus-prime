@@ -5,13 +5,12 @@
 
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: 'daily'
-      time: '01:00'
+      interval: "daily"
+      time: "01:00"
     labels: []
     open-pull-requests-limit: 99
     cooldown:
       default-days: 7
-

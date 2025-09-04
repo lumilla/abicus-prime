@@ -57,7 +57,8 @@ export default function Input() {
 			.otherwise(() => false);
 
 		if (handled) e.preventDefault();
-	}	function onBlur(e: JSX.TargetedFocusEvent<HTMLInputElement>) {
+	}
+	function onBlur(e: JSX.TargetedFocusEvent<HTMLInputElement>) {
 		// Timeout needed because of Safari (of course)
 		setTimeout(() => {
 			const target = e.target as HTMLInputElement;

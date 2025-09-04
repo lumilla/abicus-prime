@@ -2,14 +2,14 @@ import { useCalculator } from "#/state";
 
 export default function History() {
 	const { sharedHistory } = useCalculator();
-	
+
 	// Only show the latest item in pocket mode
 	const latestHistory = sharedHistory.length > 0 ? sharedHistory[sharedHistory.length - 1] : null;
-	
+
 	if (!latestHistory) {
 		return null;
 	}
-	
+
 	return (
 		<div
 			x={[

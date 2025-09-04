@@ -3,7 +3,7 @@ import { translations, supportedLanguages, DEFAULT_LANGUAGE, TranslationKey, Lan
 // Mock localStorage for testing
 const mockLocalStorage = (() => {
 	let store: Record<string, string> = {};
-	
+
 	return {
 		getItem: (key: string) => store[key] || null,
 		setItem: (key: string, value: string) => {
@@ -52,7 +52,7 @@ describe("i18n translations", () => {
 		test("all languages have the same translation keys", () => {
 			const finnishKeys = Object.keys(translations.fi);
 			const languages = Object.keys(translations);
-			
+
 			for (const lang of languages) {
 				const langKeys = Object.keys(translations[lang as LanguageCode]);
 				expect(langKeys.sort()).toEqual(finnishKeys.sort());
@@ -98,7 +98,7 @@ describe("i18n translations", () => {
 			// Create a modified translations object for testing
 			const modifiedTranslations = { ...translations };
 			delete (modifiedTranslations.en as any)["settings.title"];
-			
+
 			// Simulate the fallback behavior
 			const fallback = modifiedTranslations.en["settings.title"] ?? modifiedTranslations.fi["settings.title"];
 			expect(fallback).toBe("Asetukset");
@@ -129,21 +129,21 @@ describe("i18n translations", () => {
 			// Mock localStorage to throw errors
 			const originalGetItem = mockLocalStorage.getItem;
 			const originalSetItem = mockLocalStorage.setItem;
-			
+
 			mockLocalStorage.getItem = () => {
 				throw new Error("localStorage error");
 			};
 			mockLocalStorage.setItem = () => {
 				throw new Error("localStorage error");
 			};
-			
+
 			// Should not throw and should return default language
 			expect(() => getStoredLanguage()).not.toThrow();
 			expect(getStoredLanguage()).toBe(DEFAULT_LANGUAGE);
-			
+
 			// Should not throw when setting language
 			expect(() => setStoredLanguage("en")).not.toThrow();
-			
+
 			// Restore original methods
 			mockLocalStorage.getItem = originalGetItem;
 			mockLocalStorage.setItem = originalSetItem;
@@ -177,10 +177,10 @@ describe("i18n translations", () => {
 			expect(getTranslation("settings.language", "en")).toBe("Language");
 			expect(getTranslation("settings.language", "sv")).toBe("Språk");
 			expect(getTranslation("settings.language", "se")).toBe("Giella");
-			
+
 			expect(getTranslation("error.title", "fi")).toBe("Jotain meni pieleen!");
 			expect(getTranslation("error.title", "en")).toBe("Something went wrong!");
-			
+
 			expect(getTranslation("common.close", "fi")).toBe("Sulje");
 			expect(getTranslation("common.close", "en")).toBe("Close");
 		});
@@ -188,7 +188,7 @@ describe("i18n translations", () => {
 		test("all translation categories are present", () => {
 			const expectedCategories = ["settings", "error", "language", "terminal", "common"];
 			const allKeys = Object.keys(translations.fi);
-			
+
 			for (const category of expectedCategories) {
 				const hasCategory = allKeys.some(key => key.startsWith(category + "."));
 				expect(hasCategory).toBe(true);

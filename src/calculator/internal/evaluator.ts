@@ -135,7 +135,7 @@ export default function evaluate(tokens: Token[], ans: Decimal, ind: Decimal, an
 								})
 								.otherwise(() => {
 									const func = (Decimal as any)[funcName].bind(Decimal);
-									
+
 									return match([angleUnit, funcName])
 										.with(["deg", union("sin", "cos")], () => ok(func(degToRad(arg))))
 										.with(["deg", union("asin", "acos", "atan")], () => ok(radToDeg(func(arg))))
@@ -259,17 +259,17 @@ function factorial(n: Decimal): Decimal {
 	if (n.isNeg() || !n.isInteger()) {
 		throw new Error("Factorial is only defined for non-negative integers");
 	}
-	
+
 	if (n.eq(0) || n.eq(1)) {
 		return ONE;
 	}
-	
+
 	let result = ONE;
 	let i = TWO;
 	while (i.lte(n)) {
 		result = result.mul(i);
 		i = i.add(1);
 	}
-	
+
 	return result;
 }

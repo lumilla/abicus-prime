@@ -10,7 +10,7 @@ describe("i18n translations data", () => {
 		test("all required languages are present", () => {
 			const expectedLanguages: LanguageCode[] = ["fi", "sv", "en", "se"];
 			const actualLanguages = Object.keys(translations) as LanguageCode[];
-			
+
 			expect(actualLanguages.sort()).toEqual(expectedLanguages.sort());
 		});
 
@@ -19,7 +19,7 @@ describe("i18n translations data", () => {
 			// At runtime, JavaScript objects are still mutable, so we just verify the structure
 			expect(translations).toBeDefined();
 			expect(typeof translations).toBe("object");
-			
+
 			// The real test is that TypeScript compilation would fail if we tried to modify
 			// the translations object due to the 'as const' assertion
 		});
@@ -29,13 +29,7 @@ describe("i18n translations data", () => {
 		const referenceKeys = Object.keys(translations.fi) as TranslationKey[];
 
 		test("Finnish (reference) has all expected categories", () => {
-			const categories = [
-				"settings.",
-				"error.",
-				"language.",
-				"terminal.",
-				"common.",
-			];
+			const categories = ["settings.", "error.", "language.", "terminal.", "common."];
 
 			for (const category of categories) {
 				const hasCategory = referenceKeys.some(key => key.startsWith(category));
@@ -75,17 +69,17 @@ describe("i18n translations data", () => {
 		test("configuration matches available translations", () => {
 			const configuredLanguages = Object.keys(supportedLanguages);
 			const availableLanguages = Object.keys(translations);
-			
+
 			expect(configuredLanguages.sort()).toEqual(availableLanguages.sort());
 		});
 
 		test("language name keys exist in translations", () => {
 			for (const [langCode, config] of Object.entries(supportedLanguages)) {
 				expect(config.code).toBe(langCode);
-				
+
 				// The name should be a valid translation key
 				expect(config.name in translations.fi).toBe(true);
-				
+
 				// All languages should have this name translation
 				for (const translationLang of Object.keys(translations)) {
 					expect(translations[translationLang as LanguageCode][config.name]).toBeTruthy();
@@ -95,7 +89,7 @@ describe("i18n translations data", () => {
 
 		test("language codes are valid", () => {
 			const validLanguageCodes = ["fi", "sv", "en", "se"];
-			
+
 			for (const langCode of Object.keys(supportedLanguages)) {
 				expect(validLanguageCodes).toContain(langCode);
 			}
@@ -112,14 +106,7 @@ describe("i18n translations data", () => {
 		});
 
 		test("no translations contain placeholder text", () => {
-			const placeholderPatterns = [
-				/TODO/i,
-				/FIXME/i,
-				/\[.*\]/,
-				/\{.*\}/,
-				/xxx/i,
-				/placeholder/i,
-			];
+			const placeholderPatterns = [/TODO/i, /FIXME/i, /\[.*\]/, /\{.*\}/, /xxx/i, /placeholder/i];
 
 			for (const langTranslations of Object.values(translations)) {
 				for (const value of Object.values(langTranslations)) {
@@ -135,7 +122,7 @@ describe("i18n translations data", () => {
 				for (const [key, value] of Object.entries(langTranslations)) {
 					expect(value.length).toBeGreaterThan(0);
 					expect(value.length).toBeLessThan(200); // Reasonable upper limit
-					
+
 					// Specific checks for certain types of keys
 					if (key.includes("title")) {
 						expect(value.length).toBeLessThan(50);
@@ -148,10 +135,10 @@ describe("i18n translations data", () => {
 			// The Northern Sami translations should be reviewed by native speakers
 			// This test ensures we're aware of their placeholder status
 			const seTranslations = translations.se;
-			
+
 			// We expect these to exist and be non-empty, even if they're placeholders
 			expect(Object.keys(seTranslations).length).toBeGreaterThan(0);
-			
+
 			for (const value of Object.values(seTranslations)) {
 				expect(typeof value).toBe("string");
 				expect(value.trim().length).toBeGreaterThan(0);
@@ -162,7 +149,7 @@ describe("i18n translations data", () => {
 	describe("type safety validation", () => {
 		test("TranslationKey type covers all Finnish keys", () => {
 			const finnishKeys = Object.keys(translations.fi);
-			
+
 			// This is more of a compile-time check, but we can verify at runtime too
 			finnishKeys.forEach(key => {
 				// If this compiles without error, our type is correct
@@ -173,7 +160,7 @@ describe("i18n translations data", () => {
 
 		test("LanguageCode type covers all available languages", () => {
 			const availableLanguages = Object.keys(translations);
-			
+
 			availableLanguages.forEach(lang => {
 				// If this compiles without error, our type is correct
 				const typedLang: LanguageCode = lang as LanguageCode;
