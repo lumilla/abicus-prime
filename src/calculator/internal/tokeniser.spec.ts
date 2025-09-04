@@ -51,6 +51,20 @@ run("Function power notation", [
 	["tan^(-1)(1)", [t.atan, t.lbrk, litr(1), t.rbrk]],
 	["sin^(2)(1)", [t.sin, t.lbrk, litr(1), t.rbrk, t.pow, litr(2)]],
 ]);
+run("Superscript exponents", [
+	["3⁴", [litr(3), t.pow, litr(4)]],
+	["12⁴⁵", [litr(12), t.pow, litr(45)]],
+	["(2+3)⁵", [t.lbrk, litr(2), t.add, litr(3), t.rbrk, t.pow, litr(5)]],
+	["2⁻³", [litr(2), t.pow, t.sub, litr(3)]],
+]);
+run("Superscript grouping", [["5⁵⁺⁵", [litr(5), t.pow, t.lbrk, litr(5), t.add, litr(5), t.rbrk]]]);
+
+run("Superscript bases", [["pi⁴", [t.pi, t.pow, litr(4)]]]);
+
+test("isolated sign-only superscript produces lexical error", () => {
+	const res = tokenise("2⁻");
+	expect(res.isErr()).toBe(true);
+});
 run("Factorial", [
 	["5!", [litr(5), t.fact]],
 	["3!+4!", [litr(3), t.fact, t.add, litr(4), t.fact]],

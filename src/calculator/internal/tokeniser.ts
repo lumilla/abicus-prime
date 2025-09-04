@@ -166,11 +166,59 @@ const tokenMatchers = [
  */
 export default function tokenise(expression: string): Result<Token[], LexicalError> {
 	// Preprocess a few common shorthand notations before tokenising:
-	// 1) Inverse trig notation: "sin^(-1)(x)" -> "arcsin(x)" (same for cos/tan)
-	// 2) Function power notation: "sin^(2)(x)" -> "sin(x)^(2)" (so it's parsed as (sin(x))^2)
-	const preprocessed = preprocessFunctionPowers(expression);
+	// 1) Superscript exponents: "3⁵" -> "3^5", "12⁴⁵" -> "12^45"
+	//    Only transform when the superscript run is attached to a base token (e.g. digit or ")").
+	// 2) Inverse trig notation: "sin^(-1)(x)" -> "arcsin(x)" (same for cos/tan)
+	// 3) Function power notation: "sin^(2)(x)" -> "sin(x)^(2)" (so it's parsed as (sin(x))^2)
+	const preprocessed = preprocessFunctionPowers(preprocessSuperscripts(expression));
 
 	return Result.combine([...tokens(preprocessed)]);
+}
+
+/**
+ * Rewrites runs of superscript characters into ^<digits> sequences.
+ * Example: "3⁵" -> "3^5", "12⁴⁵" -> "12^45".
+ * Only rewrites when attached to a non-whitespace base; standalone superscripts
+ * are left unchanged to trigger lexical errors.
+ */
+function preprocessSuperscripts(input: string) {
+	const supers = /(?:[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺])+/g;
+
+	const map: Record<string, string> = {
+		"⁰": "0",
+		"¹": "1",
+		"²": "2",
+		"³": "3",
+		"⁴": "4",
+		"⁵": "5",
+		"⁶": "6",
+		"⁷": "7",
+		"⁸": "8",
+		"⁹": "9",
+		"⁻": "-",
+		"⁺": "+",
+	};
+
+	return input.replace(supers, function (match: string, offset: number, s: string) {
+		if (offset === 0) return match;
+
+		const prev = s[offset - 1] ?? "";
+		// Allow any non-whitespace base; defer semantic validation.
+		if (!/\S/.test(prev)) return match;
+
+		const converted = Array.from(match)
+			.map(ch => map[ch] ?? ch)
+			.join("");
+
+		// Skip sign-only runs to avoid orphaned operators.
+		if (/^[+-]+$/.test(converted)) return match;
+
+		// Handle expressions in exponents (e.g., 5⁵⁺⁵ -> 5^(5+5)) or signed exponents (e.g., 2⁻³ -> ^-3).
+		const hasInternalPlusMinus = /[+-]/.test(converted.slice(1));
+		if (hasInternalPlusMinus) return "^(" + converted + ")";
+
+		return "^" + converted;
+	});
 }
 
 /**
