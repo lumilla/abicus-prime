@@ -165,7 +165,122 @@ const tokenMatchers = [
  * ```
  */
 export default function tokenise(expression: string): Result<Token[], LexicalError> {
-	return Result.combine([...tokens(expression)]);
+	// Preprocess a few common shorthand notations before tokenising:
+	// 1) Inverse trig notation: "sin^(-1)(x)" -> "arcsin(x)" (same for cos/tan)
+	// 2) Function power notation: "sin^(2)(x)" -> "sin(x)^(2)" (so it's parsed as (sin(x))^2)
+	const preprocessed = preprocessFunctionPowers(expression);
+
+	return Result.combine([...tokens(preprocessed)]);
+}
+
+/**
+ * Rewrites occurrences of f^(n)(arg) into f(arg)^(n), and rewrites f^(-1)(arg)
+ * for sin/cos/tan into arcsin/arccos/arctan(arg). The operation is string-level
+ * and preserves other characters verbatim.
+ */
+function preprocessFunctionPowers(input: string) {
+	const funcs = /\b(?:arcsin|arccos|arctan|asin|acos|atan|sin|cos|tan|sqrt|root|√|log|lg|ln|fact)\b/gi;
+
+	let expr = input;
+	let m: RegExpExecArray | null;
+
+	// Helper to find the matching closing parenthesis for a '(' at `start`.
+	function findClosingParen(s: string, start: number) {
+		let depth = 0;
+		for (let i = start; i < s.length; i++) {
+			if (s[i] === "(") depth++;
+			else if (s[i] === ")") {
+				depth--;
+				if (depth === 0) return i;
+			}
+		}
+		return -1;
+	}
+
+	// We use exec in a loop, but because we mutate `expr` we must reset lastIndex each iteration.
+	while ((m = funcs.exec(expr)) !== null) {
+		const nameStart = m.index;
+		const name = m[0];
+		let nameEnd = nameStart + name.length;
+
+		// Skip any whitespace between name and the following characters
+		const wsMatch = /^\s*/.exec(expr.slice(nameEnd))?.[0] ?? "";
+		nameEnd += wsMatch.length;
+
+		// Check for a power annotation of the form ^(...)
+		if (expr[nameEnd] !== "^") {
+			// continue search after this match
+			funcs.lastIndex = nameEnd;
+			continue;
+		}
+
+		const expOpen = nameEnd + 1;
+		if (expr[expOpen] !== "(") {
+			funcs.lastIndex = nameEnd + 1;
+			continue;
+		}
+
+		const expClose = findClosingParen(expr, expOpen);
+		if (expClose === -1) {
+			// malformed, skip
+			funcs.lastIndex = nameEnd + 1;
+			continue;
+		}
+
+		const exponent = expr.slice(expOpen + 1, expClose);
+
+		// After the exponent closing paren there may be whitespace before the arg paren
+		let afterExp = expClose + 1;
+		const wsAfterExp = /^\s*/.exec(expr.slice(afterExp))?.[0] ?? "";
+		afterExp += wsAfterExp.length;
+
+		// Expect a '(' for the function's argument list
+		if (expr[afterExp] !== "(") {
+			funcs.lastIndex = afterExp;
+			continue;
+		}
+
+		const argOpen = afterExp;
+		const argClose = findClosingParen(expr, argOpen);
+		if (argClose === -1) {
+			funcs.lastIndex = afterExp;
+			continue;
+		}
+
+		// Special-case: sin^(-1)(x) -> arcsin(x) (and similarly for cos/tan)
+		const lowerName = name.toLowerCase();
+		const trimmedExp = exponent.trim();
+		if (trimmedExp === "-1" && (lowerName === "sin" || lowerName === "cos" || lowerName === "tan")) {
+			const arcMap: Record<string, string> = { sin: "arcsin", cos: "arccos", tan: "arctan" };
+			const arcName = arcMap[lowerName];
+			const newSub = arcName + expr.slice(argOpen, argClose + 1);
+
+			expr = expr.slice(0, nameStart) + newSub + expr.slice(argClose + 1);
+
+			// Continue scanning after the replacement
+			funcs.lastIndex = nameStart + newSub.length;
+			continue;
+		}
+
+		// General case: move the ^(exponent) after the function argument: f^(n)(arg) -> f(arg)^n
+		const origSubEnd = argClose + 1;
+		const exponentTrim = exponent.trim();
+
+		// If the exponent is a single simple number (e.g. 2 or 1.5), we can safely drop the
+		// parentheses so the final expression becomes `f(arg)^2`. For more complex exponents
+		// (like `1+1`) keep the parentheses to preserve grouping.
+		const simpleNumber = /^[-+]?\d+(?:[.,]\d+)?$/.test(exponentTrim);
+		const powSuffix = simpleNumber ? "^" + exponentTrim : "^(" + exponent + ")";
+
+		const newSub = name + expr.slice(argOpen, origSubEnd) + powSuffix;
+
+		expr = expr.slice(0, nameStart) + newSub + expr.slice(origSubEnd);
+
+		// Continue scanning after the replacement
+		funcs.lastIndex = nameStart + newSub.length;
+	}
+
+	return expr;
 }
 
 /**

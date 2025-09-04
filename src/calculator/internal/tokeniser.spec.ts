@@ -45,6 +45,12 @@ run("Operators", [["2+3", [litr(2), t.add, litr(3)]]]);
 run("Brackets", [["2+(3+4)", [litr(2), t.add, t.lbrk, litr(3), t.add, litr(4), t.rbrk]]]);
 run("Semicolons", [["(8;3;2;1)", [t.lbrk, litr(8), t.semi, litr(3), t.semi, litr(2), t.semi, litr(1), t.rbrk]]]);
 run("Functions", [["sin cos tan root fact", [t.sin, t.cos, t.tan, t.root, t.factFunc]]]);
+run("Function power notation", [
+	["sin^(-1)(1)", [t.asin, t.lbrk, litr(1), t.rbrk]],
+	["cos^(-1)(1)", [t.acos, t.lbrk, litr(1), t.rbrk]],
+	["tan^(-1)(1)", [t.atan, t.lbrk, litr(1), t.rbrk]],
+	["sin^(2)(1)", [t.sin, t.lbrk, litr(1), t.rbrk, t.pow, litr(2)]],
+]);
 run("Factorial", [
 	["5!", [litr(5), t.fact]],
 	["3!+4!", [litr(3), t.fact, t.add, litr(4), t.fact]],
