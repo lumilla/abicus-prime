@@ -1,6 +1,6 @@
 import { useCalculator } from "#/state";
 
-const APP_VERSION = "1.0.6"; // TODO: Get this from package.json dynamically
+const APP_VERSION = __APP_VERSION__;
 
 export default function SettingsPage() {
 	const { angleUnit, degsOn, radsOn, interfaceMode, setInterfaceMode, isDarkMode, setDarkMode, clearAll, clearTerminalHistory, closeSettings } = useCalculator();

@@ -3,6 +3,8 @@ import { formatResult } from "#/utils/format-result";
 import { useState, useEffect, useRef } from "react";
 import { calculate } from "#/calculator";
 
+const APP_VERSION = __APP_VERSION__;
+
 type HistoryItem = {
 	expression: string;
 	result: string;
@@ -108,7 +110,7 @@ export default function Terminal() {
 					"rounded-t-md",
 				]}
 			>
-				<div x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>Abicus Terminal v1.0.6</div>
+				<div x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>Abicus Terminal v{APP_VERSION}</div>
 			</div>
 
 			{/* Terminal Content */}
