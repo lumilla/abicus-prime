@@ -172,6 +172,10 @@ export default function useBuffer() {
 					rawInput("^ 2", "", "replace", 0);
 				}
 			},
+
+			factorial() {
+				rawInput("!", "", "replace", 0);
+			},
 		},
 	} as const;
 }

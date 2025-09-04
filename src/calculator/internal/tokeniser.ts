@@ -124,6 +124,7 @@ const tokenMatchers = [
 				/^((a(rc)?)?(sin|cos|tan))/,
 				/^(log|lg|ln)/,
 				/^(root|sqrt|√)/,
+				/^(fact)/,
 			]
 				.map(subRegex => subRegex.source)
 				.join("|"),
@@ -138,10 +139,16 @@ const tokenMatchers = [
 				.with("arcsin", () => "asin" as const)
 				.with("arccos", () => "acos" as const)
 				.with("arctan", () => "atan" as const)
+				.with("fact", () => "fact" as const)
 				.otherwise(name => {
 					throw Error(`Programmer error: neglected function "${name}"`);
 				}),
 		}),
+	],
+	[
+		// Factorial operator: "!"
+		/^!/,
+		_ => ({ type: "fact" as const }),
 	],
 ] satisfies [RegExp, (str: string) => { type: string }][];
 

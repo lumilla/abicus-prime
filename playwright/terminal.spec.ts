@@ -24,7 +24,7 @@ async function submitTerminalInput(page: Page, expression: string) {
 
 test("Terminal Mode: Switches to terminal mode", async ({ page }) => {
 	// Verify we're in terminal mode by checking for terminal-specific elements
-	await expect(page.getByText(/^Abicus Terminal v\d+\.\d+\.\d+$/)).toBeVisible();
+	await expect(page.getByText(/^Abicus Prime Terminal v\d+\.\d+\.\d+$/)).toBeVisible();
 	await expect(await getTerminalInput(page)).toBeVisible();
 });
 
@@ -217,7 +217,7 @@ test("Terminal Mode: Clear function clears history", async ({ page }) => {
 // UI and Visual Tests
 
 test("Terminal Mode: Terminal has proper header", async ({ page }) => {
-	await expect(page.getByText(/^Abicus Terminal v\d+\.\d+\.\d+$/)).toBeVisible();
+	await expect(page.getByText(/^Abicus Prime Terminal v\d+\.\d+\.\d+$/)).toBeVisible();
 });
 
 test("Terminal Mode: Input has proper placeholder", async ({ page }) => {

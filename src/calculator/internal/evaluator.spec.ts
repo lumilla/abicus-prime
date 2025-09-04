@@ -115,6 +115,14 @@ run("Functions", [
 	[[t.root,  t.lbrk, litr(-8),  t.semi, litr(3), t.rbrk], d(-2)],
 	[[t.root,  t.lbrk, litr(-8),  t.semi, litr(1/5), t.rbrk], d(-32768)],
 	[[t.root,  t.lbrk, litr(8),  t.semi, litr(-3), t.rbrk], d(1/2)],
+	
+	// Factorial as function
+	[[t.factFunc, t.lbrk, litr(0), t.rbrk], d(1)],
+	[[t.factFunc, t.lbrk, litr(1), t.rbrk], d(1)],
+	[[t.factFunc, t.lbrk, litr(5), t.rbrk], d(120)],
+	[[t.factFunc, t.lbrk, litr(10), t.rbrk], d(3628800)],
+	
+	// More function tests
 
 	[[t.sin,   t.lbrk, litr(13),  t.add, litr(13),  t.rbrk], d(2 * 13).sin()],
 	[[t.cos,   t.lbrk, litr(13),  t.add, litr(13),  t.rbrk], d(2 * 13).cos()],
@@ -135,6 +143,25 @@ run("Functions", [
 		],
 		new Decimal("0.66239180766192125587")
 	]
+]);
+
+run("Factorial", [
+	// Postfix factorial operator
+	[[litr(0), t.fact], d(1)],
+	[[litr(1), t.fact], d(1)],
+	[[litr(5), t.fact], d(120)],
+	[[litr(10), t.fact], d(3628800)],
+	
+	// Factorial with brackets
+	[[t.lbrk, litr(3), t.add, litr(2), t.rbrk, t.fact], d(120)],
+	[[t.lbrk, litr(6), t.div, litr(2), t.rbrk, t.fact], d(6)],
+	
+	// Factorial in expressions
+	[[litr(5), t.fact, t.add, litr(10)], d(130)],
+	[[litr(3), t.fact, t.mul, litr(4), t.fact], d(144)],
+	
+	// Nested factorial expressions
+	[[litr(3), t.fact, t.fact], d(720)],
 ]);
 
 describe("Constants", () => {
@@ -327,6 +354,20 @@ describe("Syntax Errors", () => {
 		[t.root, t.lbrk, litr(-8), t.semi, litr(3.1), t.rbrk],
 		[t.root, t.lbrk, litr(-8), t.semi, litr(-3.1), t.rbrk],
 		[t.root, t.lbrk, litr(8), t.semi, litr(0), t.rbrk],
+	]);
+
+	fail("Factorial", [
+		// Negative numbers
+		[litr(-1), t.fact],
+		[litr(-5), t.fact],
+		[t.factFunc, t.lbrk, litr(-1), t.rbrk],
+		[t.factFunc, t.lbrk, litr(-5), t.rbrk],
+		
+		// Non-integers
+		[litr(3.5), t.fact],
+		[litr(2.1), t.fact],
+		[t.factFunc, t.lbrk, litr(3.5), t.rbrk],
+		[t.factFunc, t.lbrk, litr(2.1), t.rbrk],
 	]);
 });
 

@@ -44,7 +44,12 @@ run("Disregard trailing zeros", [
 run("Operators", [["2+3", [litr(2), t.add, litr(3)]]]);
 run("Brackets", [["2+(3+4)", [litr(2), t.add, t.lbrk, litr(3), t.add, litr(4), t.rbrk]]]);
 run("Semicolons", [["(8;3;2;1)", [t.lbrk, litr(8), t.semi, litr(3), t.semi, litr(2), t.semi, litr(1), t.rbrk]]]);
-run("Functions", [["sin cos tan root", [t.sin, t.cos, t.tan, t.root]]]);
+run("Functions", [["sin cos tan root fact", [t.sin, t.cos, t.tan, t.root, t.factFunc]]]);
+run("Factorial", [
+	["5!", [litr(5), t.fact]],
+	["3!+4!", [litr(3), t.fact, t.add, litr(4), t.fact]],
+	["(2+3)!", [t.lbrk, litr(2), t.add, litr(3), t.rbrk, t.fact]],
+]);
 run("Memory", [["ans mem", [t.ans, t.ind]]]);
 
 function run(title: string, cases: [input: string, expected: Token[]][]) {

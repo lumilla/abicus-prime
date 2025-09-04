@@ -144,7 +144,7 @@ test("Settings page has version information", async ({ page }) => {
 	await page.getByRole("button", { name: "*", exact: true }).click();
 	
 	// Should show version information
-	await expect(page.getByText("Abicus Calculator")).toBeVisible();
+	await expect(page.getByText("Abicus Prime Calculator")).toBeVisible();
 	await expect(page.getByText(/^v\d+\.\d+\.\d+$/)).toBeVisible();
 });
 

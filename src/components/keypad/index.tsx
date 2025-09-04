@@ -58,26 +58,27 @@ export default function Keypad() {
 					<BasicKey input="4" />
 					<BasicKey input="5" />
 					<BasicKey input="6" />
+					<RawKey label={keyLabel.factorial} onClick={calculator.buffer.input.factorial} tint="l-blue" />
 					<OperatorKey tint="grey" symbol="+" />
-					<OperatorKey tint="grey" symbol="−" />
 
 					{/* Row #6 */}
 					<BasicKey input="7" />
 					<BasicKey input="8" />
 					<BasicKey input="9" />
 					<OperatorKey tint="grey" symbol="×" />
-					<OperatorKey tint="grey" symbol="/" />
+					<OperatorKey tint="grey" symbol="−" />
 
 					{/* Row #7 */}
 					<BasicKey input="0" className="col-span-2" />
 					<BasicKey input="," />
+					<OperatorKey tint="grey" symbol="/" />
 					<BasicKey input="π" />
-					<BasicKey input="e" />
 
 					{/* Row #8 */}
+					<BasicKey input="e" />
 					<RawKey tint="d-blue" label="⌫" onClick={calculator.buffer.del} />
 					{clearButton}
-					<div x="col-span-2" />
+					<div x="col-span-1" />
 					<RawKey tint="d-blue" label="=" onClick={calculator.crunch} />
 				</div>
 			</div>

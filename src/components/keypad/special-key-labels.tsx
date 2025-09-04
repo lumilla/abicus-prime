@@ -32,3 +32,5 @@ export const power = (
 		<sup>y</sup>
 	</>
 );
+
+export const factorial = "!";

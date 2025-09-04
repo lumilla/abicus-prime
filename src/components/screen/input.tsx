@@ -15,32 +15,46 @@ export default function Input() {
 	}
 
 	function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-		match(e.key)
+		const handled = match(e.key)
 			.with("Enter", "=", "ArrowDown", () => {
 				crunch();
+				return true;
 			})
 			.with("(", () => {
 				buffer.input.openBrackets();
+				return true;
 			})
 			.with(")", () => {
 				buffer.input.closeBrackets();
+				return true;
 			})
 			.with("^", "/", "+", symbol => {
 				buffer.input.oper(symbol);
+				return true;
 			})
 			.with("-", () => {
 				buffer.input.oper("−");
+				return true;
 			})
 			.with("*", () => {
 				buffer.input.oper("×");
+				return true;
 			})
 			.with("Escape", () => {
 				buffer.empty();
+				return true;
 			})
 			.with("Tab", () => {
-				angleUnit === "deg" ? radsOn() : degsOn();
+				if (angleUnit === "deg") {
+					radsOn();
+				} else {
+					degsOn();
+				}
+				return true;
 			})
-			.otherwise(() => true) || e.preventDefault();
+			.otherwise(() => false);
+
+			if (!handled) e.preventDefault();
 	}
 
 	function onBlur(e: FocusEvent<HTMLInputElement>) {
