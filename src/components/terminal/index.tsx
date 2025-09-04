@@ -15,6 +15,8 @@ export default function Terminal() {
 	const { memory, angleUnit, terminalHistory, pushTerminalHistory, clearTerminalHistory } = useCalculator();
 	const history = terminalHistory as HistoryItem[];
 	const [currentInput, setCurrentInput] = useState("");
+	const [historyIndex, setHistoryIndex] = useState(-1);
+	const [tempInput, setTempInput] = useState("");
 	const terminalRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const prevAnsRef = useRef<import("decimal.js").default | null>(null);
@@ -61,13 +63,26 @@ export default function Terminal() {
 		e.preventDefault();
 		if (!currentInput.trim()) return;
 
+		// Handle special commands
+		const trimmedInput = currentInput.trim().toLowerCase();
+		
+		if (trimmedInput === "clear" || trimmedInput === "cls") {
+			clearTerminalHistory();
+			setCurrentInput("");
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+		
+
+
 		// Calculate directly without using the shared buffer
 		const calculationResult = calculate(currentInput, memory.ans, memory.ind, angleUnit);
 		
 		let resultString: string;
 		if (calculationResult.isOk()) {
 			const result = calculationResult.value;
-			resultString = formatResult(result);
+			resultString = "= " + formatResult(result);
 			// Update the answer memory
 			memory.setAns(result);
 		} else {
@@ -81,11 +96,91 @@ export default function Terminal() {
 		});
 
 		setCurrentInput("");
+		setHistoryIndex(-1);
+		setTempInput("");
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Escape") {
 			setCurrentInput("");
+			setHistoryIndex(-1);
+			setTempInput("");
+		}
+		// Arrow up/down to navigate through history
+		if (e.key === "ArrowUp") {
+			e.preventDefault();
+			if (history.length > 0) {
+				if (historyIndex === -1) {
+					// Save current input before starting history navigation
+					setTempInput(currentInput);
+					setHistoryIndex(history.length - 1);
+					setCurrentInput(history[history.length - 1]?.expression || "");
+				} else if (historyIndex > 0) {
+					setHistoryIndex(historyIndex - 1);
+					setCurrentInput(history[historyIndex - 1]?.expression || "");
+				}
+			}
+		}
+		if (e.key === "ArrowDown") {
+			e.preventDefault();
+			if (historyIndex >= 0) {
+				if (historyIndex < history.length - 1) {
+					setHistoryIndex(historyIndex + 1);
+					setCurrentInput(history[historyIndex + 1]?.expression || "");
+				} else {
+					// Back to original input
+					setHistoryIndex(-1);
+					setCurrentInput(tempInput);
+					setTempInput("");
+				}
+			}
+		}
+		// Tab completion for commands
+		if (e.key === "Tab") {
+			e.preventDefault();
+			const input = currentInput.toLowerCase();
+			if (input === "c" || input === "cl") {
+				setCurrentInput("clear");
+			}
+		}
+		// Ctrl+N to clear terminal history
+		if (e.ctrlKey && e.key === "n") {
+			e.preventDefault();
+			clearTerminalHistory();
+		}
+		// Ctrl+K to clear current input
+		if (e.ctrlKey && e.key === "k") {
+			e.preventDefault();
+			setCurrentInput("");
+			setHistoryIndex(-1);
+			setTempInput("");
+		}
+	};
+
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setCurrentInput(e.target.value);
+		// Reset history navigation when user manually types
+		setHistoryIndex(-1);
+		setTempInput("");
+	};
+
+	const handleDoubleClickExpression = (expression: string) => {
+		setCurrentInput(expression);
+		setHistoryIndex(-1);
+		setTempInput("");
+		if (inputRef.current) {
+			inputRef.current.focus();
+		}
+	};
+
+	const handleDoubleClickResult = (result: string) => {
+		// Remove the "= " prefix if it exists, and put the result in input
+		const cleanResult = result.startsWith("= ") ? result.slice(2) : result;
+		setCurrentInput(cleanResult);
+		setHistoryIndex(-1);
+		setTempInput("");
+		if (inputRef.current) {
+			inputRef.current.focus();
 		}
 	};
 
@@ -129,10 +224,20 @@ export default function Terminal() {
 					<div key={item.timestamp} x={["space-y-1"]}>
 						<div x={["flex items-center"]}>
 							<span x={["text-abi-dgrey dark:text-abi-dark-dgrey mr-2"]}>▶</span>
-							<span>{item.expression}</span>
+							<span 
+								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
+								onDoubleClick={() => handleDoubleClickExpression(item.expression)}
+							>
+								{item.expression}
+							</span>
 						</div>
-						<div x={["ml-4", "text-abi-dgrey dark:text-abi-dark-dgrey"]}>
-							{item.result}
+						<div x={["ml-3", "text-abi-dgrey dark:text-abi-dark-dgrey"]}>
+							<span 
+								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
+								onDoubleClick={() => handleDoubleClickResult(item.result)}
+							>
+								{item.result}
+							</span>
 						</div>
 					</div>
 				))}
@@ -154,7 +259,7 @@ export default function Terminal() {
 						ref={inputRef}
 						type="text"
 						value={currentInput}
-						onChange={(e) => setCurrentInput(e.target.value)}
+						onChange={handleInputChange}
 						onKeyDown={handleKeyDown}
 						placeholder="Enter calculation..."
 						x={[

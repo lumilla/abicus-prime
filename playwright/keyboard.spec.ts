@@ -29,7 +29,7 @@ test("Degrees are selected by default", async ({ page }) => {
 	// Check that degrees is default by testing trigonometric function
 	await page.getByRole("textbox").fill("sin(90)");
 	await page.keyboard.press("=");
-	expect(page.getByRole("status")).toHaveText("1");
+	await expect(page.getByRole("status")).toHaveText("1");
 	
 	// Also verify in settings page
 	await page.getByRole("button", { name: "*", exact: true }).click();
@@ -41,7 +41,7 @@ test("Can change to radians by pressing tab", async ({ page }) => {
 	// Verify degrees is default
 	await page.getByRole("textbox").fill("sin(90)");
 	await page.keyboard.press("=");
-	expect(page.getByRole("status")).toHaveText("1");
+	await expect(page.getByRole("status")).toHaveText("1");
 	
 	// Clear the result
 	await page.keyboard.press("Escape");
@@ -54,7 +54,7 @@ test("Can change to radians by pressing tab", async ({ page }) => {
 	// Test with radians
 	await page.getByRole("textbox").fill("sin(pi/2)");
 	await page.keyboard.press("=");
-	expect(page.getByRole("status")).toHaveText("1");
+	await expect(page.getByRole("status")).toHaveText("1");
 });
 
 test("Can clear the screen with Escape", async ({ page }) => {

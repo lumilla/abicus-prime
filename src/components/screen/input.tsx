@@ -54,10 +54,8 @@ export default function Input() {
 			})
 			.otherwise(() => false);
 
-			if (!handled) e.preventDefault();
-	}
-
-	function onBlur(e: FocusEvent<HTMLInputElement>) {
+		if (handled) e.preventDefault();
+	}	function onBlur(e: FocusEvent<HTMLInputElement>) {
 		// Timeout needed because of Safari (of course)
 		setTimeout(() => {
 			e.target.scrollLeft = e.target.scrollWidth;
