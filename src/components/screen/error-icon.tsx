@@ -1,8 +1,10 @@
 import { useCalculator } from "#/state";
+import { useTranslation } from "#/i18n/hook";
 import errorImgSrc from "./error-img.svg";
 
 export default function ErrorIcon() {
 	const { buffer } = useCalculator();
+	const { t } = useTranslation();
 
 	return (
 		<div
@@ -16,7 +18,7 @@ export default function ErrorIcon() {
 				buffer.isErr ? "opacity-100" : "opacity-0",
 			]}
 		>
-			<img src={errorImgSrc} x="w-6 dark:brightness-125 dark:contrast-75" />
+			<img src={errorImgSrc} alt={t("error.imageAlt")} x="w-6 dark:brightness-125 dark:contrast-75" />
 		</div>
 	);
 }

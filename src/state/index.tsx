@@ -8,6 +8,7 @@ import useBuffer, { BufferHandle } from "./internal-buffer";
 import useMemory, { MemoryHandle } from "./internal-memory";
 
 type InterfaceMode = "pocket" | "terminal";
+type Language = "fi" | "sv" | "en";
 
 export type TerminalHistoryItem = { expression: string; result: string; timestamp: number };
 
@@ -49,6 +50,11 @@ type CalculatorContext = {
 	/** Set dark mode to a specific value */
 	setDarkMode: (value: boolean) => void;
 
+	/** Current language */
+	language: Language;
+	/** Set language */
+	setLanguage: (language: Language) => void;
+
 	/** Settings page visibility */
 	showSettings: boolean;
 	/** Show settings page */
@@ -84,6 +90,13 @@ export function useCalculator() {
 export default function CalculatorProvider({ children }: { children: ComponentChildren }) {
 	const [angleUnit, setAngleUnit] = useState<AngleUnit>("deg");
 	const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("pocket");
+	
+	// Initialize language with saved preference or default to Finnish
+	const [language, setLanguageState] = useState<Language>(() => {
+		if (typeof window === 'undefined') return 'fi';
+		const saved = localStorage.getItem('abicus-language');
+		return (saved as Language) || 'fi';
+	});
 	
 	// Initialize dark mode with OS preference or saved preference
 	const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -154,6 +167,11 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		setTerminalHistory([]);
 	}
 
+	function setLanguage(value: Language) {
+		setLanguageState(value);
+		localStorage.setItem('abicus-language', value);
+	}
+
 	function crunch(saveToInd = false) {
 		buffer.clean();
 
@@ -214,6 +232,9 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 					// Save preference to localStorage when manually set
 					localStorage.setItem('abicus-dark-mode', JSON.stringify(value));
 				},
+
+				language,
+				setLanguage,
 
 				showSettings,
 				openSettings() {

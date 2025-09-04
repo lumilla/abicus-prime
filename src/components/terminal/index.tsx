@@ -3,6 +3,7 @@ import { formatResult } from "#/utils/format-result";
 import { useState, useEffect, useRef } from "preact/hooks";
 import { JSX } from "preact";
 import { calculate } from "#/calculator";
+import { useTranslation } from "#/i18n/hook";
 
 const APP_VERSION = __APP_VERSION__;
 
@@ -14,6 +15,7 @@ type HistoryItem = {
 
 export default function Terminal() {
 	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory } = useCalculator();
+	const { t } = useTranslation();
 	const history = sharedHistory as HistoryItem[];
 	const [historyIndex, setHistoryIndex] = useState(-1);
 	const [tempInput, setTempInput] = useState("");
@@ -46,7 +48,7 @@ export default function Terminal() {
 		const ansIsZero = memory.ans?.isZero();
 		const indIsZero = memory.ind?.isZero();
 
-		if ((prevAns && !prevAns.isZero() || prevInd && !prevInd.isZero()) && ansIsZero && indIsZero) {
+		if (((prevAns && !prevAns.isZero()) || (prevInd && !prevInd.isZero())) && ansIsZero && indIsZero) {
 			// Real clear detected
 			if (history.length > 0) {
 				clearSharedHistory();
@@ -64,7 +66,7 @@ export default function Terminal() {
 
 		// Handle special commands
 		const trimmedInput = buffer.value.trim().toLowerCase();
-		
+
 		if (trimmedInput === "clear" || trimmedInput === "cls") {
 			clearSharedHistory();
 			buffer.empty();
@@ -72,12 +74,10 @@ export default function Terminal() {
 			setTempInput("");
 			return;
 		}
-		
-
 
 		// Calculate directly without using the shared buffer
 		const calculationResult = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
-		
+
 		let resultString: string;
 		if (calculationResult.isOk()) {
 			const result = calculationResult.value;
@@ -85,9 +85,9 @@ export default function Terminal() {
 			// Update the answer memory
 			memory.setAns(result);
 		} else {
-			resultString = "Error";
+			resultString = t("terminal.error");
 		}
-		
+
 		pushSharedHistory({
 			expression: buffer.value,
 			result: resultString,
@@ -205,26 +205,21 @@ export default function Terminal() {
 					"rounded-t-md",
 				]}
 			>
-				<div x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>Abicus Prime Terminal v{APP_VERSION}</div>
+				<div x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>
+					{t("terminal.title")} v{APP_VERSION}
+				</div>
 			</div>
 
 			{/* Terminal Content */}
 			<div
 				ref={terminalRef}
-				x={[
-					"flex-1",
-					"overflow-y-auto",
-					"px-4 py-2",
-					"text-sm",
-					"space-y-1",
-					"text-black dark:text-white",
-				]}
+				x={["flex-1", "overflow-y-auto", "px-4 py-2", "text-sm", "space-y-1", "text-black dark:text-white"]}
 			>
-				{history.map((item) => (
+				{history.map(item => (
 					<div key={item.timestamp} x={["space-y-1"]}>
 						<div x={["flex items-center"]}>
 							<span x={["text-abi-dgrey dark:text-abi-dark-dgrey mr-2"]}>▶</span>
-							<span 
+							<span
 								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
 								onDblClick={() => handleDoubleClickExpression(item.expression)}
 							>
@@ -232,7 +227,7 @@ export default function Terminal() {
 							</span>
 						</div>
 						<div x={["ml-3", "text-abi-dgrey dark:text-abi-dark-dgrey"]}>
-							<span 
+							<span
 								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
 								onDblClick={() => handleDoubleClickResult(item.result)}
 							>
@@ -261,7 +256,7 @@ export default function Terminal() {
 						value={buffer.value}
 						onInput={handleInputChange}
 						onKeyDown={handleKeyDown}
-						placeholder="Enter calculation..."
+						placeholder={t("terminal.placeholder")}
 						x={[
 							"flex-1",
 							"bg-transparent",

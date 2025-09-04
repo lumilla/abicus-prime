@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
+	// Set language to English for consistent test experience
+	await page.addInitScript(() => {
+		localStorage.setItem("abicus-language", "en");
+	});
 	await page.goto("/");
 });
 

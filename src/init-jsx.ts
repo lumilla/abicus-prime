@@ -21,7 +21,6 @@ options.vnode = (vnode: any) => {
 		}
 	} catch (e) {
 		// Don't break rendering on unexpected values
-		// eslint-disable-next-line no-console
 		console.error("init-jsx: failed to process x attribute", e);
 	}
 
