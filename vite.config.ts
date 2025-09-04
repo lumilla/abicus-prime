@@ -14,18 +14,7 @@ const appVersion = packageJson.version;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-	plugins: [
-		tsconfigPaths(),
-		preact({
-			babel: {
-				plugins: [
-					/** See `./src/_clsx-jsx.d.ts` for more details on these two plugins */
-					["transform-jsx-classnames", { attributes: ["x"] }],
-					["babel-plugin-rename-jsx-attribute", { attributes: { x: "className" } }],
-				],
-			},
-		}),
-	],
+	plugins: [tsconfigPaths(), preact()],
 
 	define: {
 		__GIT_HASH__: JSON.stringify(commitHash),
