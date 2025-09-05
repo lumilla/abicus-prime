@@ -190,7 +190,7 @@ describe("i18n translations", () => {
 
 		test("all translation categories are present", () => {
 			const expectedCategories = ["settings", "error", "language", "terminal", "common"];
-			const allKeys = Object.keys(translations["fi"] ?? {} as Record<string, string>);
+			const allKeys = Object.keys(translations["fi"] ?? ({} as Record<string, string>));
 
 			for (const category of expectedCategories) {
 				const hasCategory = allKeys.some(key => key.startsWith(category + "."));

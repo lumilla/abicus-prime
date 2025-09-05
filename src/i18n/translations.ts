@@ -39,7 +39,8 @@ function inferCodeFromPath(path: string) {
 export type LanguageCode = keyof typeof translations;
 
 // Use Finnish as default when available, otherwise first available
-export const DEFAULT_LANGUAGE: LanguageCode = ("fi" in translations ? ("fi" as LanguageCode) : (Object.keys(translations)[0] as LanguageCode));
+export const DEFAULT_LANGUAGE: LanguageCode =
+	"fi" in translations ? ("fi" as LanguageCode) : (Object.keys(translations)[0] as LanguageCode);
 
 // Translation key type based on default language (if present)
 export type TranslationKey = string; // Keep generic since keys come from JSON

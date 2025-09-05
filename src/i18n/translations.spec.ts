@@ -39,10 +39,10 @@ describe("i18n translations data", () => {
 		});
 
 		test("all languages have identical key structures", () => {
-				for (const langTranslations of Object.values(translations)) {
-					const langKeys = Object.keys(langTranslations ?? {}) as TranslationKey[];
-					expect(langKeys.sort()).toEqual(referenceKeys.sort());
-				}
+			for (const langTranslations of Object.values(translations)) {
+				const langKeys = Object.keys(langTranslations ?? {}) as TranslationKey[];
+				expect(langKeys.sort()).toEqual(referenceKeys.sort());
+			}
 		});
 
 		test("specific critical keys exist in all languages", () => {

@@ -19,6 +19,8 @@ export default function Terminal() {
 	const history = sharedHistory as HistoryItem[];
 	const [historyIndex, setHistoryIndex] = useState(-1);
 	const [tempInput, setTempInput] = useState("");
+	// Make Tauri detection synchronous to avoid layout flicker
+	const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 	const terminalRef = useRef<HTMLDivElement>(null);
 	const prevAnsRef = useRef<import("decimal.js").default | null>(null);
 	const prevIndRef = useRef<import("decimal.js").default | null>(null);
@@ -186,39 +188,59 @@ export default function Terminal() {
 
 	return (
 		<div
-			x={[
-				"w-96",
-				"h-[456px]",
-				"bg-white dark:bg-gray-800",
-				"rounded-md",
-				"border border-abi-dgrey dark:border-abi-dark-dgrey",
-				"flex flex-col",
-				"font-mono",
-			]}
+			x={
+				isTauri
+					? ["w-full", "h-full", "bg-transparent", "flex flex-col", "font-mono"]
+					: [
+							"w-96",
+							"h-[456px]",
+							"bg-white dark:bg-gray-800",
+							"rounded-md",
+							"border border-abi-dgrey dark:border-abi-dark-dgrey",
+							"flex flex-col",
+							"font-mono",
+						]
+			}
 		>
 			{/* Header */}
-			<div
-				x={[
-					"px-4 py-2",
-					"bg-gray-50 dark:bg-gray-700",
-					"border-b border-abi-lgrey dark:border-abi-dark-lgrey",
-					"rounded-t-md",
-				]}
-			>
-				<div x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>
-					{t("terminal.title")} v{APP_VERSION}
+			{!isTauri && (
+				<div
+					x={[
+						"px-4 py-2",
+						"bg-gray-50 dark:bg-gray-700",
+						"border-b border-abi-lgrey dark:border-abi-dark-lgrey",
+						"rounded-t-md",
+					]}
+				>
+					<div x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>
+						{t("terminal.title")} v{APP_VERSION}
+					</div>
 				</div>
-			</div>
+			)}
 
 			{/* Terminal Content */}
 			<div
 				ref={terminalRef}
-				x={["flex-1", "overflow-y-auto", "px-4 py-2", "text-sm", "space-y-1", "text-black dark:text-white"]}
+				x={[
+					"flex-1",
+					"overflow-y-auto",
+					...(isTauri ? ["px-6 py-2"] : ["px-4 py-2"]),
+					"text-sm",
+					"space-y-1",
+					...(isTauri ? ["text-black dark:text-white"] : ["text-black dark:text-white"]),
+				]}
 			>
 				{history.map(item => (
 					<div key={item.timestamp} x={["space-y-1"]}>
 						<div x={["flex items-center"]}>
-							<span x={["text-abi-dgrey dark:text-abi-dark-dgrey mr-2"]}>▶</span>
+							<span
+								x={[
+									"mr-2",
+									...(isTauri ? ["text-black/60 dark:text-white/80"] : ["text-abi-dgrey dark:text-abi-dark-dgrey"]),
+								]}
+							>
+								▶
+							</span>
 							<span
 								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
 								onDblClick={() => handleDoubleClickExpression(item.expression)}
@@ -226,7 +248,12 @@ export default function Terminal() {
 								{item.expression}
 							</span>
 						</div>
-						<div x={["ml-3", "text-abi-dgrey dark:text-abi-dark-dgrey"]}>
+						<div
+							x={[
+								"ml-3",
+								...(isTauri ? ["text-black/50 dark:text-white/70"] : ["text-abi-dgrey dark:text-abi-dark-dgrey"]),
+							]}
+						>
 							<span
 								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
 								onDblClick={() => handleDoubleClickResult(item.result)}
@@ -243,13 +270,30 @@ export default function Terminal() {
 				<div
 					x={[
 						"flex items-center",
-						"px-4 py-3",
-						"border-t border-abi-lgrey dark:border-abi-dark-lgrey",
-						"bg-gray-50 dark:bg-gray-700",
-						"rounded-b-md",
+						...(isTauri
+							? [
+									"px-6 py-4",
+									"bg-black/20 dark:bg-black/20 backdrop-blur-sm",
+									"border-t border-black/10 dark:border-white/10",
+									"rounded-b-2xl",
+									"-mx-0 -mb-0",
+								]
+							: [
+									"px-4 py-3",
+									"border-t border-abi-lgrey dark:border-abi-dark-lgrey",
+									"bg-gray-50 dark:bg-gray-700",
+									"rounded-b-md",
+								]),
 					]}
 				>
-					<span x={["text-abi-dgrey dark:text-abi-dark-dgrey mr-2"]}>▶</span>
+					<span
+						x={[
+							"mr-2",
+							...(isTauri ? ["text-black dark:text-white font-medium"] : ["text-abi-dgrey dark:text-abi-dark-dgrey"]),
+						]}
+					>
+						▶
+					</span>
 					<input
 						ref={buffer.ref}
 						type="text"
@@ -261,9 +305,10 @@ export default function Terminal() {
 							"flex-1",
 							"bg-transparent",
 							"outline-none",
-							"text-sm",
-							"text-black dark:text-white",
-							"placeholder-abi-dgrey dark:placeholder-abi-dark-dgrey",
+							...(isTauri ? ["text-base"] : ["text-sm"]),
+							...(isTauri
+								? ["text-black dark:text-white font-medium", "placeholder-black/40 dark:placeholder-white/50"]
+								: ["text-black dark:text-white", "placeholder-abi-dgrey dark:placeholder-abi-dark-dgrey"]),
 						]}
 					/>
 				</div>

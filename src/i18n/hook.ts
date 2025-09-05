@@ -6,7 +6,11 @@ const STORAGE_KEY = "abicus-language";
 // Get the translation for a specific key and language
 function getTranslation(key: TranslationKey, language: LanguageCode): string {
 	const langTable = translations[language] ?? translations[DEFAULT_LANGUAGE];
-	return (langTable && (langTable as Record<string, string>)[key]) ?? (translations[DEFAULT_LANGUAGE] as Record<string, string>)[key] ?? key;
+	return (
+		(langTable && (langTable as Record<string, string>)[key]) ??
+		(translations[DEFAULT_LANGUAGE] as Record<string, string>)[key] ??
+		key
+	);
 }
 
 // Get the stored language preference or default

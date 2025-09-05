@@ -7,6 +7,11 @@ import App from "#/app";
 import "#/main.css";
 import "#/init-jsx";
 
+// Add data-tauri attribute when Tauri is detected for CSS targeting
+if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+	document.documentElement.setAttribute("data-tauri", "");
+}
+
 render(
 	<ErrorBoundary>
 		<CalculatorProvider>

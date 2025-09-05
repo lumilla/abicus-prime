@@ -6,3 +6,37 @@
 	font-family: "Jost";
 	src: url("/src/assets/fonts/Jost-Regular.ttf") format("truetype");
 }
+
+/* Browser-specific styles for vertical centering */
+html:not([data-tauri]) body {
+	margin: 0;
+	padding: 0;
+	min-height: 100vh;
+}
+
+html:not([data-tauri]) #root {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Tauri-specific styles for transparent window - only apply when Tauri is detected */
+[data-tauri] html,
+[data-tauri] body {
+	background: transparent !important;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+}
+
+[data-tauri] #root {
+	background: transparent !important;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
