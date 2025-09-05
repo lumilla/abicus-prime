@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "abicus"
-version = "0.0.0"
+version = "1.1.1"
 dependencies = [
  "serde",
  "serde_json",

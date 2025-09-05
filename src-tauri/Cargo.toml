@@ -1,6 +1,6 @@
 [package]
 name = "abicus"
-version = "0.0.0"
+version = "1.1.1"
 description = "A Simple Scientific Calculator"
 authors = ["Matriculation Examination Board, Finland"]
 edition = "2021"
