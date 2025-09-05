@@ -32,7 +32,7 @@ for (const [path, mod] of Object.entries(modules)) {
 
 function inferCodeFromPath(path: string) {
 	const match = path.match(/([a-z]{2})\.json$/i);
-	return match ? match[1] : path;
+	return match ? match[1] : "en";
 }
 
 // Types derived from available locales
