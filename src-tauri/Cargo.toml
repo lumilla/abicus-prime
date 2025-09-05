@@ -1,15 +1,16 @@
 [package]
 name = "abicus"
-version = "0.0.0"
+version = "1.1.1"
 description = "A Simple Scientific Calculator"
 authors = ["Matriculation Examination Board, Finland"]
 edition = "2021"
 
 [build-dependencies]
-tauri-build = { version = "1.5.3", features = [] }
+tauri-build = { version = "2.0", features = [] }
 
 [dependencies]
-tauri = { version = "1.7.1", features = ["shell-open"] }
+tauri = { version = "2.0", features = [] }
+tauri-plugin-shell = "2.0"
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.120"
 

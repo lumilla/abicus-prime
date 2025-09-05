@@ -26,7 +26,8 @@ describe("i18n translations data", () => {
 	});
 
 	describe("translation key consistency", () => {
-		const referenceKeys = Object.keys(translations.fi) as TranslationKey[];
+		const firstKey = (Object.keys(translations)[0] as string) ?? "";
+		const referenceKeys = Object.keys(translations["fi"] ?? translations[firstKey] ?? {}) as TranslationKey[];
 
 		test("Finnish (reference) has all expected categories", () => {
 			const categories = ["settings.", "error.", "language.", "terminal.", "common."];
@@ -39,7 +40,7 @@ describe("i18n translations data", () => {
 
 		test("all languages have identical key structures", () => {
 			for (const langTranslations of Object.values(translations)) {
-				const langKeys = Object.keys(langTranslations) as TranslationKey[];
+				const langKeys = Object.keys(langTranslations ?? {}) as TranslationKey[];
 				expect(langKeys.sort()).toEqual(referenceKeys.sort());
 			}
 		});
@@ -56,10 +57,10 @@ describe("i18n translations data", () => {
 
 			for (const key of criticalKeys) {
 				for (const langCode of Object.keys(translations)) {
-					const translation = translations[langCode as LanguageCode][key];
+					const translation = translations[langCode as LanguageCode]?.[key];
 					expect(translation).toBeTruthy();
 					expect(typeof translation).toBe("string");
-					expect(translation.trim().length).toBeGreaterThan(0);
+					expect((translation as string).trim().length).toBeGreaterThan(0);
 				}
 			}
 		});
@@ -77,12 +78,15 @@ describe("i18n translations data", () => {
 			for (const [langCode, config] of Object.entries(supportedLanguages)) {
 				expect(config.code).toBe(langCode);
 
-				// The name should be a valid translation key
-				expect(config.name in translations.fi).toBe(true);
+				// The name should be a valid translation key in the reference (fi) or first available
+				const first = Object.keys(translations)[0] as string;
+				const ref = translations["fi"] ?? translations[first];
+				expect(ref).toBeDefined();
+				expect(config.name in (ref ?? {})).toBe(true);
 
 				// All languages should have this name translation
 				for (const translationLang of Object.keys(translations)) {
-					expect(translations[translationLang as LanguageCode][config.name]).toBeTruthy();
+					expect(translations[translationLang as LanguageCode]?.[config.name]).toBeTruthy();
 				}
 			}
 		});
@@ -134,21 +138,21 @@ describe("i18n translations data", () => {
 		test("Northern Sami translations are marked as placeholders where appropriate", () => {
 			// The Northern Sami translations should be reviewed by native speakers
 			// This test ensures we're aware of their placeholder status
-			const seTranslations = translations.se;
+			const seTranslations = translations["se"] ?? {};
 
 			// We expect these to exist and be non-empty, even if they're placeholders
 			expect(Object.keys(seTranslations).length).toBeGreaterThan(0);
 
 			for (const value of Object.values(seTranslations)) {
 				expect(typeof value).toBe("string");
-				expect(value.trim().length).toBeGreaterThan(0);
+				expect((value as string).trim().length).toBeGreaterThan(0);
 			}
 		});
 	});
 
 	describe("type safety validation", () => {
 		test("TranslationKey type covers all Finnish keys", () => {
-			const finnishKeys = Object.keys(translations.fi);
+			const finnishKeys = Object.keys(translations["fi"] ?? {});
 
 			// This is more of a compile-time check, but we can verify at runtime too
 			finnishKeys.forEach(key => {

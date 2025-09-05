@@ -20,7 +20,7 @@ const mockLocalStorage = (() => {
 
 // Helper function to simulate the translation logic from the hook
 function getTranslation(key: TranslationKey, language: LanguageCode): string {
-	return translations[language][key] ?? translations[DEFAULT_LANGUAGE][key];
+	return translations[language]?.[key] ?? translations[DEFAULT_LANGUAGE]?.[key] ?? (key as string);
 }
 
 function getStoredLanguage(): LanguageCode {
@@ -50,19 +50,19 @@ describe("i18n translations", () => {
 
 	describe("translation completeness", () => {
 		test("all languages have the same translation keys", () => {
-			const finnishKeys = Object.keys(translations.fi);
+			const finnishKeys = Object.keys(translations["fi"] ?? translations[Object.keys(translations)[0] as string] ?? {});
 			const languages = Object.keys(translations);
 
 			for (const lang of languages) {
-				const langKeys = Object.keys(translations[lang as LanguageCode]);
+				const langKeys = Object.keys(translations[lang as LanguageCode] ?? {});
 				expect(langKeys.sort()).toEqual(finnishKeys.sort());
 			}
 		});
 
 		test("no translation values are empty", () => {
 			for (const translationMap of Object.values(translations)) {
-				for (const [key, value] of Object.entries(translationMap)) {
-					expect(value.trim()).not.toBe("");
+				for (const [key, value] of Object.entries(translationMap ?? {})) {
+					expect((value as string).trim()).not.toBe("");
 					expect(value).not.toBe(key);
 				}
 			}
@@ -96,11 +96,13 @@ describe("i18n translations", () => {
 
 		test("falls back to default language for missing key", () => {
 			// Create a modified translations object for testing
-			const modifiedTranslations = { ...translations };
-			delete (modifiedTranslations.en as any)["settings.title"];
+			const modifiedTranslations: Record<string, Record<string, string>> = JSON.parse(JSON.stringify(translations));
+			if (modifiedTranslations["en"]) {
+				delete modifiedTranslations["en"]["settings.title"];
+			}
 
 			// Simulate the fallback behavior
-			const fallback = modifiedTranslations.en["settings.title"] ?? modifiedTranslations.fi["settings.title"];
+			const fallback = modifiedTranslations["en"]?.["settings.title"] ?? modifiedTranslations["fi"]?.["settings.title"];
 			expect(fallback).toBe("Asetukset");
 		});
 	});
@@ -160,7 +162,8 @@ describe("i18n translations", () => {
 		test("all supported languages have valid translation keys for names", () => {
 			for (const [langCode, config] of Object.entries(supportedLanguages)) {
 				expect(config.code).toBe(langCode);
-				expect(config.name in translations.fi).toBe(true);
+				const ref = translations["fi"] ?? translations[Object.keys(translations)[0] as string];
+				expect(config.name in (ref ?? {})).toBe(true);
 			}
 		});
 
@@ -187,7 +190,7 @@ describe("i18n translations", () => {
 
 		test("all translation categories are present", () => {
 			const expectedCategories = ["settings", "error", "language", "terminal", "common"];
-			const allKeys = Object.keys(translations.fi);
+			const allKeys = Object.keys(translations["fi"] ?? ({} as Record<string, string>));
 
 			for (const category of expectedCategories) {
 				const hasCategory = allKeys.some(key => key.startsWith(category + "."));

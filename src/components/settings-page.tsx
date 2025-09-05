@@ -22,6 +22,18 @@ export default function SettingsPage() {
 	const { t, currentLanguage, setLanguage } = useTranslation();
 	const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
+	// Make Tauri detection synchronous for consistent styling
+	const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+
+	// Crash test state (hidden, no visual indication)
+	const [_crashTestClicks, setCrashTestClicks] = useState(0);
+	const [lastClickTime, setLastClickTime] = useState(0);
+	const [shouldCrash, setShouldCrash] = useState(false);
+
+	// If crash test triggered, throw error to trigger error boundary
+	if (shouldCrash) {
+		throw new Error(t("error.usertriggerederror"));
+	}
 
 	// Close dropdown when clicking outside
 	useEffect(() => {
@@ -37,36 +49,74 @@ export default function SettingsPage() {
 		}
 	}, [isLanguageDropdownOpen]);
 
+	// Hidden crash test handler (no visual indication)
+	const handleVersionClick = (e: MouseEvent) => {
+		// Check if shift key is pressed
+		if (e.shiftKey) {
+			e.preventDefault();
+			e.stopPropagation();
+
+			const now = Date.now();
+			const timeSinceLastClick = now - lastClickTime;
+
+			// Reset counter if more than 5 seconds have passed
+			if (timeSinceLastClick > 5000) {
+				console.log("Resetting crash test counter");
+				setCrashTestClicks(1);
+			} else {
+				setCrashTestClicks(prev => {
+					const newCount = prev + 1;
+
+					// Trigger crash on 25th click
+					if (newCount >= 25) {
+						// Trigger error boundary by setting state that causes component to throw
+						setShouldCrash(true);
+					}
+
+					return newCount;
+				});
+			}
+
+			setLastClickTime(now);
+		}
+	};
+
 	return (
 		<div
-			x={[
-				"w-96",
-				"h-[456px]",
-				"bg-white dark:bg-gray-800",
-				"rounded-md",
-				"border border-abi-dgrey dark:border-abi-dark-dgrey",
-				"flex flex-col",
-			]}
+			x={
+				isTauri
+					? ["w-full", "h-full", "bg-transparent", "flex flex-col"]
+					: [
+							"w-96",
+							"h-[456px]",
+							"bg-white dark:bg-gray-800",
+							"rounded-md",
+							"border border-abi-dgrey dark:border-abi-dark-dgrey",
+							"flex flex-col",
+						]
+			}
 		>
 			{/* Header */}
-			<div x={["flex items-center justify-between", "p-3", "border-b border-abi-lgrey dark:border-abi-dark-lgrey"]}>
-				<h2 x={["text-base font-semibold text-black dark:text-white"]}>{t("settings.title")}</h2>
-				<button
-					onClick={closeSettings}
-					x={[
-						"text-abi-dgrey hover:text-black dark:text-abi-dark-dgrey dark:hover:text-white",
-						"transition-colors",
-						"text-xl",
-						"w-7 h-7",
-						"flex items-center justify-center",
-					]}
-				>
-					×
-				</button>
-			</div>
+			{!isTauri && (
+				<div x={["flex items-center justify-between", "p-3", "border-b border-abi-lgrey dark:border-abi-dark-lgrey"]}>
+					<h2 x={["text-base font-semibold text-black dark:text-white"]}>{t("settings.title")}</h2>
+					<button
+						onClick={closeSettings}
+						x={[
+							"text-abi-dgrey hover:text-black dark:text-abi-dark-dgrey dark:hover:text-white",
+							"transition-colors",
+							"text-xl",
+							"w-7 h-7",
+							"flex items-center justify-center",
+						]}
+					>
+						×
+					</button>
+				</div>
+			)}
 
 			{/* Content */}
-			<div x={["flex-1", "p-3", "space-y-3"]}>
+			<div x={["flex-1", ...(isTauri ? ["px-6 py-4"] : ["p-3"]), "space-y-3", ...(isTauri ? ["text-white"] : [])]}>
 				{/* Language Selection - Dropdown */}
 				<div>
 					<h3 x={["text-sm font-medium text-black dark:text-white mb-1.5"]}>{t("settings.language")}</h3>
@@ -85,7 +135,12 @@ export default function SettingsPage() {
 								"flex items-center justify-between",
 							]}
 						>
-							<span>{t(supportedLanguages[currentLanguage].name)}</span>
+							<span>
+								{(() => {
+									const entry = supportedLanguages[currentLanguage];
+									return entry ? t(entry.name) : currentLanguage;
+								})()}
+							</span>
 							<span
 								x={[
 									"text-abi-dgrey dark:text-abi-dark-dgrey transition-transform",
@@ -307,7 +362,13 @@ export default function SettingsPage() {
 				{/* Version Information */}
 				<div x={["pt-1.5", "border-t border-abi-lgrey dark:border-abi-dark-lgrey"]}>
 					<p x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>{t("settings.version")}</p>
-					<p x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>v{APP_VERSION}</p>
+					<p
+						x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey select-text"]}
+						onClick={handleVersionClick}
+						onMouseDown={e => e.stopPropagation()}
+					>
+						v{APP_VERSION}
+					</p>
 				</div>
 			</div>
 		</div>

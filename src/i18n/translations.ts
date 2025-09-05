@@ -1,169 +1,53 @@
 // Translation keys and messages for the calculator
-// This approach provides compile-time type safety and zero runtime overhead
+// Dynamic translations loader using Vite's import.meta.glob
+// Locale files are JSON files placed under src/i18n/locales/*.json
 
-export const translations = {
-	fi: {
-		// Settings
-		"settings.title": "Asetukset",
-		"settings.angleUnit": "Kulman yksikkö",
-		"settings.radians": "Radiaanit",
-		"settings.degrees": "Asteet",
-		"settings.interfaceMode": "Käyttöliittymätila",
-		"settings.pocket": "Tasku",
-		"settings.terminal": "Pääte",
-		"settings.theme": "Teema",
-		"settings.light": "Vaalea",
-		"settings.dark": "Tumma",
-		"settings.language": "Kieli",
-		"settings.clear": "Tyhjennä",
-		"settings.version": "Abicus Prime Laskin",
-
-		// Error boundary
-		"error.title": "Jotain meni pieleen!",
-		"error.description": "Välitäthän alla olevan virheviestin Abitti-tukeen.",
-		"error.restart": "Uudelleenkäynnistä",
-		"error.imageAlt": "Virhe",
-
-		// Languages
-		"language.finnish": "Suomi",
-		"language.swedish": "Ruotsi",
-		"language.english": "Englanti",
-		"language.northernsami": "Pohjoissaame",
-
-		// Terminal
-		"terminal.title": "Abicus Prime Pääte",
-		"terminal.placeholder": "Syötä laskutoimitus...",
-		"terminal.error": "Virhe",
-
-		// Common
-		"common.close": "Sulje",
-	},
-	sv: {
-		// Settings
-		"settings.title": "Inställningar",
-		"settings.angleUnit": "Vinkelenhet",
-		"settings.radians": "Radianer",
-		"settings.degrees": "Grader",
-		"settings.interfaceMode": "Gränssnitt",
-		"settings.pocket": "Miniräknare",
-		"settings.terminal": "Terminal",
-		"settings.theme": "Tema",
-		"settings.light": "Ljus",
-		"settings.dark": "Mörk",
-		"settings.language": "Språk",
-		"settings.clear": "Rensa",
-		"settings.version": "Abicus Prime Kalkylator",
-
-		// Error boundary
-		"error.title": "Något gick fel!",
-		"error.description": "Vänligen lämna feluppgifterna nedan till Abitti-support.",
-		"error.restart": "Omstarta",
-		"error.imageAlt": "Fel",
-
-		// Languages
-		"language.finnish": "Finska",
-		"language.swedish": "Svenska",
-		"language.english": "Engelska",
-		"language.northernsami": "Nordsamiska",
-
-		// Terminal
-		"terminal.title": "Abicus Prime Terminal",
-		"terminal.placeholder": "Ange beräkning...",
-		"terminal.error": "Fel",
-
-		// Common
-		"common.close": "Stäng",
-	},
-	en: {
-		// Settings
-		"settings.title": "Settings",
-		"settings.angleUnit": "Angle Unit",
-		"settings.radians": "Radians",
-		"settings.degrees": "Degrees",
-		"settings.interfaceMode": "Interface Mode",
-		"settings.pocket": "Pocket",
-		"settings.terminal": "Terminal",
-		"settings.theme": "Theme",
-		"settings.light": "Light",
-		"settings.dark": "Dark",
-		"settings.language": "Language",
-		"settings.clear": "Clear",
-		"settings.version": "Abicus Prime Calculator",
-
-		// Error boundary
-		"error.title": "Something went wrong!",
-		"error.description": "Please report the error details below to Abitti support.",
-		"error.restart": "Restart",
-		"error.imageAlt": "Error",
-
-		// Languages
-		"language.finnish": "Finnish",
-		"language.swedish": "Swedish",
-		"language.english": "English",
-		"language.northernsami": "Northern Sami",
-
-		// Terminal
-		"terminal.title": "Abicus Prime Terminal",
-		"terminal.placeholder": "Enter calculation...",
-		"terminal.error": "Error",
-
-		// Common
-		"common.close": "Close",
-	},
-	se: {
-		// PLACEHOLDER: Northern Sami (Davvisámegiella) translations
-		// These translations are placeholders created using a dictionary
-		// and should be reviewed by a native Northern Sami speaker
-		// Settings
-		"settings.title": "Ásahusat",
-		"settings.angleUnit": "Čiehka ovttadat",
-		"settings.radians": "Rádiánat",
-		"settings.degrees": "Grádat",
-		"settings.interfaceMode": "Čájehanvuogi",
-		"settings.pocket": "Lumma",
-		"settings.terminal": "Terminal",
-		"settings.theme": "Ivdnitema",
-		"settings.light": "Čuovgat",
-		"settings.dark": "Seavdnjat",
-		"settings.language": "Giella",
-		"settings.clear": "Sihko",
-		"settings.version": "Abicus Prime Rehkenastin",
-
-		// Error boundary
-		"error.title": "Juoga manai boastut!",
-		"error.description": "Dieđit meattáhusa birra Abitti doarjagii!",
-		"error.restart": "Álggahit ođđasit",
-		"error.imageAlt": "Meattáhus",
-
-		// Languages
-		"language.finnish": "Suomagiella",
-		"language.swedish": "Ruoŧagiella",
-		"language.english": "Eŋgelasgiella",
-		"language.northernsami": "Davvisámegiella",
-
-		// Terminal
-		"terminal.title": "Abicus Prime Terminála",
-		"terminal.placeholder": "Čális rehkenastima...",
-		"terminal.error": "Meattáhus",
-
-		// Common
-		"common.close": "Gidde",
-	},
-} as const;
-
-// Extract the translation keys from the Finnish translations for type safety
-export type TranslationKey = keyof typeof translations.fi;
-
-// Supported language codes
-export type LanguageCode = keyof typeof translations;
-
-// Language options for the settings dropdown
-export const supportedLanguages: Record<LanguageCode, { name: TranslationKey; code: LanguageCode }> = {
-	fi: { name: "language.finnish", code: "fi" },
-	sv: { name: "language.swedish", code: "sv" },
-	en: { name: "language.english", code: "en" },
-	se: { name: "language.northernsami", code: "se" },
+type LocaleMeta = {
+	code: string;
+	nameKey: string;
+	placeholder?: boolean;
 };
 
-// Default language (Finnish for Finnish matriculation exams)
-export const DEFAULT_LANGUAGE: LanguageCode = "fi";
+export type TranslationsMap = Record<string, Record<string, string>>;
+
+// Use Vite's glob to discover locale JSON files at build time.
+// The glob below should be tree-shaken by the bundler; in dev it will dynamically import.
+const modules = import.meta.glob("./locales/*.json", { eager: true }) as Record<string, any>;
+
+// Build translations object and metadata
+export const translations: TranslationsMap = {};
+export const _localeMeta: Record<string, LocaleMeta> = {};
+
+for (const [path, mod] of Object.entries(modules)) {
+	// mod is the parsed JSON
+	const locale = mod.default ?? mod;
+	const meta: LocaleMeta = locale._meta ?? { code: inferCodeFromPath(path), nameKey: "language.unknown" };
+	const code = meta.code ?? inferCodeFromPath(path);
+	const entries = { ...locale };
+	delete entries._meta;
+
+	translations[code] = entries;
+	_localeMeta[code] = meta;
+}
+
+function inferCodeFromPath(path: string) {
+	const match = path.match(/([a-z]{2})\.json$/i);
+	return match ? match[1] : "en";
+}
+
+// Types derived from available locales
+export type LanguageCode = keyof typeof translations;
+
+// Use Finnish as default when available, otherwise first available
+export const DEFAULT_LANGUAGE: LanguageCode =
+	"fi" in translations ? ("fi" as LanguageCode) : (Object.keys(translations)[0] as LanguageCode);
+
+// Translation key type based on default language (if present)
+export type TranslationKey = string; // Keep generic since keys come from JSON
+
+// Supported languages: build from discovered locale files to avoid code changes when adding files
+export const supportedLanguages: Record<string, { name: string; code: string; meta?: LocaleMeta }> = {};
+for (const code of Object.keys(translations)) {
+	const meta = _localeMeta[code];
+	supportedLanguages[code] = { name: meta?.nameKey ?? code, code, meta };
+}
