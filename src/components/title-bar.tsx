@@ -87,7 +87,6 @@ export default function TitleBar() {
 				console.log(`Setting always on top to: ${newState}`);
 				await window.setAlwaysOnTop(newState);
 				setIsAlwaysOnTop(newState);
-				console.log(`Successfully set always on top to: ${newState}`);
 			} catch (error) {
 				console.error("Failed to toggle always on top:", error);
 			}
