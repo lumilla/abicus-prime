@@ -51,8 +51,6 @@ export default function SettingsPage() {
 
 	// Hidden crash test handler (no visual indication)
 	const handleVersionClick = (e: MouseEvent) => {
-		console.log("Version clicked, shift key:", e.shiftKey);
-
 		// Check if shift key is pressed
 		if (e.shiftKey) {
 			e.preventDefault();
@@ -61,8 +59,6 @@ export default function SettingsPage() {
 			const now = Date.now();
 			const timeSinceLastClick = now - lastClickTime;
 
-			console.log(`Time since last click: ${timeSinceLastClick}ms`);
-
 			// Reset counter if more than 5 seconds have passed
 			if (timeSinceLastClick > 5000) {
 				console.log("Resetting crash test counter");
@@ -70,11 +66,9 @@ export default function SettingsPage() {
 			} else {
 				setCrashTestClicks(prev => {
 					const newCount = prev + 1;
-					console.log(`Crash test clicks: ${newCount}/25`);
 
 					// Trigger crash on 25th click
 					if (newCount >= 25) {
-						console.log("TRIGGERING CRASH TEST!");
 						// Trigger error boundary by setting state that causes component to throw
 						setShouldCrash(true);
 					}
