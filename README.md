@@ -1,99 +1,23 @@
-[![Digabi logo](https://digabi.fi/images/digabi-logo.png)](https://digabi.fi)
+# Abicus Prime
+### A work-in-progress fork of Digabi/Abicus with the goal of implementing major UX improvements.
 
-# Digabi
+**Note:** Just like Abicus Prime itself, this README is a work in progress.
 
-Digabi is a codebase used in the Abitti exam system, the digital exam environment for the [Finnish Matriculation Examination](https://www.ylioppilastutkinto.fi/en).
+### Affiliation and Attribution
 
-All bug reports, feature requests, and pull requests are appreciated. However, the following should be kept in mind:
+This fork is entirely independent. The maintainer (@j3r0github) is **not** directly affiliated with the Finnish Matriculation Examination Board (Ylioppilastutkintolautakunta), the Digabi project, or any upstream maintainers.
 
-- Pull requests based on submitted issues cannot be implemented due to limited resources. Similarly, upstream issues related to third-party projects in use are not forwarded.
-- No guarantee can be given that submitted pull requests will be reviewed.
-- Our focus is strictly on the Finnish Matriculation Examination, as defined by law. Issues or pull requests unrelated to this mission will not be addressed.
-- Official channels should be used for inquiries. The issue tracker and pull requests are not to be used for general questions or support requests.
+Some portions of the code originate from upstream contributors and their copyright(s) remain intact under the MIT license (https://github.com/digabi/abicus/blob/master/LICENCE.md). 
+You can find the original code at https://github.com/digabi/abicus 
 
-Before any contribution is accepted to the codebase, to clarify the intellectual property rights associated with contributions to open-source projects owned by the Finnish Matriculation Examination Board, all contributors must sign and submit a Contribution License Agreement (CLA):
+### License and Usage
+You are welcome to use this repository for **personal, non-commercial purposes** or for **evaluative, non-production purposes**. 
+*In such cases, the software is provided as-is, without any warranties or guarantees of any kind.*
 
-- Individuals should sign and send the [Personal CLA](https://digabi.fi/YTL%20Personal%20CLA.pdf) to [digabi@ylioppilastutkinto.fi](mailto:digabi@ylioppilastutkinto.fi).
-- Organizations or corporations should sign and send the [Corporate CLA](https://digabi.fi/YTL%20Corporate%20CLA.pdf) to the same address.
+However **no permission is granted to use this repository or its contents in production or redistribute it without explicit authorization from @j3r0github.** 
+If you’d like to request broader access, please open a GitHub issue.
 
----
+Why? Because this code is **not production-ready**, and **I don’t want it shared upstream in its current state**. 
+However, the goal *is* to eventually upstream all changes (and perhaps continue development afterward).
 
-<h1 align="center">
-  <img alt="logo" height="100" src="./app-icon.png" />
-  <div>Abicus Prime</div>
-</h1>
-
-<div align="center">
-  
-Abicus Prime is a simple **scientific calculator** built on web technologies.
-
-Abicus Prime does not include any symbolic computation capabilities.  
-It is built for use in the Finnish digital matriculation examinations.
-
-</div>
-
-<div align="center">
-<img alt="screenshot" width="375" src="./app-screenshot.png" />
-</div>
-
-> [!NOTE]
-> The calculator was developed especially to be an example of an Abitti 2 application. The source code, the Abitti 2 container, and precompiled binaries of the calculator are made available to the public for demonstration purposes only. The matriculation examination board does not provide support for e.g. installing the precompiled binaries.
->
-> We request that any errors in the program are reported to Abitti-support (abitti@ylioppilastutkinto.fi)
-
-<!--
-[Installation]() ⋅
-[User Guide]() ⋅
-[Development Guide]()
--->
-
-## Development Setup
-
-Clone this repository and make sure you have [Node.js](https://nodejs.org/) installed on your system. The exact version used in development can be found in the [`.nvmrc` file](./.nvmrc).
-
-If you want to develop the desktop application, you will additionally need to have a [Rust](https://www.rust-lang.org/) toolchain installed on your system. Please then also follow the [Tauri set-up instructions for your system](https://tauri.app/v1/guides/getting-started/prerequisites/).
-
-When Node.js is ready and this repository has been cloned, install the packages by running the following in the cloned directory:
-
-```bash
-npm install
-```
-
-After all the required packages have been installed, run one of the following commands to start the development server:
-
-- For the web-application only:
-
-  ```bash
-  npm run dev
-  ```
-
-- For the web-application and the desktop application:
-  ```bash
-  npm run tauri dev
-  ```
-
-## Tests
-
-This project uses the [Vitest testing framework](https://vitest.dev) for unit tests and [Playwright](https://playwright.dev) for UI tests. After the project has been [set up](#installation), to run all the tests for the project you can simply run:
-
-```bash
-npm run test
-```
-
-To run only the unit tests:
-
-```bash
-npm run test:unit
-```
-
-And to only run the UI tests:
-
-```bash
-npm run test:ui
-```
-
-Please see the Vitest and/or Playwright documentation for details on e.g. how to filter which tests to run etc.
-
----
-
-</table>
+**Feedback:** Issues are welcome and appreciated. Pull requests? I would **highly** encourage to send them upstream first (on the off-chance that anyone would be willing to review and merge them).
