@@ -1,0 +1,33 @@
+{
+  "_meta": { "code": "se", "nameKey": "language.northernsami", "placeholder": true },
+
+  "settings.title": "Ásahusat",
+  "settings.angleUnit": "čiehka ovttadat",
+  "settings.radians": "Rádiánat",
+  "settings.degrees": "Grádat",
+  "settings.interfaceMode": "čájihanvuogi",
+  "settings.pocket": "Lumma",
+  "settings.terminal": "Terminal",
+  "settings.theme": "Ivdnitema",
+  "settings.light": "čuovgat",
+  "settings.dark": "seavdnjat",
+  "settings.language": "Giella",
+  "settings.clear": "Sihko",
+  "settings.version": "Abicus Prime Rehkenastin",
+
+  "error.title": "Juoga manai boastut!",
+  "error.description": "Dieđit meattáhusa birra Abitti doarjagii!",
+  "error.restart": "Álggahit ođđasit",
+  "error.imageAlt": "Meattáhus",
+
+  "language.finnish": "Suomagiella",
+  "language.swedish": "Ruoŧagiella",
+  "language.english": "Eŋgelasgiella",
+  "language.northernsami": "Davvisámegiella",
+
+  "terminal.title": "Abicus Prime Terminála",
+  "terminal.placeholder": "Čális rehkenastima...",
+  "terminal.error": "Meattáhus",
+
+  "common.close": "Gidde"
+}

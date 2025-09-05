@@ -1,0 +1,33 @@
+{
+  "_meta": { "code": "sv", "nameKey": "language.swedish" },
+
+  "settings.title": "Inställningar",
+  "settings.angleUnit": "Vinkelenhet",
+  "settings.radians": "Radianer",
+  "settings.degrees": "Grader",
+  "settings.interfaceMode": "Gränssnitt",
+  "settings.pocket": "Miniräknare",
+  "settings.terminal": "Terminal",
+  "settings.theme": "Tema",
+  "settings.light": "Ljus",
+  "settings.dark": "Mörk",
+  "settings.language": "Språk",
+  "settings.clear": "Rensa",
+  "settings.version": "Abicus Prime Kalkylator",
+
+  "error.title": "Något gick fel!",
+  "error.description": "Vänligen lämna feluppgifterna nedan till Abitti-support.",
+  "error.restart": "Omstarta",
+  "error.imageAlt": "Fel",
+
+  "language.finnish": "Finska",
+  "language.swedish": "Svenska",
+  "language.english": "Engelska",
+  "language.northernsami": "Nordsamiska",
+
+  "terminal.title": "Abicus Prime Terminal",
+  "terminal.placeholder": "Ange beräkning...",
+  "terminal.error": "Fel",
+
+  "common.close": "Stäng"
+}

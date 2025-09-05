@@ -85,7 +85,12 @@ export default function SettingsPage() {
 								"flex items-center justify-between",
 							]}
 						>
-							<span>{t(supportedLanguages[currentLanguage].name)}</span>
+							<span>{
+								(() => {
+									const entry = supportedLanguages[currentLanguage];
+									return entry ? t(entry.name) : currentLanguage;
+								})()
+							}</span>
 							<span
 								x={[
 									"text-abi-dgrey dark:text-abi-dark-dgrey transition-transform",

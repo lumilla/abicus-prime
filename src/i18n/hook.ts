@@ -1,19 +1,20 @@
 import { useState } from "preact/hooks";
-import { translations, TranslationKey, LanguageCode, DEFAULT_LANGUAGE } from "./translations";
+import { translations, TranslationKey, LanguageCode, DEFAULT_LANGUAGE, supportedLanguages } from "./translations";
 
 const STORAGE_KEY = "abicus-language";
 
 // Get the translation for a specific key and language
 function getTranslation(key: TranslationKey, language: LanguageCode): string {
-	return translations[language][key] ?? translations[DEFAULT_LANGUAGE][key];
+	const langTable = translations[language] ?? translations[DEFAULT_LANGUAGE];
+	return (langTable && (langTable as Record<string, string>)[key]) ?? (translations[DEFAULT_LANGUAGE] as Record<string, string>)[key] ?? key;
 }
 
 // Get the stored language preference or default
 function getStoredLanguage(): LanguageCode {
 	try {
-		const stored = localStorage.getItem(STORAGE_KEY) as LanguageCode;
+		const stored = localStorage.getItem(STORAGE_KEY) as string | null;
 		if (stored && stored in translations) {
-			return stored;
+			return stored as LanguageCode;
 		}
 	} catch {
 		// localStorage might not be available
@@ -40,6 +41,7 @@ export function useTranslation() {
 
 	// Function to change language
 	const setLanguage = (language: LanguageCode): void => {
+		if (!(language in translations)) return;
 		setCurrentLanguage(language);
 		setStoredLanguage(language);
 	};
@@ -48,5 +50,6 @@ export function useTranslation() {
 		t,
 		currentLanguage,
 		setLanguage,
+		supportedLanguages: Object.values(supportedLanguages).map(s => ({ code: s.code, nameKey: s.name })),
 	};
 }

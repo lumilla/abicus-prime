@@ -1,0 +1,33 @@
+{
+  "_meta": { "code": "fi", "nameKey": "language.finnish" },
+
+  "settings.title": "Asetukset",
+  "settings.angleUnit": "Kulman yksikkö",
+  "settings.radians": "Radiaanit",
+  "settings.degrees": "Asteet",
+  "settings.interfaceMode": "Käyttöliittymätila",
+  "settings.pocket": "Tasku",
+  "settings.terminal": "Pääte",
+  "settings.theme": "Teema",
+  "settings.light": "Vaalea",
+  "settings.dark": "Tumma",
+  "settings.language": "Kieli",
+  "settings.clear": "Tyhjennä",
+  "settings.version": "Abicus Prime Laskin",
+
+  "error.title": "Jotain meni pieleen!",
+  "error.description": "Välittäthän alla olevan virheviestin Abitti-tukeen.",
+  "error.restart": "Uudelleenkäynnistä",
+  "error.imageAlt": "Virhe",
+
+  "language.finnish": "Suomi",
+  "language.swedish": "Ruotsi",
+  "language.english": "Englanti",
+  "language.northernsami": "Pohjoissaame",
+
+  "terminal.title": "Abicus Prime Pääte",
+  "terminal.placeholder": "Syötä laskutoimitus...",
+  "terminal.error": "Virhe",
+
+  "common.close": "Sulje"
+}
