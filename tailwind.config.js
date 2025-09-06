@@ -20,4 +20,22 @@ export default {
 		},
 	},
 	plugins: [],
+	// Reduce Tailwind's default palette and utilities
+	corePlugins: {
+		// Disable unused core plugins
+		container: false,
+		fontVariantNumeric: false,
+		backdropHueRotate: false,
+		backdropInvert: false,
+		backdropSepia: false,
+		divideColor: false,
+		divideOpacity: false,
+		divideStyle: false,
+		divideWidth: false,
+		ringColor: false,
+		ringOffsetColor: false,
+		ringOffsetWidth: false,
+		ringOpacity: false,
+		ringWidth: false,
+	},
 };
