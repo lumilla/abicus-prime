@@ -4,7 +4,7 @@
 
 @font-face {
 	font-family: "Jost";
-	src: url("/src/assets/fonts/Jost-Regular.ttf") format("truetype");
+	src: url("/src/assets/fonts/Jost-Regular.woff2") format("woff2");
 }
 
 /* Custom slow fade-in animation for component transitions */
