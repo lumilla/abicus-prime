@@ -1,12 +1,12 @@
+import Keypad from "#/components/keypad";
+import Screen from "#/components/screen";
+import SettingsPage from "#/components/settings-page";
+import Terminal from "#/components/terminal";
 import { useCalculator } from "#/state";
 import { lazy, Suspense } from "preact/compat";
 
-// Lazy load all components for better performance
-const TitleBar = lazy(() => import("#/components/title-bar")); // Only used in Tauri mode
-const SettingsPage = lazy(() => import("#/components/settings-page"));
-const Terminal = lazy(() => import("#/components/terminal"));
-const Screen = lazy(() => import("#/components/screen"));
-const Keypad = lazy(() => import("#/components/keypad"));
+// Lazy load TitleBar only when needed (Tauri mode)
+const TitleBar = lazy(() => import("#/components/title-bar"));
 
 export default function App() {
 	const { showSettings, interfaceMode, openSettings } = useCalculator();
@@ -42,25 +42,17 @@ export default function App() {
 					]}
 				>
 					{showSettings ? (
-						<div key="settings" x={["w-full", ...(interfaceMode === "terminal" || showSettings ? ["h-full"] : ["max-w-sm"]), "fade-in-slow"]}>
-							<Suspense fallback={<div x={["opacity-0"]} />}>
-								<SettingsPage />
-							</Suspense>
+						<div x={["w-full", ...(interfaceMode === "terminal" || showSettings ? ["h-full"] : ["max-w-sm"])]}>
+							<SettingsPage />
 						</div>
 					) : interfaceMode === "terminal" ? (
-						<div key="terminal" x={["w-full h-full flex flex-col", "fade-in-slow"]}>
-							<Suspense fallback={<div x={["opacity-0"]} />}>
-								<Terminal />
-							</Suspense>
+						<div x={["w-full h-full flex flex-col"]}>
+							<Terminal />
 						</div>
 					) : (
-						<div key="calculator" x={["w-full flex flex-col gap-4 items-center", "fade-in-slow"]}>
-							<Suspense fallback={<div x={["opacity-0"]} />}>
-								<div x={["flex flex-col gap-4 items-center"]}>
-									<Screen />
-									<Keypad />
-								</div>
-							</Suspense>
+						<div x={["w-full flex flex-col gap-4 items-center"]}>
+							<Screen />
+							<Keypad />
 						</div>
 					)}
 				</main>
@@ -93,26 +85,14 @@ export default function App() {
 
 					<main x={["flex flex-col gap-4"]}>
 						{showSettings ? (
-							<div key="settings" className="fade-in-slow">
-								<Suspense fallback={<div x={["opacity-0"]} />}>
-									<SettingsPage />
-								</Suspense>
-							</div>
+							<SettingsPage />
 						) : interfaceMode === "terminal" ? (
-							<div key="terminal" className="fade-in-slow">
-								<Suspense fallback={<div x={["opacity-0"]} />}>
-									<Terminal />
-								</Suspense>
-							</div>
+							<Terminal />
 						) : (
-							<div key="calculator" className="fade-in-slow">
-								<Suspense fallback={<div x={["opacity-0"]} />}>
-									<div x={["flex flex-col gap-4"]}>
-										<Screen />
-										<Keypad />
-									</div>
-								</Suspense>
-							</div>
+							<>
+								<Screen />
+								<Keypad />
+							</>
 						)}
 					</main>
 				</div>

@@ -9,10 +9,10 @@ function getTranslation(key: TranslationKey, language: LanguageCode): string {
 	const defaultTable = translations[DEFAULT_LANGUAGE] as Record<string, string>;
 
 	if (langTable && key in langTable) {
-		return langTable[key] || key;
+		return langTable[key];
 	}
 	if (key in defaultTable) {
-		return defaultTable[key] || key;
+		return defaultTable[key];
 	}
 	return key;
 }
