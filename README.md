@@ -21,3 +21,7 @@ Why? Because this code is **not production-ready**, and **I don’t want it shar
 However, the goal *is* to eventually upstream all changes (and perhaps continue development afterward).
 
 **Feedback:** Issues are welcome and appreciated. Pull requests? I would **highly** encourage to send them upstream first (on the off-chance that anyone would be willing to review and merge them).
+
+### Icon Attribution
+
+This project uses icons from the [Phosphor Icons](https://phosphoricons.com/) library, which is licensed under the [MIT License](https://github.com/phosphor-icons/phosphor-home/blob/master/LICENSE).

@@ -135,13 +135,23 @@ export default function App() {
 								"top-0 right-0",
 								"z-10",
 								"p-2",
-								"text-abi-dgrey hover:text-black dark:text-abi-dark-dgrey dark:hover:text-white",
-								"transition-colors",
+								"transition-all duration-300",
 								"flex items-center justify-center",
+								"hover:scale-110",
 							]}
 							title="Open Settings"
 						>
-							<img src={gearIcon} alt="Settings" x={["w-4 h-4"]} />
+							<img 
+								src={gearIcon} 
+								alt="Settings" 
+								x={[
+									"w-4 h-4",
+									"transition-transform duration-500 ease-in-out",
+									"hover:rotate-180",
+									"opacity-60 hover:opacity-100",
+									"dark:invert"
+								]} 
+							/>
 						</button>
 					)}
 
