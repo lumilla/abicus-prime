@@ -1,5 +1,6 @@
 import { useCalculator } from "#/state";
 import { lazy, Suspense } from "preact/compat";
+import gearIcon from "@icons/svg/gear.svg";
 
 // Lazy load all components for better performance
 const TitleBar = lazy(() => import("#/components/title-bar")); // Only used in Tauri mode
@@ -84,10 +85,11 @@ export default function App() {
 								"p-2",
 								"text-abi-dgrey hover:text-black dark:text-abi-dark-dgrey dark:hover:text-white",
 								"transition-colors",
-								"text-xl font-bold",
+								"flex items-center justify-center",
 							]}
+							title="Open Settings"
 						>
-							*
+							<img src={gearIcon} alt="Settings" x={["w-4 h-4"]} />
 						</button>
 					)}
 
