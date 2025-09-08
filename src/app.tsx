@@ -1,5 +1,6 @@
 import { useCalculator } from "#/state";
 import { lazy, Suspense } from "preact/compat";
+import { useEffect } from "preact/hooks";
 import gearIcon from "@icons/svg/gear.svg";
 
 // Lazy load all components for better performance
@@ -9,10 +10,61 @@ const Terminal = lazy(() => import("#/components/terminal"));
 const Screen = lazy(() => import("#/components/screen"));
 const Keypad = lazy(() => import("#/components/keypad"));
 
+// Pre-fetch functions for background loading
+const prefetchComponents = (currentMode: string, isInTauri: boolean) => {
+	// Use requestIdleCallback if available, otherwise setTimeout
+	const scheduleTask = (callback: () => void, delay = 0) => {
+		if (typeof requestIdleCallback !== "undefined") {
+			requestIdleCallback(callback, { timeout: 1000 });
+		} else {
+			setTimeout(callback, delay);
+		}
+	};
+
+	// Always pre-fetch settings page (most commonly accessed)
+	scheduleTask(() => {
+		import("#/components/settings-page").catch(() => {
+			// Silently ignore errors - component will still lazy load when needed
+		});
+	});
+
+	// Pre-fetch the opposite mode component for quick switching
+	if (currentMode === "pocket") {
+		scheduleTask(() => {
+			import("#/components/terminal").catch(() => {});
+		}, 100);
+	} else if (currentMode === "terminal") {
+		// Pre-fetch screen and keypad for switching back to pocket mode
+		scheduleTask(() => {
+			import("#/components/screen").catch(() => {});
+		}, 100);
+		scheduleTask(() => {
+			import("#/components/keypad").catch(() => {});
+		}, 200);
+	}
+
+	// Pre-fetch title bar for Tauri users
+	if (isInTauri) {
+		scheduleTask(() => {
+			import("#/components/title-bar").catch(() => {});
+		}, 50);
+	}
+};
+
 export default function App() {
 	const { showSettings, interfaceMode, openSettings } = useCalculator();
 	// Make Tauri detection synchronous to avoid layout flicker
 	const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+
+	// Pre-fetch lazy-loaded components in the background after initial render
+	useEffect(() => {
+		// Small delay to ensure initial render is complete
+		const timer = setTimeout(() => {
+			prefetchComponents(interfaceMode, isTauri);
+		}, 500); // 500ms delay to ensure smooth initial load
+
+		return () => clearTimeout(timer);
+	}, [interfaceMode, isTauri]); // Re-run if mode or environment changes
 
 	if (isTauri) {
 		// Tauri layout - full window with rounded container
