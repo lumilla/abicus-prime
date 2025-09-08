@@ -10,7 +10,7 @@ test.describe("Input Methods", () => {
 		test("can calculate by pressing Enter", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
 			await calc.calculate("5*5", "enter");
-			expect(await calc.getExpression()).toBe("5 × 5");
+			expect(await calc.getExpression()).toBe("5 ⋅ 5");
 			await expect(calc.getResult()).toHaveText("25");
 		});
 
@@ -66,7 +66,7 @@ test.describe("Input Methods", () => {
 	test.describe("Text Selection Operations", () => {
 		test("can wrap selection in brackets", async ({ page }) => {
 			const selection = new SelectionHelpers(page);
-			
+
 			await page.getByRole("textbox").fill("5+5/2");
 			await selection.selectRange(0, 3);
 			await page.keyboard.press("(");
@@ -77,7 +77,7 @@ test.describe("Input Methods", () => {
 			const operators = [
 				{ keyboard: "+", display: "+" },
 				{ keyboard: "/", display: "/" },
-				{ keyboard: "*", display: "×" },
+				{ keyboard: "*", display: "⋅" },
 				{ keyboard: "-", display: "−" },
 			];
 
@@ -105,7 +105,7 @@ test.describe("Input Methods", () => {
 
 			test('shortcut for "^2" works with x² button', async ({ page }) => {
 				const selection = new SelectionHelpers(page);
-				
+
 				await page.getByRole("textbox").fill("5+5");
 				await selection.selectRange(0, 3);
 				await page.getByRole("button", { name: "x2", exact: true }).click();
@@ -114,7 +114,7 @@ test.describe("Input Methods", () => {
 
 			test('shortcut for "ⁿ√" works with n√ button', async ({ page }) => {
 				const selection = new SelectionHelpers(page);
-				
+
 				await page.getByRole("textbox").fill("5+5");
 				await selection.selectRange(0, 3);
 				await page.getByRole("button", { name: "n√", exact: true }).click();

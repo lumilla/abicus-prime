@@ -39,7 +39,7 @@ export default function Input() {
 				return true;
 			})
 			.with("*", () => {
-				buffer.input.oper("×");
+				buffer.input.oper("⋅");
 				return true;
 			})
 			.with("Escape", () => {

@@ -19,7 +19,7 @@ test.describe("Basic Calculator Operations", () => {
 
 		test("multiplication works correctly", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			await calc.expectCalculation("6*7", "42", "6 × 7");
+			await calc.expectCalculation("6*7", "42", "6 ⋅ 7");
 		});
 
 		test("division works correctly", async ({ page }) => {
@@ -36,22 +36,22 @@ test.describe("Basic Calculator Operations", () => {
 	test.describe("Order of Operations", () => {
 		test("follows order of operations without parentheses", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			await calc.expectCalculation("2+3*4", "14", "2 + 3 × 4");
+			await calc.expectCalculation("2+3*4", "14", "2 + 3 ⋅ 4");
 		});
 
 		test("respects parentheses", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			await calc.expectCalculation("(2+3)*4", "20", "(2 + 3) × 4");
+			await calc.expectCalculation("(2+3)*4", "20", "(2 + 3) ⋅ 4");
 		});
 
 		test("handles nested parentheses", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			await calc.expectCalculation("2*((3+4)*5)", "70", "2 × ((3 + 4) × 5)");
+			await calc.expectCalculation("2*((3+4)*5)", "70", "2 ⋅ ((3 + 4) ⋅ 5)");
 		});
 
 		test("handles complex expressions", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			await calc.expectCalculation("2+3*4-1", "13", "2 + 3 × 4 − 1");
+			await calc.expectCalculation("2+3*4-1", "13", "2 + 3 ⋅ 4 − 1");
 		});
 	});
 
@@ -59,10 +59,10 @@ test.describe("Basic Calculator Operations", () => {
 		test("π constant works in calculations", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
 			await page.getByRole("textbox").fill("2*");
-			await page.getByRole("button", { name: "π" }).click();
-			await page.getByRole("button", { name: "=" }).click();
-			
-			expect(await calc.getExpression()).toBe("2 × π");
+			await page.getByRole("button", { name: "π", exact: true }).click();
+			await page.getByRole("button", { name: "=", exact: true }).click();
+
+			expect(await calc.getExpression()).toBe("2 ⋅ π");
 			// Calculator shows full precision with comma as decimal separator
 			await expect(calc.getResult()).toHaveText("6,28318530717958647693");
 		});
@@ -70,10 +70,10 @@ test.describe("Basic Calculator Operations", () => {
 		test("e constant works in calculations", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
 			await page.getByRole("textbox").fill("2*");
-			await page.getByRole("button", { name: "e" }).click();
-			await page.getByRole("button", { name: "=" }).click();
-			
-			expect(await calc.getExpression()).toBe("2 × e");
+			await page.getByRole("button", { name: "e", exact: true }).click();
+			await page.getByRole("button", { name: "=", exact: true }).click();
+
+			expect(await calc.getExpression()).toBe("2 ⋅ e");
 			// Calculator shows full precision with comma as decimal separator
 			await expect(calc.getResult()).toHaveText("5,43656365691809047072");
 		});
@@ -82,7 +82,7 @@ test.describe("Basic Calculator Operations", () => {
 	test.describe("Clear Operations", () => {
 		test("C button clears current input", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			
+
 			await page.getByRole("textbox").fill("5+5");
 			await calc.clear();
 			expect(await calc.getExpression()).toBe("");

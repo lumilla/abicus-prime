@@ -8,11 +8,11 @@ import { tokenise, Token } from "#/calculator";
  */
 function addThousandSeparators(numStr: string): string {
 	// Split into integer and decimal parts
-	const [integerPart, decimalPart] = numStr.split(',');
-	
+	const [integerPart, decimalPart] = numStr.split(",");
+
 	// Add spaces every 3 digits from the right in the integer part
-	const formattedInteger = integerPart?.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') || '';
-	
+	const formattedInteger = integerPart?.replace(/\B(?=(\d{3})+(?!\d))/g, " ") || "";
+
 	// Return with decimal part if it exists
 	return decimalPart ? `${formattedInteger},${decimalPart}` : formattedInteger;
 }
@@ -64,7 +64,7 @@ function* prettiedCharacters(tokens: Token[]) {
 			.with({ type: "memo", name: "ind" }, () => "M")
 			.with({ type: "cons", name: "pi" }, () => "π")
 			.with({ type: "cons", name: "e" }, () => "e")
-			.with({ type: "oper", name: "*" }, () => "×")
+			.with({ type: "oper", name: "*" }, () => "⋅")
 			.with({ type: "oper", name: "-" }, () => "−")
 			.with({ type: "oper", name: any }, token => token.name)
 			.with({ type: "fact" }, () => "!")

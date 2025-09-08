@@ -39,7 +39,7 @@ export class CalculatorHelpers {
 	 */
 	async calculate(expression: string, method: "enter" | "equals" | "button" = "button") {
 		await this.page.getByRole("textbox").fill(expression);
-		
+
 		switch (method) {
 			case "enter":
 				await this.page.keyboard.press("Enter");
@@ -103,10 +103,8 @@ export class SettingsHelpers {
 	 * Opens the settings page
 	 */
 	async open() {
-		await this.page.getByRole("button", { name: "*", exact: true }).click();
-	}
-
-	/**
+		await this.page.getByRole("button", { name: "Settings", exact: true }).click();
+	} /**
 	 * Closes the settings page
 	 */
 	async close() {
@@ -194,7 +192,7 @@ export class TerminalHelpers {
 	 * Switches to terminal mode from pocket mode
 	 */
 	async switchToTerminalMode() {
-		await this.page.getByRole("button", { name: "*", exact: true }).click();
+		await this.page.getByRole("button", { name: "Settings", exact: true }).click();
 		await this.page.getByRole("button", { name: "Terminal", exact: true }).click();
 		await this.page.getByRole("button", { name: "×", exact: true }).click();
 	}
@@ -229,17 +227,17 @@ export class SelectionHelpers {
 		selectionEnd: number,
 		operator: string,
 		expectedResult: string,
-		method: "keyboard" | "button" = "keyboard"
+		method: "keyboard" | "button" = "keyboard",
 	) {
 		await this.page.getByRole("textbox").fill(initialText);
 		await this.selectRange(selectionStart, selectionEnd);
-		
+
 		if (method === "keyboard") {
 			await this.page.keyboard.press(operator);
 		} else {
 			await this.page.getByRole("button", { name: operator, exact: true }).click();
 		}
-		
+
 		expect(await this.page.getByRole("textbox").inputValue()).toBe(expectedResult);
 	}
 
@@ -251,7 +249,7 @@ export class SelectionHelpers {
 		selectionStart: number,
 		selectionEnd: number,
 		functionName: string,
-		expectedResult: string
+		expectedResult: string,
 	) {
 		await this.page.getByRole("textbox").fill(initialText);
 		await this.selectRange(selectionStart, selectionEnd);
@@ -264,11 +262,7 @@ export class SelectionHelpers {
  * Button visibility helper
  */
 export async function expectButtonsVisible(page: Page, buttonNames: string[]) {
-	await Promise.all(
-		buttonNames.map(name => 
-			expect(page.getByRole("button", { name, exact: true })).toBeVisible()
-		)
-	);
+	await Promise.all(buttonNames.map(name => expect(page.getByRole("button", { name, exact: true })).toBeVisible()));
 }
 
 /**

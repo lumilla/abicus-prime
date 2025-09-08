@@ -61,13 +61,14 @@ const tokenMatchers = [
 	[
 		// Operators: "-", "+", "/", "*", "^"
 		// The multiplication and minus signs have unicode variants that also need to be handled
-		/^[-+/*^−×]/,
+		/^[-+/*^−×⋅]/,
 		str => ({
 			type: "oper" as const,
 			name: match(str)
 				.with("-", "+", "/", "*", "^", op => op)
 				.with("−", () => "-" as const)
 				.with("×", () => "*" as const)
+				.with("⋅", () => "*" as const)
 				.otherwise(op => {
 					throw Error(`Programmer error: neglected operator "${op}"`);
 				}),
@@ -166,8 +167,8 @@ const tokenMatchers = [
  */
 export default function tokenise(expression: string): Result<Token[], LexicalError> {
 	// Remove all spaces from the input since they serve no mathematical purpose
-	const withoutSpaces = expression.replace(/\s/g, '');
-	
+	const withoutSpaces = expression.replace(/\s/g, "");
+
 	// Preprocess a few common shorthand notations before tokenising:
 	// 1) Superscript exponents: "3⁵" -> "3^5", "12⁴⁵" -> "12^45"
 	//    Only transform when the superscript run is attached to a base token (e.g. digit or ")").
