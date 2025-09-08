@@ -1,6 +1,6 @@
 import { useCalculator } from "#/state";
 import { useTranslation } from "#/i18n/hook";
-import errorImgSrc from "./error-img.svg";
+import errorImgSrc from "@icons/svg/error-img.svg";
 
 export default function ErrorIcon() {
 	const { buffer } = useCalculator();

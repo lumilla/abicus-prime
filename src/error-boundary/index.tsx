@@ -1,7 +1,7 @@
 import { Component, ComponentChildren } from "preact";
 import { useTranslation } from "#/i18n";
 
-import errorImgSrc from "./error-img.svg";
+import errorImgSrc from "@icons/svg/error-img.svg";
 import { BUFFER_DEBUG, EXPR_DEBUG, INPUT_DEBUG } from "./constants";
 
 // Currently no way to write Error Boundaries as function components :(

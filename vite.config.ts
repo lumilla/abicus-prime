@@ -12,6 +12,12 @@ const appVersion = packageJson.version;
 export default defineConfig({
 	plugins: [tsconfigPaths(), preact()],
 
+	resolve: {
+		alias: {
+			"@icons": resolve(__dirname, "src/assets/icons"),
+		},
+	},
+
 	define: {
 		__GIT_HASH__: JSON.stringify(commitHash),
 		__APP_VERSION__: JSON.stringify(appVersion),

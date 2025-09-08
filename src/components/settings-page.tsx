@@ -61,7 +61,6 @@ export default function SettingsPage() {
 
 			// Reset counter if more than 5 seconds have passed
 			if (timeSinceLastClick > 5000) {
-				console.log("Resetting crash test counter");
 				setCrashTestClicks(1);
 			} else {
 				setCrashTestClicks(prev => {
