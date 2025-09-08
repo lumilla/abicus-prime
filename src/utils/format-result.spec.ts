@@ -93,7 +93,7 @@ describe("formatResult", () => {
 		testResultFormat(
 			`below large threshold (${MAX_SIGNIFICANT_DIGITS}) - no exponentia`,
 			`1 * 10 ^ ${MAX_SIGNIFICANT_DIGITS - 1}`,
-			`1${"0".repeat(MAX_SIGNIFICANT_DIGITS - 1)}`,
+			`100 000 000 000 000 000 000`,
 		);
 		testResultFormat(
 			`at large threshold (${MAX_SIGNIFICANT_DIGITS}) - uses exponential`,
