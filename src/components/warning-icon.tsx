@@ -4,44 +4,40 @@ interface WarningIconProps {
 	className?: string;
 }
 
-export default function WarningIcon({ 
-	size = 24, 
-	showBackground = false, 
-	className = "text-abi-blue-1 dark:text-abi-dark-blue-1" 
+export default function WarningIcon({
+	size = 24,
+	showBackground = false,
+	className = "text-abi-blue-1 dark:text-abi-dark-blue-1",
 }: WarningIconProps) {
 	if (showBackground) {
 		// Error boundary version - with circular background, scaled properly
 		const outerSize = Math.max(32, size * 1.2); // Outer circle is 20% larger than icon
 		const innerSize = Math.max(24, size * 0.9); // Inner circle is 90% of icon size
 		const iconSize = Math.max(16, size * 0.6); // Icon is 60% of total size
-		
+
 		return (
 			<div className="relative p-2">
 				{/* Outer circle */}
-				<div 
+				<div
 					style={{ width: `${outerSize}px`, height: `${outerSize}px` }}
 					x={[
 						"rounded-full",
 						"bg-abi-lgrey dark:bg-abi-dark-lgrey",
 						"flex items-center justify-center",
-						"shadow-[0_0_4px_4px_white] dark:shadow-[0_0_4px_4px_rgb(17_24_39)]"
+						"shadow-[0_0_4px_4px_white] dark:shadow-[0_0_4px_4px_rgb(17_24_39)]",
 					]}
 				>
 					{/* Inner circle */}
-					<div 
+					<div
 						style={{ width: `${innerSize}px`, height: `${innerSize}px` }}
-						x={[
-							"rounded-full",
-							"bg-white dark:bg-gray-900",
-							"flex items-center justify-center"
-						]}
+						x={["rounded-full", "bg-white dark:bg-gray-900", "flex items-center justify-center"]}
 					>
 						{/* Warning icon */}
-						<svg 
-							xmlns="http://www.w3.org/2000/svg" 
-							width={iconSize} 
-							height={iconSize} 
-							fill="currentColor" 
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width={iconSize}
+							height={iconSize}
+							fill="currentColor"
 							viewBox="0 0 256 256"
 							x={className}
 						>
@@ -55,11 +51,11 @@ export default function WarningIcon({
 
 	// Simple version - no background
 	return (
-		<svg 
-			xmlns="http://www.w3.org/2000/svg" 
-			width={size} 
-			height={size} 
-			fill="currentColor" 
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width={size}
+			height={size}
+			fill="currentColor"
 			viewBox="0 0 256 256"
 			x={className}
 		>

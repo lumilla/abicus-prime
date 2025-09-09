@@ -153,10 +153,10 @@ export default function TitleBar() {
 					]}
 					title={isAlwaysOnTop ? "Unpin from top" : "Pin always on top"}
 				>
-					<img 
-						src={isAlwaysOnTop ? pushPinSlashIcon : pushPinIcon} 
-						alt={isAlwaysOnTop ? "Unpin" : "Pin"} 
-						x={["w-2 h-2"]} 
+					<img
+						src={isAlwaysOnTop ? pushPinSlashIcon : pushPinIcon}
+						alt={isAlwaysOnTop ? "Unpin" : "Pin"}
+						x={["w-2 h-2"]}
 					/>
 				</button>
 				<button

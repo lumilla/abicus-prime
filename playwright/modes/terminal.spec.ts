@@ -38,12 +38,12 @@ test.describe("Terminal Mode", () => {
 		test("input clears after calculation", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const input = terminal.getInput();
-			
+
 			await input.fill("5*5");
 			await input.press("Enter");
 
 			expect(await input.inputValue()).toBe("");
-			
+
 			// Verify something appears in history
 			const historyItems = page.locator("div:has(span:has-text('▶'))");
 			await expect(historyItems.first()).toBeVisible();
@@ -51,7 +51,7 @@ test.describe("Terminal Mode", () => {
 
 		test("multiple calculations create ordered history", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
-			
+
 			await terminal.submitCalculation("5+5");
 			await terminal.submitCalculation("10*2");
 			await terminal.submitCalculation("3^2");
@@ -99,7 +99,7 @@ test.describe("Terminal Mode", () => {
 	test.describe("Terminal Commands", () => {
 		test("clear command clears history", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
-			
+
 			await terminal.submitCalculation("1+1");
 			await terminal.submitCalculation("2+2");
 
@@ -117,7 +117,7 @@ test.describe("Terminal Mode", () => {
 
 		test("cls command clears history", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
-			
+
 			await terminal.submitCalculation("3+3");
 			await expect(page.locator("text=3+3").first()).toBeVisible();
 
@@ -144,7 +144,7 @@ test.describe("Terminal Mode", () => {
 		test("escape clears current input", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const input = terminal.getInput();
-			
+
 			await input.fill("5+5+5");
 			expect(await input.inputValue()).toBe("5+5+5");
 
@@ -155,7 +155,7 @@ test.describe("Terminal Mode", () => {
 		test("ctrl+k clears current input", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const input = terminal.getInput();
-			
+
 			await input.fill("some expression");
 			await input.press("Control+k");
 			await expect(input).toHaveValue("");
@@ -164,7 +164,7 @@ test.describe("Terminal Mode", () => {
 		test("ctrl+n clears terminal history", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const input = terminal.getInput();
-			
+
 			await terminal.submitCalculation("5*5");
 			await terminal.submitCalculation("6*6");
 
@@ -181,7 +181,7 @@ test.describe("Terminal Mode", () => {
 	test.describe("Advanced Features", () => {
 		test("ANS memory works", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
-			
+
 			await terminal.submitCalculation("8*9");
 			await terminal.expectCalculationInHistory("8*9", "72");
 
@@ -191,7 +191,7 @@ test.describe("Terminal Mode", () => {
 
 		test("constants work", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
-			
+
 			await terminal.submitCalculation("pi * 2");
 			await expect(page.locator("text=pi * 2").first()).toBeVisible();
 			// Result should contain pi*2 value (approximately 6.28)
@@ -201,7 +201,7 @@ test.describe("Terminal Mode", () => {
 		test("double-click expression copies to input", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const input = terminal.getInput();
-			
+
 			await terminal.submitCalculation("2*3");
 			await expect(page.locator("text== 6").first()).toBeVisible();
 
@@ -212,7 +212,7 @@ test.describe("Terminal Mode", () => {
 		test("double-click result copies clean value to input", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const input = terminal.getInput();
-			
+
 			await terminal.submitCalculation("4*5");
 			await expect(page.locator("text== 20").first()).toBeVisible();
 
@@ -224,7 +224,7 @@ test.describe("Terminal Mode", () => {
 	test.describe("Error Handling", () => {
 		test("invalid expression shows error", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
-			
+
 			await terminal.submitCalculation("5++5");
 			await expect(page.locator("text=5++5").first()).toBeVisible();
 			await expect(page.locator("text=Error").first()).toBeVisible();
@@ -232,7 +232,7 @@ test.describe("Terminal Mode", () => {
 
 		test("division by zero shows error", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
-			
+
 			await terminal.submitCalculation("5/0");
 			await expect(page.locator("text=5/0").first()).toBeVisible();
 			await expect(page.locator("text=Error").first()).toBeVisible();
@@ -241,7 +241,7 @@ test.describe("Terminal Mode", () => {
 		test("empty input does nothing", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const input = terminal.getInput();
-			
+
 			await input.press("Enter");
 			// No history should be created
 			await expect(page.locator("span:has-text('▶') + span").first()).not.toBeVisible();
@@ -252,7 +252,7 @@ test.describe("Terminal Mode", () => {
 		test("angle unit setting affects calculations", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const settings = new SettingsHelpers(page);
-			
+
 			// Test degrees (default)
 			await terminal.submitCalculation("cos(60)");
 			await expect(page.locator("text=0,5").first()).toBeVisible();
@@ -272,7 +272,7 @@ test.describe("Terminal Mode", () => {
 		test("can switch back to pocket mode", async ({ page }) => {
 			const settings = new SettingsHelpers(page);
 			const terminal = new TerminalHelpers(page);
-			
+
 			await settings.open();
 			await settings.setPocketMode();
 			await settings.close();
@@ -286,7 +286,7 @@ test.describe("Terminal Mode", () => {
 		test("terminal calculation persists when switching to pocket mode", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const settings = new SettingsHelpers(page);
-			
+
 			await terminal.submitCalculation("1+1");
 			await expect(page.locator("text== 2").first()).toBeVisible();
 
@@ -304,7 +304,7 @@ test.describe("Terminal Mode", () => {
 		test("terminal state persists across mode switches", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
 			const settings = new SettingsHelpers(page);
-			
+
 			await terminal.submitCalculation("10+10");
 			await expect(page.locator("text=10+10").first()).toBeVisible();
 

@@ -95,7 +95,14 @@ export default function App() {
 					]}
 				>
 					{showSettings ? (
-						<div key="settings" x={["w-full", ...(interfaceMode === "terminal" || showSettings ? ["h-full"] : ["max-w-sm"]), "fade-in-slow"]}>
+						<div
+							key="settings"
+							x={[
+								"w-full",
+								...(interfaceMode === "terminal" || showSettings ? ["h-full"] : ["max-w-sm"]),
+								"fade-in-slow",
+							]}
+						>
 							<Suspense fallback={<div x={["opacity-0"]} />}>
 								<SettingsPage />
 							</Suspense>
@@ -141,16 +148,16 @@ export default function App() {
 							]}
 							title="Open Settings"
 						>
-							<img 
-								src={gearIcon} 
-								alt="Settings" 
+							<img
+								src={gearIcon}
+								alt="Settings"
 								x={[
 									"w-4 h-4",
 									"transition-transform duration-500 ease-in-out",
 									"hover:rotate-180",
 									"opacity-60 hover:opacity-100",
-									"dark:invert"
-								]} 
+									"dark:invert",
+								]}
 							/>
 						</button>
 					)}

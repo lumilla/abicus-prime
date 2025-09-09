@@ -19,8 +19,8 @@ export default defineConfig({
 	},
 
 	define: {
-		__GIT_HASH__: JSON.stringify(commitHash),
-		__APP_VERSION__: JSON.stringify(appVersion),
+		"__GIT_HASH__": JSON.stringify(commitHash),
+		"__APP_VERSION__": JSON.stringify(appVersion),
 		// Define these as false to help tree-shaking
 		"process.env.NODE_ENV": JSON.stringify("production"),
 	},
@@ -48,7 +48,7 @@ export default defineConfig({
 				},
 			},
 		},
-		target: 'es2020',
+		target: "es2020",
 		chunkSizeWarningLimit: 1000,
 		cssCodeSplit: true,
 		cssMinify: true,
