@@ -1,5 +1,10 @@
 import { useCalculator } from "#/state";
 import { useState, useEffect } from "preact/hooks";
+import gearIcon from "@icons/svg/gear.svg";
+import closeIcon from "@icons/svg/close.svg";
+import minusIcon from "@icons/svg/minus.svg";
+import pushPinIcon from "@icons/svg/push-pin.svg";
+import pushPinSlashIcon from "@icons/svg/push-pin-slash.svg";
 
 export default function TitleBar() {
 	// Make Tauri detection synchronous to avoid layout flicker
@@ -124,7 +129,11 @@ export default function TitleBar() {
 					]}
 					title={showSettings ? "Close Settings" : "Open Settings"}
 				>
-					<div x={["text-[6px] text-gray-900 font-bold leading-none"]}>{showSettings ? "×" : "⚙"}</div>
+					{showSettings ? (
+						<img src={closeIcon} alt="Close" x={["w-2 h-2"]} />
+					) : (
+						<img src={gearIcon} alt="Settings" x={["w-2 h-2"]} />
+					)}
 				</button>
 				<span x={["text-xs text-black dark:text-white font-medium pointer-events-none"]}>Abicus Prime</span>
 			</div>
@@ -144,7 +153,11 @@ export default function TitleBar() {
 					]}
 					title={isAlwaysOnTop ? "Unpin from top" : "Pin always on top"}
 				>
-					<div x={["text-[7px] text-gray-900 font-bold leading-none"]}>📌</div>
+					<img
+						src={isAlwaysOnTop ? pushPinSlashIcon : pushPinIcon}
+						alt={isAlwaysOnTop ? "Unpin" : "Pin"}
+						x={["w-2 h-2"]}
+					/>
 				</button>
 				<button
 					type="button"
@@ -160,7 +173,7 @@ export default function TitleBar() {
 					]}
 					title="Minimize"
 				>
-					<div x={["w-1.5 h-0.5 bg-yellow-900 rounded"]}></div>
+					<img src={minusIcon} alt="Minimize" x={["w-2 h-2"]} />
 				</button>
 
 				<button
@@ -173,12 +186,11 @@ export default function TitleBar() {
 						"border-0 cursor-pointer",
 						"flex items-center justify-center",
 						"transition-all duration-150",
-						"text-xs text-red-900 font-bold leading-none",
 						"hover:scale-110 active:scale-95",
 					]}
 					title="Close"
 				>
-					×
+					<img src={closeIcon} alt="Close" x={["w-2 h-2"]} />
 				</button>
 			</div>
 		</div>

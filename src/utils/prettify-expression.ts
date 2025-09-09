@@ -2,6 +2,22 @@ import { match, P } from "ts-pattern";
 import { tokenise, Token } from "#/calculator";
 
 /**
+ * Adds thousand separators (spaces) to a number string
+ * @param numStr - The number string to format
+ * @returns The formatted number string with thousand separators
+ */
+function addThousandSeparators(numStr: string): string {
+	// Split into integer and decimal parts
+	const [integerPart, decimalPart] = numStr.split(",");
+
+	// Add spaces every 3 digits from the right in the integer part
+	const formattedInteger = integerPart?.replace(/\B(?=(\d{3})+(?!\d))/g, " ") || "";
+
+	// Return with decimal part if it exists
+	return decimalPart ? `${formattedInteger},${decimalPart}` : formattedInteger;
+}
+
+/**
  * Takes in an unformatted expression (e.g. `1+2*(cos(2)/sqrt(pi))`) and gives out a "prettified"
  * but equivalent expression (`1 + 2 × (cos(2) / √(π))`).
  *
@@ -40,7 +56,7 @@ function* prettiedCharacters(tokens: Token[]) {
 		const rhs = tokens[i + 1] ?? null;
 
 		const formattedToken = match(cur)
-			.with({ type: "litr" }, token => token.value.toFixed().replace(".", ","))
+			.with({ type: "litr" }, token => addThousandSeparators(token.value.toFixed().replace(".", ",")))
 			.with({ type: "lbrk" }, () => "(")
 			.with({ type: "rbrk" }, () => ")")
 			.with({ type: "semi" }, () => ";")
@@ -48,7 +64,7 @@ function* prettiedCharacters(tokens: Token[]) {
 			.with({ type: "memo", name: "ind" }, () => "M")
 			.with({ type: "cons", name: "pi" }, () => "π")
 			.with({ type: "cons", name: "e" }, () => "e")
-			.with({ type: "oper", name: "*" }, () => "×")
+			.with({ type: "oper", name: "*" }, () => "⋅")
 			.with({ type: "oper", name: "-" }, () => "−")
 			.with({ type: "oper", name: any }, token => token.name)
 			.with({ type: "fact" }, () => "!")

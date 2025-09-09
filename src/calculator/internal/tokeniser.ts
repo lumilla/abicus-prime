@@ -61,13 +61,14 @@ const tokenMatchers = [
 	[
 		// Operators: "-", "+", "/", "*", "^"
 		// The multiplication and minus signs have unicode variants that also need to be handled
-		/^[-+/*^−×]/,
+		/^[-+/*^−×⋅]/,
 		str => ({
 			type: "oper" as const,
 			name: match(str)
 				.with("-", "+", "/", "*", "^", op => op)
 				.with("−", () => "-" as const)
 				.with("×", () => "*" as const)
+				.with("⋅", () => "*" as const)
 				.otherwise(op => {
 					throw Error(`Programmer error: neglected operator "${op}"`);
 				}),
@@ -165,12 +166,15 @@ const tokenMatchers = [
  * ```
  */
 export default function tokenise(expression: string): Result<Token[], LexicalError> {
+	// Remove all spaces from the input since they serve no mathematical purpose
+	const withoutSpaces = expression.replace(/\s/g, "");
+
 	// Preprocess a few common shorthand notations before tokenising:
 	// 1) Superscript exponents: "3⁵" -> "3^5", "12⁴⁵" -> "12^45"
 	//    Only transform when the superscript run is attached to a base token (e.g. digit or ")").
 	// 2) Inverse trig notation: "sin^(-1)(x)" -> "arcsin(x)" (same for cos/tan)
 	// 3) Function power notation: "sin^(2)(x)" -> "sin(x)^(2)" (so it's parsed as (sin(x))^2)
-	const preprocessed = preprocessFunctionPowers(preprocessSuperscripts(expression));
+	const preprocessed = preprocessFunctionPowers(preprocessSuperscripts(withoutSpaces));
 
 	return Result.combine([...tokens(preprocessed)]);
 }

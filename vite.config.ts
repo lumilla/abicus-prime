@@ -1,6 +1,3 @@
-/// <reference types="vite/client" />
-/// <reference types="vitest" />
-
 import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -8,34 +5,63 @@ import * as child from "child_process";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
-const commitHash = process.env.GIT_HASH || child.execSync("git rev-parse HEAD").toString();
+const commitHash = process.env.GIT_HASH || child.execSync("git rev-parse HEAD").toString().trim();
 const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf-8"));
 const appVersion = packageJson.version;
 
-// https://vitejs.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig({
 	plugins: [tsconfigPaths(), preact()],
 
-	define: {
-		__GIT_HASH__: JSON.stringify(commitHash),
-		__APP_VERSION__: JSON.stringify(appVersion),
+	resolve: {
+		alias: {
+			"@icons": resolve(__dirname, "src/assets/icons"),
+		},
 	},
 
-	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-	//
-	// 1. prevent vite from obscuring rust errors
+	define: {
+		"__GIT_HASH__": JSON.stringify(commitHash),
+		"__APP_VERSION__": JSON.stringify(appVersion),
+		// Define these as false to help tree-shaking
+		"process.env.NODE_ENV": JSON.stringify("production"),
+	},
+
+	build: {
+		minify: "terser",
+		terserOptions: {
+			compress: {
+				drop_console: true,
+				drop_debugger: true,
+				pure_funcs: ["console.log", "console.info", "console.debug"],
+			},
+			mangle: {
+				toplevel: true,
+			},
+			format: {
+				comments: false,
+			},
+		},
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					decimal: ["decimal.js"],
+					utils: ["clsx", "neverthrow", "ts-pattern"],
+				},
+			},
+		},
+		target: "es2020",
+		chunkSizeWarningLimit: 1000,
+		cssCodeSplit: true,
+		cssMinify: true,
+		reportCompressedSize: true,
+		sourcemap: false,
+	},
+
 	clearScreen: false,
-	// 2. tauri expects a fixed port, fail if that port is not available
 	server: {
 		port: 1420,
 		strictPort: true,
 		watch: {
-			// 3. tell vite to ignore watching `src-tauri`
 			ignored: ["**/src-tauri/**"],
 		},
 	},
-	test: {
-		globals: true,
-		exclude: ["**/playwright/**", "**/node_modules/**"],
-	},
-}));
+});

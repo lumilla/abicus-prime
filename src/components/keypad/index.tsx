@@ -65,7 +65,7 @@ export default function Keypad() {
 					<BasicKey input="7" />
 					<BasicKey input="8" />
 					<BasicKey input="9" />
-					<OperatorKey tint="grey" symbol="×" />
+					<OperatorKey tint="grey" symbol="⋅" />
 					<OperatorKey tint="grey" symbol="−" />
 
 					{/* Row #7 */}

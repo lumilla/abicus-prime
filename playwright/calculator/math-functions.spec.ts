@@ -34,17 +34,17 @@ test.describe("Mathematical Functions", () => {
 		test("trigonometric functions work in radians", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
 			const settings = new SettingsHelpers(page);
-			
+
 			// Switch to radians
 			await settings.open();
 			await settings.setRadians();
 			await settings.close();
-			
+
 			// Test π/2 ≈ 1.5708 - calculator returns 0,99999... very close to 1
 			await calc.calculate("sin(1.5708)", "button");
 			const result = await calc.getResult().textContent();
 			// The calculator returns something very close to 1 (or exactly 0.99999...)
-			const numResult = parseFloat(result!.replace(',', '.'));
+			const numResult = parseFloat(result!.replace(",", "."));
 			expect(numResult).toBeGreaterThan(0.999);
 		});
 	});
@@ -123,7 +123,7 @@ test.describe("Mathematical Functions", () => {
 	test.describe("Factorial Function", () => {
 		test("basic factorial calculations work", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			
+
 			// Test 5!
 			await calc.clickButtons(["5", "!", "="]);
 			expect(await calc.getExpression()).toBe("5!");
@@ -144,7 +144,7 @@ test.describe("Mathematical Functions", () => {
 
 		test("factorial with expressions", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			
+
 			// Test (3+2)!
 			await calc.clickButtons(["(", "3", "+", "2", ")", "!", "="]);
 			expect(await calc.getExpression()).toBe("(3 + 2)!");
@@ -153,7 +153,7 @@ test.describe("Mathematical Functions", () => {
 
 		test("factorial in arithmetic operations", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			
+
 			// Test 3! + 4!
 			await calc.clickButtons(["3", "!", "+", "4", "!", "="]);
 			expect(await calc.getExpression()).toBe("3! + 4!");
@@ -162,7 +162,7 @@ test.describe("Mathematical Functions", () => {
 
 		test("double factorial", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			
+
 			// Test 3!! (factorial of factorial)
 			await calc.clickButtons(["3", "!", "!", "="]);
 			expect(await calc.getExpression()).toBe("3!!");
@@ -171,7 +171,7 @@ test.describe("Mathematical Functions", () => {
 
 		test("factorial function form works", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			
+
 			// Test fact(5)
 			await calc.calculate("fact(5)", "button");
 			expect(await calc.getExpression()).toBe("fact(5)");
@@ -180,7 +180,7 @@ test.describe("Mathematical Functions", () => {
 
 		test("factorial error cases", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			
+
 			// Test negative factorial
 			await calc.calculate("(-1)!", "button");
 			await expect(calc.getResult()).not.toBeVisible();
@@ -193,11 +193,14 @@ test.describe("Mathematical Functions", () => {
 
 		test("large factorial calculations", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			
+
 			// Test 10!
 			await calc.clickButtons(["1", "0", "!", "="]);
 			expect(await calc.getExpression()).toBe("10!");
-			await expect(calc.getResult()).toHaveText("3628800");
+			// The UI may format large numbers with thousands separators (spaces).
+			const raw = await calc.getResult().textContent();
+			const normalized = (raw || "").replace(/\s+/g, "");
+			expect(normalized).toBe("3628800");
 		});
 	});
 });

@@ -20,7 +20,7 @@ test.describe("Calculator Interface", () => {
 		});
 
 		test("has decimal, operator, and bracket buttons", async ({ page }) => {
-			await expectButtonsVisible(page, [...",+−×/()"]);
+			await expectButtonsVisible(page, [...",+−⋅/()"]);
 		});
 
 		test("has memory buttons", async ({ page }) => {
@@ -46,9 +46,8 @@ test.describe("Calculator Interface", () => {
 
 	test.describe("Settings Page", () => {
 		test("has settings button", async ({ page }) => {
-			await expect(page.getByRole("button", { name: "*", exact: true })).toBeVisible();
+			await expect(page.getByRole("button", { name: "Settings", exact: true })).toBeVisible();
 		});
-
 		test("settings button opens and closes settings page", async ({ page }) => {
 			const settings = new SettingsHelpers(page);
 
@@ -58,12 +57,13 @@ test.describe("Calculator Interface", () => {
 			// Open settings
 			await settings.open();
 			await expect(page.getByText("Settings")).toBeVisible();
-			await expect(page.getByRole("button", { name: "*", exact: true })).not.toBeVisible();
+			await expect(page.getByRole("button", { name: "Settings", exact: true })).not.toBeVisible();
 
 			// Close settings
 			await settings.close();
 			await expect(page.getByText("Settings")).not.toBeVisible();
-			await expect(page.getByRole("button", { name: "*", exact: true })).toBeVisible();
+			// The multiplication button is rendered as '⋅' in the UI
+			await expect(page.getByRole("button", { name: "⋅", exact: true })).toBeVisible();
 		});
 
 		test.describe("Angle Unit Settings", () => {
@@ -97,7 +97,7 @@ test.describe("Calculator Interface", () => {
 
 			test("angle unit setting persists after closing settings", async ({ page }) => {
 				const settings = new SettingsHelpers(page);
-				
+
 				// Open settings and switch to radians
 				await settings.open();
 				await settings.setRadians();
@@ -141,7 +141,7 @@ test.describe("Calculator Interface", () => {
 
 			test("interface mode setting persists after closing settings", async ({ page }) => {
 				const settings = new SettingsHelpers(page);
-				
+
 				// Open settings and switch to terminal mode
 				await settings.open();
 				await settings.setTerminalMode();

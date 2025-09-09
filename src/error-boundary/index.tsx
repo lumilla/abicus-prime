@@ -1,7 +1,7 @@
 import { Component, ComponentChildren } from "preact";
 import { useTranslation } from "#/i18n";
+import WarningIcon from "#/components/warning-icon";
 
-import errorImgSrc from "./error-img.svg";
 import { BUFFER_DEBUG, EXPR_DEBUG, INPUT_DEBUG } from "./constants";
 
 // Currently no way to write Error Boundaries as function components :(
@@ -59,7 +59,9 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 			]}
 		>
 			<div x="grid grid-cols-[5rem_1fr] items-center gap-4 mt-10">
-				<img src={errorImgSrc} alt={t("error.imageAlt")} x={["h-16", "filter dark:invert"]} />
+				<div x={["h-16 flex items-center justify-center"]}>
+					<WarningIcon size={64} showBackground={true} />
+				</div>
 
 				<h1 x="text-xl">{t("error.title")}</h1>
 			</div>

@@ -12,7 +12,7 @@ function getTranslation(key: TranslationKey, language: LanguageCode): string {
 		return langTable[key];
 	}
 	if (key in defaultTable) {
-		return defaultTable[key];
+		return defaultTable[key] || key;
 	}
 	return key;
 }
