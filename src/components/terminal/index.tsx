@@ -19,6 +19,7 @@ export default function Terminal() {
 	const history = sharedHistory as HistoryItem[];
 	const [historyIndex, setHistoryIndex] = useState(-1);
 	const [tempInput, setTempInput] = useState("");
+	const [previewResult, setPreviewResult] = useState<string | null>(null);
 	// Make Tauri detection synchronous to avoid layout flicker
 	const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 	const terminalRef = useRef<HTMLDivElement>(null);
@@ -61,6 +62,22 @@ export default function Terminal() {
 		prevAnsRef.current = memory.ans;
 		prevIndRef.current = memory.ind;
 	}, [memory.ans, memory.ind, history.length, clearSharedHistory]);
+
+	// Compute live preview when buffer changes (debounced-ish via effect)
+	useEffect(() => {
+		if (!buffer.value.trim()) {
+			setPreviewResult(null);
+			return;
+		}
+
+		// Calculate preview safely without mutating memory
+		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
+		if (result.isOk()) {
+			setPreviewResult("= " + formatResult(result.value));
+		} else {
+			setPreviewResult(t("terminal.error"));
+		}
+	}, [buffer.value, memory.ans, memory.ind, angleUnit, t]);
 
 	const handleSubmit = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
 		e.preventDefault();
@@ -230,6 +247,15 @@ export default function Terminal() {
 					...(isTauri ? ["text-black dark:text-white"] : ["text-black dark:text-white"]),
 				]}
 			>
+			{/* Live preview row */}
+			{previewResult && (
+				<div x={["mb-2 mx-1 px-2 py-1 rounded", isTauri ? "text-white/90" : "text-abi-dgrey"]}>
+					<div x={["flex items-center gap-2"]}>
+						<span x={["text-xs text-black/60 dark:text-white/80"]}>↳</span>
+						<span x={["text-sm font-medium"]}>{previewResult}</span>
+					</div>
+				</div>
+			)}
 				{history.map(item => (
 					<div key={item.timestamp} x={["space-y-1"]}>
 						<div x={["flex items-center"]}>
@@ -265,7 +291,36 @@ export default function Terminal() {
 				))}
 			</div>
 
-			{/* Input Area */}
+			{/* Live preview - attached directly to input */}
+			<div
+				x={[
+					"transition-opacity duration-700 ease-in-out",
+					previewResult ? "opacity-100" : "opacity-0",
+					"bg-blue-500/10 dark:bg-blue-400/10",
+					"border-t border-b border-blue-400/40 dark:border-blue-300/30",
+					"px-4 py-3",
+					...(isTauri ? ["px-6"] : []),
+				]}
+			>
+				<div x={["flex items-center gap-2"]}>
+					<span
+						x={[
+							"text-blue-600 dark:text-blue-400",
+							"font-mono text-sm",
+						]}
+					>
+						=
+					</span>
+					<span
+						x={[
+							"text-blue-700 dark:text-blue-300",
+							"font-mono text-sm font-medium",
+						]}
+					>
+						{previewResult ? (previewResult.startsWith("= ") ? previewResult.slice(2) : previewResult) : ""}
+					</span>
+				</div>
+			</div>			{/* Input Area */}
 			<form onSubmit={handleSubmit}>
 				<div
 					x={[
@@ -294,6 +349,7 @@ export default function Terminal() {
 					>
 						▶
 					</span>
+					{/* live preview is always enabled */}
 					<input
 						ref={buffer.ref}
 						type="text"

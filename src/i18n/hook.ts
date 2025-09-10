@@ -8,13 +8,18 @@ function getTranslation(key: TranslationKey, language: LanguageCode): string {
 	const langTable = translations[language] as Record<string, string> | undefined;
 	const defaultTable = translations[DEFAULT_LANGUAGE] as Record<string, string>;
 
-	if (langTable && key in langTable) {
-		return langTable[key];
+	// Prefer the language table value when present and a string.
+	if (langTable && typeof langTable[key] === "string") {
+		return langTable[key] as string;
 	}
-	if (key in defaultTable) {
-		return defaultTable[key] || key;
+
+	// Fallback to default language table if present.
+	if (typeof defaultTable[key] === "string") {
+		return defaultTable[key] as string;
 	}
-	return key;
+
+	// Final fallback: return the key itself.
+	return String(key);
 }
 
 // Get the stored language preference or default
