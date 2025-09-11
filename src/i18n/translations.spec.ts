@@ -61,8 +61,6 @@ describe("i18n translations data", () => {
 			for (const key of criticalKeys) {
 				for (const langCode of Object.keys(translations)) {
 					const translation = translations[langCode]?.[key];
-					expect(translation).toBeTruthy();
-					expect(typeof translation).toBe("string");
 					expect(translation!.trim().length).toBeGreaterThan(0);
 				}
 			}
@@ -84,7 +82,7 @@ describe("i18n translations data", () => {
 				expect(config.code).toBe(langCode);
 
 				// The name should be a valid translation key in the reference (fi) or first available
-				const first = Object.keys(translations)[0] || "";
+				const first = Object.keys(translations)[0] ?? "";
 				const ref = translations["fi"] ?? translations[first];
 				expect(ref).toBeDefined();
 				expect(config.name in (ref ?? {})).toBe(true);

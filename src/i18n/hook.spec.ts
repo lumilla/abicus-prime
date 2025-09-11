@@ -50,7 +50,7 @@ describe("i18n translations", () => {
 
 	describe("translation completeness", () => {
 		test("all languages have the same translation keys", () => {
-			const finnishKeys = Object.keys(translations["fi"] ?? translations[Object.keys(translations)[0] || ""] ?? {});
+			const finnishKeys = Object.keys(translations["fi"] ?? translations[Object.keys(translations)[0] ?? ""] ?? {});
 			const languages = Object.keys(translations);
 
 			for (const lang of languages) {
