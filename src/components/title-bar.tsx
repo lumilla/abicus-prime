@@ -89,7 +89,6 @@ export default function TitleBar() {
 				const { getCurrentWindow } = await import("@tauri-apps/api/window");
 				const window = getCurrentWindow();
 				const newState = !isAlwaysOnTop;
-				console.log(`Setting always on top to: ${newState}`);
 				await window.setAlwaysOnTop(newState);
 				setIsAlwaysOnTop(newState);
 			} catch (error) {

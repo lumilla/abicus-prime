@@ -319,4 +319,85 @@ test.describe("Terminal Mode", () => {
 			await expect(page.locator("text=20").first()).toBeVisible();
 		});
 	});
+
+	test.describe("Live Preview", () => {
+		test("shows live preview while typing", async ({ page }) => {
+			const terminal = new TerminalHelpers(page);
+			const input = terminal.getInput();
+
+			// Type an expression
+			await input.fill("5+5");
+
+			// Preview should show the result
+			await expect(page.locator("text=10").first()).toBeVisible();
+
+			// Modify the expression
+			await input.fill("5+5*2");
+
+			// Preview should update to show new result
+			await expect(page.locator("text=15").first()).toBeVisible();
+		});
+
+		test("clears preview when input is empty", async ({ page }) => {
+			const terminal = new TerminalHelpers(page);
+			const input = terminal.getInput();
+
+			// Type and verify preview appears
+			await input.fill("10*3");
+			await expect(page.locator("text=30").first()).toBeVisible();
+
+			// Clear input
+			await input.fill("");
+
+			// Preview should disappear (check that 30 is not visible in preview area)
+			// Since the preview is positioned above input, we can check it's not there
+			const previewArea = page.locator("form").locator("..").locator("div").first();
+			await expect(previewArea.locator("text=30")).not.toBeVisible();
+		});
+
+		test("shows error in preview for invalid expressions", async ({ page }) => {
+			const terminal = new TerminalHelpers(page);
+			const input = terminal.getInput();
+
+			// Type invalid expression
+			await input.fill("5++5");
+
+			// Preview should show error
+			await expect(page.locator("text=Error").first()).toBeVisible();
+		});
+
+		test("preview updates with memory operations", async ({ page }) => {
+			const terminal = new TerminalHelpers(page);
+			const input = terminal.getInput();
+
+			// First establish ANS value
+			await terminal.submitCalculation("20");
+			await terminal.expectCalculationInHistory("20", "20");
+
+			// Now type expression using ANS
+			await input.fill("ANS + 5");
+
+			// Preview should show the correct result
+			await expect(page.locator("text=25").first()).toBeVisible();
+		});
+
+		test("preview respects angle unit settings", async ({ page }) => {
+			const terminal = new TerminalHelpers(page);
+			const settings = new SettingsHelpers(page);
+			const input = terminal.getInput();
+
+			// Test in degrees (default)
+			await input.fill("sin(90)");
+			await expect(page.locator("text=1").first()).toBeVisible();
+
+			// Change to radians
+			await settings.open();
+			await settings.setRadians();
+			await settings.close();
+
+			// Preview should update to radians calculation
+			await input.fill("sin(1.5708)"); // π/2 in radians ≈ 1.5708
+			await expect(page.locator("text=1").first()).toBeVisible();
+		});
+	});
 });

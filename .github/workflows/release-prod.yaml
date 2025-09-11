@@ -1,5 +1,5 @@
 name: Release (Production version for A2 + Binaries + GH Pages)
-on: [workflow_dispatch]
+"on": [workflow_dispatch]
 
 jobs:
   validate-tag:
@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b
         with:
           node-version: 20.15.0
-          cache: "npm"
+          cache: npm
 
       - name: Install Node dependencies
         run: npm ci
@@ -57,7 +57,7 @@ jobs:
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b
         with:
           node-version: 20.15.0
-          cache: "npm"
+          cache: npm
 
       - name: Install Node dependencies
         run: npm ci
@@ -108,10 +108,10 @@ jobs:
         include:
           - title: MacOS (arm64)
             platform: macos-latest
-            args: "--target aarch64-apple-darwin"
+            args: --target aarch64-apple-darwin
           - title: MacOS (x86_64)
             platform: macos-latest
-            args: "--target x86_64-apple-darwin"
+            args: --target x86_64-apple-darwin
           - title: Ubuntu
             platform: ubuntu-22.04
             args: ""

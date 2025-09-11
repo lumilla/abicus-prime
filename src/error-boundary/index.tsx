@@ -15,12 +15,14 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 	const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 	// Check if this is a user-triggered error
-	const isUserTriggered =
-		message &&
-		(message.includes("User triggered error") ||
-			message.includes("user-triggered") ||
-			message.includes("usertriggerederror") ||
-			t("error.usertriggerederror") === message);
+	const userTriggeredMessages = [
+		"User triggered error",
+		"user-triggered",
+		"usertriggerederror",
+		t("error.usertriggerederror"),
+	];
+
+	const isUserTriggered = message && userTriggeredMessages.some(msg => message.includes(msg) || message === msg);
 
 	// Try to get calculator settings from localStorage as fallback
 	let calculatorSettings = {

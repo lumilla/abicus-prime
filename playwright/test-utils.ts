@@ -221,14 +221,16 @@ export class SelectionHelpers {
 	/**
 	 * Tests operator shortcuts with selection
 	 */
-	async testOperatorShortcut(
-		initialText: string,
-		selectionStart: number,
-		selectionEnd: number,
-		operator: string,
-		expectedResult: string,
-		method: "keyboard" | "button" = "keyboard",
-	) {
+	async testOperatorShortcut(options: {
+		initialText: string;
+		selectionStart: number;
+		selectionEnd: number;
+		operator: string;
+		expectedResult: string;
+		method?: "keyboard" | "button";
+	}) {
+		const { initialText, selectionStart, selectionEnd, operator, expectedResult, method = "keyboard" } = options;
+
 		await this.page.getByRole("textbox").fill(initialText);
 		await this.selectRange(selectionStart, selectionEnd);
 

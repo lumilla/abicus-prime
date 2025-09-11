@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 
 export default [
 	{ files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
-	{ ignores: ["src-tauri/target/", "playwright*", "dist"] },
+	{ ignores: ["src-tauri/target/", "dist"] },
 	{ languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
 	{ languageOptions: { globals: globals.browser } },
 	pluginJs.configs.recommended,
