@@ -327,13 +327,13 @@ test.describe("Terminal Mode", () => {
 
 			// Type an expression
 			await input.fill("5+5");
-			
+
 			// Preview should show the result
 			await expect(page.locator("text=10").first()).toBeVisible();
-			
+
 			// Modify the expression
 			await input.fill("5+5*2");
-			
+
 			// Preview should update to show new result
 			await expect(page.locator("text=15").first()).toBeVisible();
 		});
@@ -345,10 +345,10 @@ test.describe("Terminal Mode", () => {
 			// Type and verify preview appears
 			await input.fill("10*3");
 			await expect(page.locator("text=30").first()).toBeVisible();
-			
+
 			// Clear input
 			await input.fill("");
-			
+
 			// Preview should disappear (check that 30 is not visible in preview area)
 			// Since the preview is positioned above input, we can check it's not there
 			const previewArea = page.locator("form").locator("..").locator("div").first();
@@ -361,7 +361,7 @@ test.describe("Terminal Mode", () => {
 
 			// Type invalid expression
 			await input.fill("5++5");
-			
+
 			// Preview should show error
 			await expect(page.locator("text=Error").first()).toBeVisible();
 		});
@@ -373,10 +373,10 @@ test.describe("Terminal Mode", () => {
 			// First establish ANS value
 			await terminal.submitCalculation("20");
 			await terminal.expectCalculationInHistory("20", "20");
-			
+
 			// Now type expression using ANS
 			await input.fill("ANS + 5");
-			
+
 			// Preview should show the correct result
 			await expect(page.locator("text=25").first()).toBeVisible();
 		});
@@ -389,14 +389,14 @@ test.describe("Terminal Mode", () => {
 			// Test in degrees (default)
 			await input.fill("sin(90)");
 			await expect(page.locator("text=1").first()).toBeVisible();
-			
+
 			// Change to radians
 			await settings.open();
 			await settings.setRadians();
 			await settings.close();
-			
+
 			// Preview should update to radians calculation
-			await input.fill("sin(1.5708)");  // π/2 in radians ≈ 1.5708
+			await input.fill("sin(1.5708)"); // π/2 in radians ≈ 1.5708
 			await expect(page.locator("text=1").first()).toBeVisible();
 		});
 	});

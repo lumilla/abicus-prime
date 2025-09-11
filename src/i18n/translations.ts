@@ -12,7 +12,7 @@ export type TranslationsMap = Record<string, Record<string, string>>;
 
 // Use Vite's glob to discover locale JSON files at build time.
 // The glob below should be tree-shaken by the bundler; in dev it will dynamically import.
-const modules = import.meta.glob("./locales/*.json", { eager: true }) as Record<string, any>;
+const modules = import.meta.glob("./locales/*.json", { eager: true });
 
 // Build translations object and metadata
 export const translations: TranslationsMap = {};
@@ -20,7 +20,7 @@ export const _localeMeta: Record<string, LocaleMeta> = {};
 
 for (const [path, mod] of Object.entries(modules)) {
 	// mod is the parsed JSON
-	const locale = mod.default ?? mod;
+	const locale = (mod as { default?: any; _meta?: LocaleMeta } & Record<string, any>).default ?? mod;
 	const meta: LocaleMeta = locale._meta ?? { code: inferCodeFromPath(path), nameKey: "language.unknown" };
 	const code = meta.code ?? inferCodeFromPath(path);
 	const entries = { ...locale };
@@ -31,7 +31,8 @@ for (const [path, mod] of Object.entries(modules)) {
 }
 
 function inferCodeFromPath(path: string) {
-	const match = path.match(/([a-z]{2})\.json$/i);
+	const regex = /([a-z]{2})\.json$/i;
+	const match = regex.exec(path);
 	return match ? match[1] : "en";
 }
 
@@ -39,11 +40,7 @@ function inferCodeFromPath(path: string) {
 export type LanguageCode = keyof typeof translations;
 
 // Use Finnish as default when available, otherwise first available
-export const DEFAULT_LANGUAGE: LanguageCode =
-	"fi" in translations ? ("fi" as LanguageCode) : (Object.keys(translations)[0] as LanguageCode);
-
-// Translation key type based on default language (if present)
-export type TranslationKey = string; // Keep generic since keys come from JSON
+export const DEFAULT_LANGUAGE: LanguageCode = "fi" in translations ? "fi" : (Object.keys(translations)[0] ?? "en");
 
 // Supported languages: build from discovered locale files to avoid code changes when adding files
 export const supportedLanguages: Record<string, { name: string; code: string; meta?: LocaleMeta }> = {};

@@ -51,7 +51,15 @@ export default function Terminal() {
 		const ansIsZero = memory.ans?.isZero();
 		const indIsZero = memory.ind?.isZero();
 
-		if (((prevAns && !prevAns.isZero()) || (prevInd && !prevInd.isZero())) && ansIsZero && indIsZero) {
+		// Check if previous values existed and were non-zero
+		const hadPreviousAns = prevAns && !prevAns.isZero();
+		const hadPreviousInd = prevInd && !prevInd.isZero();
+		const hadPreviousValues = hadPreviousAns || hadPreviousInd;
+
+		// Check if current values are zero
+		const currentValuesAreZero = ansIsZero && indIsZero;
+
+		if (hadPreviousValues && currentValuesAreZero) {
 			// Real clear detected
 			if (history.length > 0) {
 				clearSharedHistory();
@@ -234,7 +242,6 @@ export default function Terminal() {
 					</div>
 				</div>
 			)}
-
 			{/* Terminal Content */}
 			<div
 				ref={terminalRef}
@@ -247,15 +254,6 @@ export default function Terminal() {
 					...(isTauri ? ["text-black dark:text-white"] : ["text-black dark:text-white"]),
 				]}
 			>
-			{/* Live preview row */}
-			{previewResult && (
-				<div x={["mb-2 mx-1 px-2 py-1 rounded", isTauri ? "text-white/90" : "text-abi-dgrey"]}>
-					<div x={["flex items-center gap-2"]}>
-						<span x={["text-xs text-black/60 dark:text-white/80"]}>↳</span>
-						<span x={["text-sm font-medium"]}>{previewResult}</span>
-					</div>
-				</div>
-			)}
 				{history.map(item => (
 					<div key={item.timestamp} x={["space-y-1"]}>
 						<div x={["flex items-center"]}>
@@ -290,7 +288,6 @@ export default function Terminal() {
 					</div>
 				))}
 			</div>
-
 			{/* Live preview - attached directly to input */}
 			<div
 				x={[
@@ -303,24 +300,13 @@ export default function Terminal() {
 				]}
 			>
 				<div x={["flex items-center gap-2"]}>
-					<span
-						x={[
-							"text-blue-600 dark:text-blue-400",
-							"font-mono text-sm",
-						]}
-					>
-						=
-					</span>
-					<span
-						x={[
-							"text-blue-700 dark:text-blue-300",
-							"font-mono text-sm font-medium",
-						]}
-					>
+					<span x={["text-blue-600 dark:text-blue-400", "font-mono text-sm"]}>=</span>
+					<span x={["text-blue-700 dark:text-blue-300", "font-mono text-sm font-medium"]}>
 						{previewResult ? (previewResult.startsWith("= ") ? previewResult.slice(2) : previewResult) : ""}
 					</span>
 				</div>
-			</div>			{/* Input Area */}
+			</div>{" "}
+			{/* Input Area */}
 			<form onSubmit={handleSubmit}>
 				<div
 					x={[

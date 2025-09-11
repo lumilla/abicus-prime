@@ -84,23 +84,51 @@ test.describe("Input Methods", () => {
 			for (const { keyboard, display } of operators) {
 				test(`shortcut for "${display}" works with keyboard`, async ({ page }) => {
 					const selection = new SelectionHelpers(page);
-					await selection.testOperatorShortcut("5+5", 0, 3, keyboard, `(5+5) ${display} ()`, "keyboard");
+					await selection.testOperatorShortcut({
+						initialText: "5+5",
+						selectionStart: 0,
+						selectionEnd: 3,
+						operator: keyboard,
+						expectedResult: `(5+5) ${display} ()`,
+						method: "keyboard",
+					});
 				});
 
 				test(`shortcut for "${display}" works with on-screen keypad`, async ({ page }) => {
 					const selection = new SelectionHelpers(page);
-					await selection.testOperatorShortcut("5+5", 0, 3, display, `(5+5) ${display} ()`, "button");
+					await selection.testOperatorShortcut({
+						initialText: "5+5",
+						selectionStart: 0,
+						selectionEnd: 3,
+						operator: display,
+						expectedResult: `(5+5) ${display} ()`,
+						method: "button",
+					});
 				});
 			}
 
 			test('shortcut for "^" works with keyboard', async ({ page }) => {
 				const selection = new SelectionHelpers(page);
-				await selection.testOperatorShortcut("5+5", 0, 3, "^", "(5+5) ^ ()", "keyboard");
+				await selection.testOperatorShortcut({
+					initialText: "5+5",
+					selectionStart: 0,
+					selectionEnd: 3,
+					operator: "^",
+					expectedResult: "(5+5) ^ ()",
+					method: "keyboard",
+				});
 			});
 
 			test('shortcut for "^" works with xy button', async ({ page }) => {
 				const selection = new SelectionHelpers(page);
-				await selection.testOperatorShortcut("5+5", 0, 3, "xy", "(5+5) ^ ()", "button");
+				await selection.testOperatorShortcut({
+					initialText: "5+5",
+					selectionStart: 0,
+					selectionEnd: 3,
+					operator: "xy",
+					expectedResult: "(5+5) ^ ()",
+					method: "button",
+				});
 			});
 
 			test('shortcut for "^2" works with x² button', async ({ page }) => {

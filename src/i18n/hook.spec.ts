@@ -1,11 +1,11 @@
-import { translations, supportedLanguages, DEFAULT_LANGUAGE, TranslationKey, LanguageCode } from "./translations";
+import { translations, supportedLanguages, DEFAULT_LANGUAGE, LanguageCode } from "./translations";
 
 // Mock localStorage for testing
 const mockLocalStorage = (() => {
 	let store: Record<string, string> = {};
 
 	return {
-		getItem: (key: string) => store[key] || null,
+		getItem: (key: string) => store[key] ?? null,
 		setItem: (key: string, value: string) => {
 			store[key] = value;
 		},
@@ -19,13 +19,13 @@ const mockLocalStorage = (() => {
 })();
 
 // Helper function to simulate the translation logic from the hook
-function getTranslation(key: TranslationKey, language: LanguageCode): string {
-	return translations[language]?.[key] ?? translations[DEFAULT_LANGUAGE]?.[key] ?? (key as string);
+function getTranslation(key: string, language: LanguageCode): string {
+	return translations[language]?.[key] ?? translations[DEFAULT_LANGUAGE]?.[key] ?? key;
 }
 
 function getStoredLanguage(): LanguageCode {
 	try {
-		const stored = mockLocalStorage.getItem("abicus-language") as LanguageCode;
+		const stored = mockLocalStorage.getItem("abicus-language");
 		if (stored && stored in translations) {
 			return stored;
 		}
@@ -50,19 +50,21 @@ describe("i18n translations", () => {
 
 	describe("translation completeness", () => {
 		test("all languages have the same translation keys", () => {
-			const finnishKeys = Object.keys(translations["fi"] ?? translations[Object.keys(translations)[0] as string] ?? {});
+			const finnishKeys = Object.keys(translations["fi"] ?? translations[Object.keys(translations)[0] || ""] ?? {});
 			const languages = Object.keys(translations);
 
 			for (const lang of languages) {
-				const langKeys = Object.keys(translations[lang as LanguageCode] ?? {});
-				expect(langKeys.sort()).toEqual(finnishKeys.sort());
+				const langKeys = Object.keys(translations[lang] ?? {});
+				const sortedLangKeys = [...langKeys].sort((a, b) => a.localeCompare(b));
+				const sortedFinnishKeys = [...finnishKeys].sort((a, b) => a.localeCompare(b));
+				expect(sortedLangKeys).toEqual(sortedFinnishKeys);
 			}
 		});
 
 		test("no translation values are empty", () => {
 			for (const translationMap of Object.values(translations)) {
 				for (const [key, value] of Object.entries(translationMap ?? {})) {
-					expect((value as string).trim()).not.toBe("");
+					expect(value.trim()).not.toBe("");
 					expect(value).not.toBe(key);
 				}
 			}
@@ -162,7 +164,7 @@ describe("i18n translations", () => {
 		test("all supported languages have valid translation keys for names", () => {
 			for (const [langCode, config] of Object.entries(supportedLanguages)) {
 				expect(config.code).toBe(langCode);
-				const ref = translations["fi"] ?? translations[Object.keys(translations)[0] as string];
+				const ref = translations["fi"] ?? translations[Object.keys(translations)[0] ?? ""];
 				expect(config.name in (ref ?? {})).toBe(true);
 			}
 		});

@@ -249,6 +249,55 @@ function preprocessFunctionPowers(input: string) {
 		return -1;
 	}
 
+	// Helper to process special case for inverse trig functions
+	function processInverseTrigFunction(
+		name: string,
+		exponent: string,
+		expr: string,
+		nameStart: number,
+		argOpen: number,
+		argClose: number,
+	) {
+		const lowerName = name.toLowerCase();
+		const trimmedExp = exponent.trim();
+		if (trimmedExp === "-1" && (lowerName === "sin" || lowerName === "cos" || lowerName === "tan")) {
+			const arcMap: Record<string, string> = { sin: "arcsin", cos: "arccos", tan: "arctan" };
+			const arcName = arcMap[lowerName];
+			const newSub = arcName + expr.slice(argOpen, argClose + 1);
+			return {
+				result: expr.slice(0, nameStart) + newSub + expr.slice(argClose + 1),
+				lastIndex: nameStart + newSub.length,
+				wasProcessed: true,
+			};
+		}
+		return { wasProcessed: false };
+	}
+
+	// Helper to process general function power case
+	function processGeneralFunctionPower(
+		name: string,
+		exponent: string,
+		expr: string,
+		nameStart: number,
+		argOpen: number,
+		argClose: number,
+	) {
+		const origSubEnd = argClose + 1;
+		const exponentTrim = exponent.trim();
+
+		// If the exponent is a single simple number (e.g. 2 or 1.5), we can safely drop the
+		// parentheses so the final expression becomes `f(arg)^2`. For more complex exponents
+		// (like `1+1`) keep the parentheses to preserve grouping.
+		const simpleNumber = /^[-+]?\d+(?:[.,]\d+)?$/.test(exponentTrim);
+		const powSuffix = simpleNumber ? "^" + exponentTrim : "^(" + exponent + ")";
+
+		const newSub = name + expr.slice(argOpen, origSubEnd) + powSuffix;
+		return {
+			result: expr.slice(0, nameStart) + newSub + expr.slice(origSubEnd),
+			lastIndex: nameStart + newSub.length,
+		};
+	}
+
 	// We use exec in a loop, but because we mutate `expr` we must reset lastIndex each iteration.
 	while ((m = funcs.exec(expr)) !== null) {
 		const nameStart = m.index;
@@ -261,7 +310,6 @@ function preprocessFunctionPowers(input: string) {
 
 		// Check for a power annotation of the form ^(...)
 		if (expr[nameEnd] !== "^") {
-			// continue search after this match
 			funcs.lastIndex = nameEnd;
 			continue;
 		}
@@ -274,7 +322,6 @@ function preprocessFunctionPowers(input: string) {
 
 		const expClose = findClosingParen(expr, expOpen);
 		if (expClose === -1) {
-			// malformed, skip
 			funcs.lastIndex = nameEnd + 1;
 			continue;
 		}
@@ -300,36 +347,17 @@ function preprocessFunctionPowers(input: string) {
 		}
 
 		// Special-case: sin^(-1)(x) -> arcsin(x) (and similarly for cos/tan)
-		const lowerName = name.toLowerCase();
-		const trimmedExp = exponent.trim();
-		if (trimmedExp === "-1" && (lowerName === "sin" || lowerName === "cos" || lowerName === "tan")) {
-			const arcMap: Record<string, string> = { sin: "arcsin", cos: "arccos", tan: "arctan" };
-			const arcName = arcMap[lowerName];
-			const newSub = arcName + expr.slice(argOpen, argClose + 1);
-
-			expr = expr.slice(0, nameStart) + newSub + expr.slice(argClose + 1);
-
-			// Continue scanning after the replacement
-			funcs.lastIndex = nameStart + newSub.length;
+		const inverseResult = processInverseTrigFunction(name, exponent, expr, nameStart, argOpen, argClose);
+		if (inverseResult.wasProcessed) {
+			expr = inverseResult.result!;
+			funcs.lastIndex = inverseResult.lastIndex!;
 			continue;
 		}
 
 		// General case: move the ^(exponent) after the function argument: f^(n)(arg) -> f(arg)^n
-		const origSubEnd = argClose + 1;
-		const exponentTrim = exponent.trim();
-
-		// If the exponent is a single simple number (e.g. 2 or 1.5), we can safely drop the
-		// parentheses so the final expression becomes `f(arg)^2`. For more complex exponents
-		// (like `1+1`) keep the parentheses to preserve grouping.
-		const simpleNumber = /^[-+]?\d+(?:[.,]\d+)?$/.test(exponentTrim);
-		const powSuffix = simpleNumber ? "^" + exponentTrim : "^(" + exponent + ")";
-
-		const newSub = name + expr.slice(argOpen, origSubEnd) + powSuffix;
-
-		expr = expr.slice(0, nameStart) + newSub + expr.slice(origSubEnd);
-
-		// Continue scanning after the replacement
-		funcs.lastIndex = nameStart + newSub.length;
+		const generalResult = processGeneralFunctionPower(name, exponent, expr, nameStart, argOpen, argClose);
+		expr = generalResult.result;
+		funcs.lastIndex = generalResult.lastIndex;
 	}
 
 	return expr;

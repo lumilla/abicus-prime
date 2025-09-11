@@ -9,14 +9,12 @@ test.describe("Memory Operations", () => {
 	test.describe("Memory In (Min)", () => {
 		test("memory-in button forces calculation", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
-			const memory = new MemoryHelpers(page);
 
 			await page.getByRole("textbox").fill("5*5");
 			await page.getByRole("button", { name: "Min", exact: true }).click();
 			expect(await calc.getExpression()).toBe("5 ⋅ 5");
 			await expect(calc.getResult()).toHaveText("25");
 		});
-
 		test("memory-in button sets memory", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
 			const memory = new MemoryHelpers(page);

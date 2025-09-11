@@ -6,7 +6,7 @@ const prev = options.vnode;
 
 options.vnode = (vnode: any) => {
 	try {
-		if (vnode && vnode.props && vnode.props.x != null) {
+		if (vnode?.props?.x != null) {
 			const x = vnode.props.x;
 
 			// Compute class string via clsx. Support arrays and primitives.
