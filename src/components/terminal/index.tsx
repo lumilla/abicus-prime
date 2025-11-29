@@ -102,6 +102,11 @@ export default function Terminal() {
 			return;
 		}
 
+		// Prevent submission if preview shows an error
+		if (previewResult === t("terminal.error")) {
+			return;
+		}
+
 		// Calculate directly without using the shared buffer
 		const calculationResult = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
 

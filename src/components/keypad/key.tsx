@@ -18,9 +18,9 @@ export type RawKeyProps<O extends string = never> = Omit<
 export function RawKey({ onClick: propsOnClick, tint = "none", label, className }: RawKeyProps) {
 	const { buffer } = useCalculator();
 
-	function onMouseDown(e: JSX.TargetedMouseEvent<HTMLButtonElement>) {
-		e.preventDefault();
-		buffer.ref.current?.focus();
+	function onMouseDown(_e: JSX.TargetedMouseEvent<HTMLButtonElement>) {
+		// Don't prevent default to allow CSS :active pseudo-class to work
+		buffer.ref.current?.focus(); // seems to not cause issues
 	}
 
 	function onClick() {
@@ -33,9 +33,10 @@ export function RawKey({ onClick: propsOnClick, tint = "none", label, className 
 				"h-9",
 				"rounded-sm border border-abi-dgrey dark:border-abi-dark-dgrey",
 				[
-					"transition-all duration-75",
-					"shadow scale-100",
-					"active:shadow-none active:scale-95",
+					"transition-transform duration-150 ease-out",
+					"scale-100",
+					"hover:scale-105",
+					"active:scale-95",
 					"text-black dark:text-white",
 					match(tint)
 						.with("none", () => "bg-white dark:bg-gray-700 active:bg-slate-100 dark:active:bg-gray-600")
