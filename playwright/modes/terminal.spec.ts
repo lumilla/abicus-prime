@@ -222,20 +222,34 @@ test.describe("Terminal Mode", () => {
 	});
 
 	test.describe("Error Handling", () => {
-		test("invalid expression shows error", async ({ page }) => {
+		test("invalid expression shows error in preview and cannot be submitted", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
+			const input = terminal.getInput();
 
-			await terminal.submitCalculation("5++5");
-			await expect(page.locator("text=5++5").first()).toBeVisible();
+			await input.fill("5++5");
+			// Preview should show error
 			await expect(page.locator("text=Error").first()).toBeVisible();
+
+			// Try to submit
+			await input.press("Enter");
+
+			// The error expression should NOT appear in history
+			await expect(page.locator("span:has-text('▶') + span").first()).not.toBeVisible();
 		});
 
-		test("division by zero shows error", async ({ page }) => {
+		test("division by zero shows error in preview and cannot be submitted", async ({ page }) => {
 			const terminal = new TerminalHelpers(page);
+			const input = terminal.getInput();
 
-			await terminal.submitCalculation("5/0");
-			await expect(page.locator("text=5/0").first()).toBeVisible();
+			await input.fill("5/0");
+			// Preview should show error
 			await expect(page.locator("text=Error").first()).toBeVisible();
+
+			// Try to submit
+			await input.press("Enter");
+
+			// The division by zero expression should NOT appear in history
+			await expect(page.locator("text=5/0")).not.toBeVisible();
 		});
 
 		test("empty input does nothing", async ({ page }) => {
@@ -245,6 +259,13 @@ test.describe("Terminal Mode", () => {
 			await input.press("Enter");
 			// No history should be created
 			await expect(page.locator("span:has-text('▶') + span").first()).not.toBeVisible();
+		});
+
+		test("valid expressions can be submitted normally", async ({ page }) => {
+			const terminal = new TerminalHelpers(page);
+
+			await terminal.submitCalculation("5+5");
+			await terminal.expectCalculationInHistory("5+5", "10");
 		});
 	});
 
