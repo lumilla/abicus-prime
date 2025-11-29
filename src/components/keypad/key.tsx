@@ -18,7 +18,7 @@ export type RawKeyProps<O extends string = never> = Omit<
 export function RawKey({ onClick: propsOnClick, tint = "none", label, className }: RawKeyProps) {
 	const { buffer } = useCalculator();
 
-	function onMouseDown(e: JSX.TargetedMouseEvent<HTMLButtonElement>) {
+	function onMouseDown(_e: JSX.TargetedMouseEvent<HTMLButtonElement>) {
 		// Don't prevent default to allow CSS :active pseudo-class to work
 		buffer.ref.current?.focus(); // seems to not cause issues
 	}
