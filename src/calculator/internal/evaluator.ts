@@ -173,11 +173,17 @@ export default function evaluate(tokens: Token[], ans: Decimal, ind: Decimal, an
 		return (
 			match(token)
 				.with(undefined, () => err("UNEXPECTED_EOF" as const))
-				.with({ type: "oper", name: "+" }, () => evalExpr(2).map(right => left.value.add(right)))
-				.with({ type: "oper", name: "-" }, () => evalExpr(2).map(right => left.value.sub(right)))
-				.with({ type: "oper", name: "*" }, () => evalExpr(3).map(right => left.value.mul(right)))
-				.with({ type: "oper", name: "/" }, () => evalExpr(3).map(right => left.value.div(right)))
-				.with({ type: "oper", name: "^" }, () => evalExpr(3).map(right => left.value.pow(right)))
+			.with({ type: "oper", name: "+" }, () => evalExpr(2).map(right => left.value.add(right)))
+			.with({ type: "oper", name: "-" }, () => evalExpr(2).map(right => left.value.sub(right)))
+			.with({ type: "oper", name: "*" }, () => evalExpr(3).map(right => left.value.mul(right)))
+			.with({ type: "oper", name: "/" }, () => evalExpr(3).map(right => left.value.div(right)))
+			.with({ type: "oper", name: "^" }, () =>
+				evalExpr(3).andThen(right => {
+					// 0^0 is undefined
+					if (left.value.isZero() && right.isZero()) return err("NOT_A_NUMBER" as const);
+					return ok(left.value.pow(right));
+				})
+			)
 				.with({ type: "fact" }, () => {
 					if (left.value.isNeg() || !left.value.isInteger()) {
 						return err("NOT_A_NUMBER" as const);
