@@ -5,6 +5,7 @@ import * as keyLabel from "./special-key-labels";
 
 export default function Keypad() {
 	const calculator = useCalculator();
+	const { decimalSeparator } = calculator;
 
 	function onClickMemIn() {
 		if (!calculator.buffer.isDirty && !calculator.buffer.isErr) {
@@ -70,7 +71,7 @@ export default function Keypad() {
 
 					{/* Row #7 */}
 					<BasicKey input="0" className="col-span-2" />
-					<BasicKey input="," />
+					<BasicKey input={decimalSeparator} />
 					<OperatorKey tint="grey" symbol="/" />
 					<BasicKey input="π" />
 

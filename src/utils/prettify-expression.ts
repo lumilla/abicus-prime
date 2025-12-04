@@ -1,20 +1,22 @@
 import { match, P } from "ts-pattern";
 import { tokenise, Token } from "#/calculator";
+import type { DecimalSeparator } from "#/state/types";
 
 /**
  * Adds thousand separators (spaces) to a number string
  * @param numStr - The number string to format
+ * @param decimalSeparator - The decimal separator to use
  * @returns The formatted number string with thousand separators
  */
-function addThousandSeparators(numStr: string): string {
+function addThousandSeparators(numStr: string, decimalSeparator: DecimalSeparator = ","): string {
 	// Split into integer and decimal parts
-	const [integerPart, decimalPart] = numStr.split(",");
+	const [integerPart, decimalPart] = numStr.split(decimalSeparator);
 
 	// Add spaces every 3 digits from the right in the integer part
 	const formattedInteger = integerPart?.replace(/\B(?=(\d{3})+(?!\d))/g, " ") ?? "";
 
 	// Return with decimal part if it exists
-	return decimalPart ? `${formattedInteger},${decimalPart}` : formattedInteger;
+	return decimalPart ? `${formattedInteger}${decimalSeparator}${decimalPart}` : formattedInteger;
 }
 
 /**
@@ -23,7 +25,7 @@ function addThousandSeparators(numStr: string): string {
  *
  * Returns `undefined` if the input expression cannot be tokenised.
  */
-export default function prettify(expression: string | Token[]) {
+export default function prettify(expression: string | Token[], decimalSeparator: DecimalSeparator = ",") {
 	let tokens: Token[];
 	if (typeof expression === "string") {
 		const result = tokenise(expression);
@@ -34,7 +36,7 @@ export default function prettify(expression: string | Token[]) {
 		tokens = expression;
 	}
 
-	const pretty = Array.from(prettiedCharacters(tokens));
+	const pretty = Array.from(prettiedCharacters(tokens, decimalSeparator));
 
 	return pretty.join("");
 }
@@ -47,7 +49,7 @@ export default function prettify(expression: string | Token[]) {
  * meaning that the concatted output of the generator will be an expression that's strictly equivalent
  * to the input token array.
  */
-function* prettiedCharacters(tokens: Token[]) {
+function* prettiedCharacters(tokens: Token[], decimalSeparator: DecimalSeparator = ",") {
 	const { any, not, union } = P;
 
 	for (let i = 0; i < tokens.length; i++) {
@@ -56,7 +58,7 @@ function* prettiedCharacters(tokens: Token[]) {
 		const rhs = tokens[i + 1] ?? null;
 
 		const formattedToken = match(cur)
-			.with({ type: "litr" }, token => addThousandSeparators(token.value.toFixed().replace(".", ",")))
+			.with({ type: "litr" }, token => addThousandSeparators(token.value.toFixed().replace(".", decimalSeparator), decimalSeparator))
 			.with({ type: "lbrk" }, () => "(")
 			.with({ type: "rbrk" }, () => ")")
 			.with({ type: "semi" }, () => ";")

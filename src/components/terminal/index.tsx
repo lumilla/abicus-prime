@@ -9,7 +9,7 @@ import { parseFunctionDefinition } from "#/state/user-functions";
 const APP_VERSION = __APP_VERSION__;
 
 export default function Terminal() {
-	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory, userFunctions, tryDefineFunction, clearFunctions, windowSize } = useCalculator();
+	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory, userFunctions, tryDefineFunction, clearFunctions, windowSize, decimalSeparator } = useCalculator();
 	const { t } = useTranslation();
 	const history = sharedHistory;
 	const [historyIndex, setHistoryIndex] = useState(-1);
@@ -103,11 +103,11 @@ export default function Terminal() {
 		// Calculate preview safely without mutating memory
 		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
 		if (result.isOk()) {
-			setPreviewResult("= " + formatResult(result.value));
+			setPreviewResult("= " + formatResult(result.value, decimalSeparator));
 		} else {
 			setPreviewResult("info:" + t("terminal.error"));
 		}
-	}, [buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, t]);
+	}, [buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, t, decimalSeparator]);
 
 	const handleSubmit = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
 		e.preventDefault();
@@ -196,7 +196,7 @@ export default function Terminal() {
 		let resultString: string;
 		if (calculationResult.isOk()) {
 			const result = calculationResult.value;
-			resultString = "= " + formatResult(result);
+			resultString = "= " + formatResult(result, decimalSeparator);
 			// Update the answer memory
 			memory.setAns(result);
 		} else {

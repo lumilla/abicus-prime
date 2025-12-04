@@ -7,11 +7,13 @@ import { formatResult } from "#/utils/format-result";
 import useBuffer, { BufferHandle } from "./internal-buffer";
 import useMemory, { MemoryHandle } from "./internal-memory";
 import { UserFunction, UserFunctionsMap, parseFunctionDefinition } from "./user-functions";
+import type { DecimalSeparator } from "./types";
 
 type InterfaceMode = "pocket" | "terminal";
 type Language = "fi" | "sv" | "en" | "se";
 type FontSize = number;
 type WindowSize = "small" | "medium" | "large";
+export type { DecimalSeparator } from "./types";
 
 // Font size limits (in points)
 const FONT_SIZE_MIN = 10;
@@ -85,6 +87,11 @@ type CalculatorContext = {
 	windowSize: WindowSize;
 	/** Set window size */
 	setWindowSize: (size: WindowSize) => void;
+
+	/** Decimal separator preference */
+	decimalSeparator: DecimalSeparator;
+	/** Set decimal separator */
+	setDecimalSeparator: (separator: DecimalSeparator) => void;
 
 	/** Current language */
 	language: Language;
@@ -173,6 +180,13 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		if (typeof window === "undefined") return "medium";
 		const saved = localStorage.getItem("abicus-window-size");
 		return (saved as WindowSize) || "medium";
+	});
+
+	// Initialize decimal separator with saved preference or default to comma
+	const [decimalSeparator, setDecimalSeparatorState] = useState<DecimalSeparator>(() => {
+		if (typeof window === "undefined") return ",";
+		const saved = localStorage.getItem("abicus-decimal-separator");
+		return (saved as DecimalSeparator) || ",";
 	});
 
 	const [showSettings, setShowSettings] = useState(false);
@@ -328,7 +342,7 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 	}
 
 	function crunch(saveToInd = false) {
-		buffer.clean();
+		buffer.clean(decimalSeparator);
 
 		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
 		if (result.isErr()) {
@@ -343,7 +357,7 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 
 		// Add to shared history when in pocket mode
 		if (interfaceMode === "pocket" && buffer.value.trim()) {
-			const resultString = "= " + formatResult(value);
+			const resultString = "= " + formatResult(value, decimalSeparator);
 			pushSharedHistory({
 				expression: buffer.value,
 				result: resultString,
@@ -410,6 +424,12 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 				setWindowSize: (size: WindowSize) => {
 					setWindowSizeState(size);
 					localStorage.setItem("abicus-window-size", size);
+				},
+
+				decimalSeparator,
+				setDecimalSeparator: (separator: DecimalSeparator) => {
+					setDecimalSeparatorState(separator);
+					localStorage.setItem("abicus-decimal-separator", separator);
 				},
 
 				language,

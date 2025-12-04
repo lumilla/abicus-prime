@@ -32,6 +32,7 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 		language: "unknown",
 		fontSize: "unknown",
 		windowSize: "unknown",
+		decimalSeparator: "unknown",
 	};
 
 	try {
@@ -41,6 +42,7 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 		const angleUnit = localStorage.getItem("abicus-angle-unit");
 		const fontSize = localStorage.getItem("abicus-font-size");
 		const windowSize = localStorage.getItem("abicus-window-size");
+		const decimalSeparator = localStorage.getItem("abicus-decimal-separator");
 		calculatorSettings = {
 			interfaceMode: interfaceMode || "pocket",
 			angleUnit: angleUnit || "deg",
@@ -48,6 +50,7 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 			language: language || "fi",
 			fontSize: fontSize || "16",
 			windowSize: windowSize || "medium",
+			decimalSeparator: decimalSeparator || ",",
 		};
 	} catch (_e) {
 		// Fallback values already set
@@ -106,6 +109,7 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 				<span>Language: {calculatorSettings.language}</span>
 				<span>Font Size: {calculatorSettings.fontSize}pt</span>
 				<span>Window Size: {calculatorSettings.windowSize}</span>
+				<span>Decimal Separator: {calculatorSettings.decimalSeparator}</span>
 				<span>--- Message ---</span>
 				<span>{message}</span>
 				<span>--- Last Values ---</span>

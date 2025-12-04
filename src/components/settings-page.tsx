@@ -26,6 +26,8 @@ export default function SettingsPage() {
 		setFontSize,
 		windowSize,
 		setWindowSize,
+		decimalSeparator,
+		setDecimalSeparator,
 		clearAll,
 		clearTerminalHistory,
 		clearFunctions,
@@ -269,7 +271,7 @@ export default function SettingsPage() {
 										const lastExpression = sharedHistory[sharedHistory.length - 1]?.expression;
 										if (lastExpression) {
 											buffer.set(lastExpression);
-											buffer.clean(); // Mark as clean so result shows
+											buffer.clean(decimalSeparator); // Mark as clean so result shows
 										}
 									}
 								}}
@@ -452,6 +454,53 @@ export default function SettingsPage() {
 								{t(`settings.windowSize.${size}`)}
 							</button>
 						))}
+					</div>
+				</div>
+
+				{/* Decimal Separator Toggle */}
+				<div>
+					<h3 x={["text-sm font-medium text-black dark:text-white mb-1.5"]}>{t("settings.decimalSeparator")}</h3>
+					<div
+						x={[
+							"flex",
+							"border border-abi-dgrey dark:border-abi-dark-dgrey",
+							"divide-x divide-abi-dgrey dark:divide-abi-dark-dgrey",
+							"rounded-md overflow-hidden",
+							"w-full",
+						]}
+					>
+						<button
+							onClick={() => setDecimalSeparator(",")}
+							disabled={decimalSeparator === ","}
+							x={[
+								"settings-btn",
+								"flex-1 px-3 py-1.5",
+								"text-sm",
+								"transition-all",
+								"disabled:cursor-default",
+								decimalSeparator === ","
+									? "bg-abi-lgrey dark:bg-abi-dark-lgrey text-black dark:text-white"
+									: "bg-white dark:bg-gray-800 text-abi-dgrey dark:text-abi-dark-dgrey hover:text-black dark:hover:text-white",
+							]}
+						>
+							{t("settings.decimalSeparator.comma")}
+						</button>
+						<button
+							onClick={() => setDecimalSeparator(".")}
+							disabled={decimalSeparator === "."}
+							x={[
+								"settings-btn",
+								"flex-1 px-3 py-1.5",
+								"text-sm",
+								"transition-all",
+								"disabled:cursor-default",
+								decimalSeparator === "."
+									? "bg-abi-lgrey dark:bg-abi-dark-lgrey text-black dark:text-white"
+									: "bg-white dark:bg-gray-800 text-abi-dgrey dark:text-abi-dark-dgrey hover:text-black dark:hover:text-white",
+							]}
+						>
+							{t("settings.decimalSeparator.dot")}
+						</button>
 					</div>
 				</div>
 
