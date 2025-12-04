@@ -8,18 +8,10 @@ import { parseFunctionDefinition } from "#/state/user-functions";
 
 const APP_VERSION = __APP_VERSION__;
 
-type HistoryItem = {
-	expression: string;
-	result: string;
-	timestamp: number;
-	isFunction?: boolean; // Mark function definitions for special styling
-	isNumericResult?: boolean; // True if the result is a numeric value that can be reused
-};
-
 export default function Terminal() {
-	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory, userFunctions, tryDefineFunction, clearFunctions } = useCalculator();
+	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory, userFunctions, tryDefineFunction, clearFunctions, windowSize } = useCalculator();
 	const { t } = useTranslation();
-	const history = sharedHistory as HistoryItem[];
+	const history = sharedHistory;
 	const [historyIndex, setHistoryIndex] = useState(-1);
 	const [tempInput, setTempInput] = useState("");
 	const [previewResult, setPreviewResult] = useState<string | null>(null);
@@ -314,15 +306,13 @@ export default function Terminal() {
 				isTauri
 					? ["w-full", "h-full", "bg-transparent", "flex flex-col", "font-mono"]
 					: [
-							"w-96",
-							"h-[456px]",
 							"bg-white dark:bg-gray-800",
-							"rounded-md",
-							"border border-abi-dgrey dark:border-abi-dark-dgrey",
+							...(windowSize !== "large" ? ["rounded-md", "border border-abi-dgrey dark:border-abi-dark-dgrey"] : []),
 							"flex flex-col",
 							"font-mono",
 						]
 			}
+			style={!isTauri ? { width: "var(--app-width)", height: "var(--app-height)" } : undefined}
 		>
 			{/* Header */}
 			{!isTauri && (

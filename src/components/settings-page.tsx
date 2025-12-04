@@ -3,6 +3,13 @@ import { useTranslation, supportedLanguages, LanguageCode } from "#/i18n";
 import { useState, useEffect, useRef } from "preact/hooks";
 
 const APP_VERSION = __APP_VERSION__;
+const GIT_HASH = __GIT_HASH__;
+
+// Font size options
+const FONT_SIZES = ["small", "medium", "large"] as const;
+
+// Window size options (Tauri only)
+const WINDOW_SIZES = ["small", "medium", "large"] as const;
 
 export default function SettingsPage() {
 	const {
@@ -13,8 +20,14 @@ export default function SettingsPage() {
 		setInterfaceMode,
 		isDarkMode,
 		setDarkMode,
+		fontSize,
+		setFontSize,
+		windowSize,
+		setWindowSize,
 		clearAll,
 		clearTerminalHistory,
+		clearFunctions,
+		userFunctions,
 		closeSettings,
 		buffer,
 		sharedHistory,
@@ -86,19 +99,17 @@ export default function SettingsPage() {
 				isTauri
 					? ["w-full", "h-full", "bg-transparent", "flex flex-col"]
 					: [
-							"w-96",
-							"h-[456px]",
 							"bg-white dark:bg-gray-800",
-							"rounded-md",
-							"border border-abi-dgrey dark:border-abi-dark-dgrey",
+							...(windowSize !== "large" ? ["rounded-md", "border border-abi-dgrey dark:border-abi-dark-dgrey"] : []),
 							"flex flex-col",
 						]
 			}
+			style={!isTauri ? { width: "var(--app-width)", height: "var(--app-height)" } : undefined}
 		>
 			{/* Header */}
 			{!isTauri && (
 				<div x={["flex items-center justify-between", "p-3", "border-b border-abi-lgrey dark:border-abi-dark-lgrey"]}>
-					<h2 x={["text-base font-semibold text-black dark:text-white"]}>{t("settings.title")}</h2>
+					<h2 x={["text-base font-semibold text-+ dark:text-white"]}>{t("settings.title")}</h2>
 					<button
 						onClick={closeSettings}
 						x={[
@@ -115,80 +126,80 @@ export default function SettingsPage() {
 			)}
 
 			{/* Content */}
-			<div x={["flex-1", ...(isTauri ? ["px-6 py-4"] : ["p-3"]), "space-y-3", ...(isTauri ? ["text-white"] : [])]}>
-				{/* Language Selection - Dropdown */}
-				<div>
-					<h3 x={["text-sm font-medium text-black dark:text-white mb-1.5"]}>{t("settings.language")}</h3>
-					<div x={["relative"]} ref={dropdownRef}>
-						<button
-							onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-							x={[
-								"w-full px-3 py-1.5",
-								"bg-white dark:bg-gray-800",
-								"border border-abi-dgrey dark:border-abi-dark-dgrey",
-								"rounded-md",
-								"text-left",
-								"text-sm text-black dark:text-white",
-								"hover:bg-gray-50 dark:hover:bg-gray-700",
-								"transition-colors",
-								"flex items-center justify-between",
-							]}
-						>
-							<span>
-								{(() => {
-									const entry = supportedLanguages[currentLanguage];
-									return entry ? t(entry.name) : currentLanguage;
-								})()}
-							</span>
-							<span
+			<div x={["flex-1", "overflow-y-auto", "custom-scrollbar", ...(isTauri ? ["px-6 py-4"] : ["p-3"]), ...(isTauri ? ["text-white"] : []), ...(windowSize === "large" ? ["flex justify-center"] : [])]}>
+				<div x={["space-y-3", "w-full"]} style={windowSize === "large" ? { maxWidth: "480px" } : undefined}>
+					{/* Language Selection */}
+					<div>
+						<h3 x={["text-sm font-medium text-black dark:text-white mb-1.5"]}>{t("settings.language")}</h3>
+						<div x={["relative"]} ref={dropdownRef}>
+							<button
+								onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
 								x={[
-									"text-abi-dgrey dark:text-abi-dark-dgrey transition-transform",
-									isLanguageDropdownOpen ? "rotate-180" : "",
-								]}
-							>
-								▼
-							</span>
-						</button>
-
-						{isLanguageDropdownOpen && (
-							<div
-								x={[
-									"absolute top-full left-0 right-0 mt-1",
+									"settings-btn",
+									"w-full px-3 py-1.5",
 									"bg-white dark:bg-gray-800",
 									"border border-abi-dgrey dark:border-abi-dark-dgrey",
 									"rounded-md",
-									"shadow-lg",
-									"z-10",
+									"text-left",
+									"text-sm text-black dark:text-white",
+									"hover:bg-gray-50 dark:hover:bg-gray-700",
+									"transition-colors",
+									"flex items-center justify-between",
 								]}
 							>
-								{Object.entries(supportedLanguages).map(([code, { name }]) => (
-									<button
-										key={code}
-										onClick={() => {
-											setLanguage(code as LanguageCode);
-											setIsLanguageDropdownOpen(false);
-										}}
-										x={[
-											"w-full px-3 py-1.5",
-											"text-left text-sm",
-											"hover:bg-gray-50 dark:hover:bg-gray-700",
-											"transition-colors",
-											"first:rounded-t-md last:rounded-b-md",
-											currentLanguage === code
-												? "bg-abi-lgrey dark:bg-abi-dark-lgrey text-black dark:text-white font-medium"
-												: "text-abi-dgrey dark:text-abi-dark-dgrey hover:text-black dark:hover:text-white",
-										]}
-									>
-										{t(name)}
-									</button>
-								))}
-							</div>
-						)}
-					</div>
-				</div>
+								<span>
+									{(() => {
+										const entry = supportedLanguages[currentLanguage];
+										return entry ? t(entry.name) : currentLanguage;
+									})()}
+								</span>
+								<span
+									x={[
+										"text-abi-dgrey dark:text-abi-dark-dgrey transition-transform",
+										isLanguageDropdownOpen ? "rotate-180" : "",
+									]}
+								>
+									▼
+								</span>
+							</button>
 
-				{/* Angle Unit & Interface Mode */}
-				<div x={["space-y-3"]}>
+							{isLanguageDropdownOpen && (
+								<div
+									x={[
+										"absolute top-full left-0 right-0 mt-1",
+										"bg-white dark:bg-gray-800",
+										"border border-abi-dgrey dark:border-abi-dark-dgrey",
+										"rounded-md",
+										"shadow-lg",
+										"z-10",
+									]}
+								>
+									{Object.entries(supportedLanguages).map(([code, { name }]) => (
+										<button
+											key={code}
+											onClick={() => {
+												setLanguage(code as LanguageCode);
+												setIsLanguageDropdownOpen(false);
+											}}
+											x={[
+												"w-full px-3 py-1.5",
+												"text-left text-sm",
+												"hover:bg-gray-50 dark:hover:bg-gray-700",
+												"transition-colors",
+												"first:rounded-t-md last:rounded-b-md",
+												currentLanguage === code
+													? "bg-abi-lgrey dark:bg-abi-dark-lgrey text-black dark:text-white font-medium"
+													: "text-abi-dgrey dark:text-abi-dark-dgrey hover:text-black dark:hover:text-white",
+											]}
+										>
+											{t(name)}
+										</button>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
+
 					{/* Angle Unit Toggle */}
 					<div>
 						<h3 x={["text-sm font-medium text-black dark:text-white mb-1.5"]}>{t("settings.angleUnit")}</h3>
@@ -205,6 +216,7 @@ export default function SettingsPage() {
 								onClick={radsOn}
 								disabled={angleUnit === "rad"}
 								x={[
+									"settings-btn",
 									"flex-1 px-3 py-1.5",
 									"text-sm",
 									"transition-all",
@@ -220,6 +232,7 @@ export default function SettingsPage() {
 								onClick={degsOn}
 								disabled={angleUnit === "deg"}
 								x={[
+									"settings-btn",
 									"flex-1 px-3 py-1.5",
 									"text-sm",
 									"transition-all",
@@ -260,6 +273,7 @@ export default function SettingsPage() {
 								}}
 								disabled={interfaceMode === "pocket"}
 								x={[
+									"settings-btn",
 									"flex-1 px-3 py-1.5",
 									"text-sm",
 									"transition-all",
@@ -275,6 +289,7 @@ export default function SettingsPage() {
 								onClick={() => setInterfaceMode("terminal")}
 								disabled={interfaceMode === "terminal"}
 								x={[
+									"settings-btn",
 									"flex-1 px-3 py-1.5",
 									"text-sm",
 									"transition-all",
@@ -288,10 +303,9 @@ export default function SettingsPage() {
 							</button>
 						</div>
 					</div>
-				</div>
 
-				{/* Theme Selection */}
-				<div>
+					{/* Theme Selection */}
+					<div>
 					<h3 x={["text-sm font-medium text-black dark:text-white mb-1.5"]}>{t("settings.theme")}</h3>
 					<div
 						x={[
@@ -306,6 +320,7 @@ export default function SettingsPage() {
 							onClick={() => setDarkMode(false)}
 							disabled={!isDarkMode}
 							x={[
+								"settings-btn",
 								"flex-1 px-3 py-1.5",
 								"text-sm",
 								"transition-all",
@@ -321,6 +336,7 @@ export default function SettingsPage() {
 							onClick={() => setDarkMode(true)}
 							disabled={isDarkMode}
 							x={[
+								"settings-btn",
 								"flex-1 px-3 py-1.5",
 								"text-sm",
 								"transition-all",
@@ -335,6 +351,74 @@ export default function SettingsPage() {
 					</div>
 				</div>
 
+				{/* Font Size Selection */}
+				<div>
+					<h3 x={["text-sm font-medium text-black dark:text-white mb-1.5"]}>{t("settings.fontSize")}</h3>
+					<div
+						x={[
+							"flex",
+							"border border-abi-dgrey dark:border-abi-dark-dgrey",
+							"divide-x divide-abi-dgrey dark:divide-abi-dark-dgrey",
+							"rounded-md overflow-hidden",
+							"w-full",
+						]}
+					>
+						{FONT_SIZES.map(size => (
+							<button
+								key={size}
+								onClick={() => setFontSize(size)}
+								disabled={fontSize === size}
+								x={[
+									"settings-btn",
+									"flex-1 px-3 py-1.5",
+									"text-sm",
+									"transition-all",
+									"disabled:cursor-default",
+									fontSize === size
+										? "bg-abi-lgrey dark:bg-abi-dark-lgrey text-black dark:text-white"
+										: "bg-white dark:bg-gray-800 text-abi-dgrey dark:text-abi-dark-dgrey hover:text-black dark:hover:text-white",
+								]}
+							>
+								{t(`settings.fontSize.${size}`)}
+							</button>
+						))}
+					</div>
+				</div>
+
+				{/* Window Size Selection */}
+				<div>
+					<h3 x={["text-sm font-medium text-black dark:text-white mb-1.5"]}>{t("settings.windowSize")}</h3>
+					<div
+						x={[
+							"flex",
+							"border border-abi-dgrey dark:border-abi-dark-dgrey",
+							"divide-x divide-abi-dgrey dark:divide-abi-dark-dgrey",
+							"rounded-md overflow-hidden",
+							"w-full",
+						]}
+					>
+						{WINDOW_SIZES.map(size => (
+							<button
+								key={size}
+								onClick={() => setWindowSize(size)}
+								disabled={windowSize === size}
+								x={[
+									"settings-btn",
+									"flex-1 px-3 py-1.5",
+									"text-sm",
+									"transition-all",
+									"disabled:cursor-default",
+									windowSize === size
+										? "bg-abi-lgrey dark:bg-abi-dark-lgrey text-black dark:text-white"
+										: "bg-white dark:bg-gray-800 text-abi-dgrey dark:text-abi-dark-dgrey hover:text-black dark:hover:text-white",
+								]}
+							>
+								{t(`settings.windowSize.${size}`)}
+							</button>
+						))}
+					</div>
+				</div>
+
 				{/* Clear Button */}
 				<div>
 					<button
@@ -343,6 +427,7 @@ export default function SettingsPage() {
 							clearTerminalHistory();
 						}}
 						x={[
+							"settings-btn",
 							"w-full",
 							"px-3 py-1.5",
 							"bg-red-50 dark:bg-red-900",
@@ -358,6 +443,30 @@ export default function SettingsPage() {
 					</button>
 				</div>
 
+				{/* Clear Functions Button */}
+				<div>
+					<button
+						onClick={() => clearFunctions()}
+						disabled={userFunctions.size === 0}
+						x={[
+							"settings-btn",
+							"w-full",
+							"px-3 py-1.5",
+							"bg-blue-50 dark:bg-blue-900",
+							"text-blue-600 dark:text-blue-300",
+							"border border-blue-200 dark:border-blue-700",
+							"rounded-md",
+							"text-sm",
+							"transition-colors",
+							userFunctions.size > 0
+								? "hover:bg-blue-100 dark:hover:bg-blue-800"
+								: "opacity-50 cursor-not-allowed",
+						]}
+					>
+						{t("settings.clearFunctions")} ({userFunctions.size})
+					</button>
+				</div>
+
 				{/* Version Information */}
 				<div x={["pt-1.5", "border-t border-abi-lgrey dark:border-abi-dark-lgrey"]}>
 					<p x={["text-sm text-abi-dgrey dark:text-abi-dark-dgrey"]}>{t("settings.version")}</p>
@@ -366,8 +475,9 @@ export default function SettingsPage() {
 						onClick={handleVersionClick}
 						onMouseDown={e => e.stopPropagation()}
 					>
-						v{APP_VERSION}
+						v{APP_VERSION} ({GIT_HASH.slice(0, 7)})
 					</p>
+				</div>
 				</div>
 			</div>
 		</div>

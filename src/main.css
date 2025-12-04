@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* AFAIK the lint errors here are false positives */
+@custom-variant dark {
+	&:where(.dark, .dark *);
+}
 
 @theme {
 	--color-abi-blue-3: #EDF6FE;
@@ -67,4 +70,101 @@ html:not([data-tauri]) #root {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+/* Custom scrollbar styling */
+.custom-scrollbar {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-abi-dgrey) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+	width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+	background: transparent;
+	border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background-color: var(--color-abi-dgrey);
+	border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background-color: var(--color-abi-blue-1);
+}
+
+/* Dark mode scrollbar */
+.dark .custom-scrollbar {
+	scrollbar-color: var(--color-abi-dark-dgrey) transparent;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+	background-color: var(--color-abi-dark-dgrey);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background-color: var(--color-abi-dark-blue-1);
+}
+
+/* Font size scaling - applied via data attribute */
+:root {
+	--font-scale: 1;
+	--app-width: 384px;
+	--app-height: 456px;
+}
+
+/* Window size presets - applied to html element */
+html[data-window-size="small"] {
+	--app-width: 384px;
+	--app-height: 456px;
+}
+
+html[data-window-size="medium"] {
+	--app-width: 480px;
+	--app-height: 580px;
+}
+
+html[data-window-size="large"] {
+	--app-width: 100vw;
+	--app-height: 100vh;
+}
+
+/* Font size presets - override text sizes directly */
+/* Small font size */
+[data-font-size="small"] .text-xs { font-size: 0.65rem !important; }
+[data-font-size="small"] .text-sm { font-size: 0.75rem !important; }
+[data-font-size="small"] .text-base { font-size: 0.875rem !important; }
+[data-font-size="small"] .text-lg { font-size: 1rem !important; }
+[data-font-size="small"] .text-xl { font-size: 1.1rem !important; }
+[data-font-size="small"] .text-2xl { font-size: 1.25rem !important; }
+
+/* Medium font size (default - no override needed) */
+
+/* Large font size */
+[data-font-size="large"] .text-xs { font-size: 0.85rem !important; }
+[data-font-size="large"] .text-sm { font-size: 1rem !important; }
+[data-font-size="large"] .text-base { font-size: 1.15rem !important; }
+[data-font-size="large"] .text-lg { font-size: 1.3rem !important; }
+[data-font-size="large"] .text-xl { font-size: 1.45rem !important; }
+[data-font-size="large"] .text-2xl { font-size: 1.75rem !important; }
+
+/* Fullscreen (large window) mode - scale up pocket calculator buttons */
+html[data-window-size="large"] .keypad-btn {
+	height: 3.5rem !important;
+	font-size: 1.25rem !important;
+}
+
+html[data-window-size="large"] .screen-input {
+	height: 8rem !important;
+	font-size: 1.5rem !important;
+}
+
+/* Settings page scaling in fullscreen - give buttons breathing room */
+html[data-window-size="large"] .settings-btn {
+	padding-top: 0.75rem !important;
+	padding-bottom: 0.75rem !important;
+	font-size: 1rem !important;
 }

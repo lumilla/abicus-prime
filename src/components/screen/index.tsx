@@ -7,10 +7,11 @@ export default function Screen() {
 	return (
 		<>
 			<div
+				style={{ width: "var(--app-width)", maxWidth: "480px" }}
 				x={[
 					"relative",
 					"h-24",
-					"w-96",
+					"screen-input",
 					"text-xl",
 					"rounded-md overflow-hidden",
 					"border border-abi-dgrey dark:border-abi-dark-dgrey",

@@ -52,7 +52,7 @@ const prefetchComponents = (currentMode: string, isInTauri: boolean) => {
 };
 
 export default function App() {
-	const { showSettings, interfaceMode, openSettings } = useCalculator();
+	const { showSettings, interfaceMode, openSettings, windowSize } = useCalculator();
 	// Make Tauri detection synchronous to avoid layout flicker
 	const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -128,11 +128,11 @@ export default function App() {
 		);
 	}
 
-	// Browser layout - centered with max width (original layout restored)
+	// Browser layout - centered with dynamic size from CSS variable
 	return (
 		<>
-			<div x={["max-w-sm", "flex justify-center"]}>
-				<div x={["relative", "w-full"]}>
+			<div x={["flex justify-center", "transition-all duration-300"]}>
+				<div x={["relative"]}>
 					{/* Settings Button */}
 					{!showSettings && (
 						<button
@@ -178,7 +178,7 @@ export default function App() {
 						) : (
 							<div key="calculator" className="fade-in-slow">
 								<Suspense fallback={<div x={["opacity-0"]} />}>
-									<div x={["flex flex-col gap-4"]}>
+									<div x={["flex flex-col gap-4", ...(windowSize === "large" ? ["items-center", "w-full"] : [])]}>
 										<Screen />
 										<Keypad />
 									</div>

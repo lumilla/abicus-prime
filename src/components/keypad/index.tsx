@@ -25,7 +25,7 @@ export default function Keypad() {
 	return (
 		<>
 			<div>
-				<div x={["inline-grid grid-cols-5 gap-2", "w-96"]}>
+				<div style={{ width: "var(--app-width)", maxWidth: "480px" }} x={["inline-grid grid-cols-5 gap-2"]}>
 					{/* Row #1 */}
 					<RawKey tint="d-blue" onClick={onClickMemIn} label={keyLabel.memIn} />
 					<BasicKey tint="d-blue" input="M" label={keyLabel.memOut} />

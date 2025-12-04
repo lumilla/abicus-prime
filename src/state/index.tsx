@@ -10,8 +10,16 @@ import { UserFunction, UserFunctionsMap, parseFunctionDefinition } from "./user-
 
 type InterfaceMode = "pocket" | "terminal";
 type Language = "fi" | "sv" | "en";
+type FontSize = "small" | "medium" | "large";
+type WindowSize = "small" | "medium" | "large";
 
-export type TerminalHistoryItem = { expression: string; result: string; timestamp: number };
+export type TerminalHistoryItem = {
+	expression: string;
+	result: string;
+	timestamp: number;
+	isFunction?: boolean; // Mark function definitions for special styling
+	isNumericResult?: boolean; // True if the result is a numeric value that can be reused
+};
 export type { UserFunction } from "./user-functions";
 
 type CalculatorContext = {
@@ -62,6 +70,16 @@ type CalculatorContext = {
 	isDarkMode: boolean;
 	/** Set dark mode to a specific value */
 	setDarkMode: (value: boolean) => void;
+
+	/** Font size preference */
+	fontSize: FontSize;
+	/** Set font size */
+	setFontSize: (size: FontSize) => void;
+
+	/** Window size preference (Tauri only) */
+	windowSize: WindowSize;
+	/** Set window size */
+	setWindowSize: (size: WindowSize) => void;
 
 	/** Current language */
 	language: Language;
@@ -132,6 +150,20 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
 	});
 
+	// Initialize font size with saved preference or default to medium
+	const [fontSize, setFontSizeState] = useState<FontSize>(() => {
+		if (typeof window === "undefined") return "medium";
+		const saved = localStorage.getItem("abicus-font-size");
+		return (saved as FontSize) || "medium";
+	});
+
+	// Initialize window size with saved preference or default to medium
+	const [windowSize, setWindowSizeState] = useState<WindowSize>(() => {
+		if (typeof window === "undefined") return "medium";
+		const saved = localStorage.getItem("abicus-window-size");
+		return (saved as WindowSize) || "medium";
+	});
+
 	const [showSettings, setShowSettings] = useState(false);
 	const [terminalHistory, setTerminalHistory] = useState<{ expression: string; result: string; timestamp: number }[]>(
 		[],
@@ -188,6 +220,41 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		mediaQuery.addEventListener("change", handleChange);
 		return () => mediaQuery.removeEventListener("change", handleChange);
 	}, []); // Run once on mount
+
+	// Apply font size via data attribute (does not change root font-size)
+	useEffect(() => {
+		document.documentElement.setAttribute("data-font-size", fontSize);
+	}, [fontSize]);
+
+	// Apply window size - via Tauri API for desktop, CSS variable for browser
+	useEffect(() => {
+		// Always set the data attribute for CSS
+		document.documentElement.setAttribute("data-window-size", windowSize);
+
+		// Also apply via Tauri API for desktop app
+		const applyTauriWindowSize = async () => {
+			if (typeof window === "undefined" || !("__TAURI_INTERNALS__" in window)) return;
+
+			try {
+				const { getCurrentWindow } = await import("@tauri-apps/api/window");
+				const { LogicalSize } = await import("@tauri-apps/api/dpi");
+				const currentWindow = getCurrentWindow();
+
+				const windowSizeMap: Record<WindowSize, { width: number; height: number }> = {
+					small: { width: 340, height: 520 },
+					medium: { width: 420, height: 620 },
+					large: { width: 520, height: 760 },
+				};
+
+				const size = windowSizeMap[windowSize];
+				await currentWindow.setSize(new LogicalSize(size.width, size.height));
+			} catch {
+				// Ignore errors if Tauri API is not available
+			}
+		};
+
+		applyTauriWindowSize();
+	}, [windowSize]);
 
 	function clearAll() {
 		buffer.empty();
@@ -317,6 +384,18 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 					setIsDarkMode(value);
 					// Save preference to localStorage when manually set
 					localStorage.setItem("abicus-dark-mode", JSON.stringify(value));
+				},
+
+				fontSize,
+				setFontSize: (size: FontSize) => {
+					setFontSizeState(size);
+					localStorage.setItem("abicus-font-size", size);
+				},
+
+				windowSize,
+				setWindowSize: (size: WindowSize) => {
+					setWindowSizeState(size);
+					localStorage.setItem("abicus-window-size", size);
 				},
 
 				language,

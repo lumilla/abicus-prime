@@ -31,6 +31,7 @@ export function RawKey({ onClick: propsOnClick, tint = "none", label, className 
 		<button
 			x={[
 				"h-9",
+				"keypad-btn",
 				"rounded-sm border border-abi-dgrey dark:border-abi-dark-dgrey",
 				[
 					"transition-transform duration-150 ease-out",
