@@ -9,7 +9,19 @@ import { parseFunctionDefinition } from "#/state/user-functions";
 const APP_VERSION = __APP_VERSION__;
 
 export default function Terminal() {
-	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory, userFunctions, tryDefineFunction, clearFunctions, windowSize, decimalSeparator } = useCalculator();
+	const {
+		memory,
+		angleUnit,
+		buffer,
+		sharedHistory,
+		pushSharedHistory,
+		clearSharedHistory,
+		userFunctions,
+		tryDefineFunction,
+		clearFunctions,
+		windowSize,
+		decimalSeparator,
+	} = useCalculator();
 	const { t } = useTranslation();
 	const history = sharedHistory;
 	const [historyIndex, setHistoryIndex] = useState(-1);
@@ -397,19 +409,19 @@ export default function Terminal() {
 							...(isTauri ? ["px-6"] : []),
 						]}
 					>
-					<div x={["flex items-center gap-2"]}>
-						{/* Only show "=" for numeric results, not for info messages */}
-						{!previewResult.startsWith("info:") && (
-							<span x={["text-blue-600 dark:text-blue-400", "font-mono text-sm"]}>=</span>
-						)}
-						<span x={["text-blue-700 dark:text-blue-300", "font-mono text-sm font-medium"]}>
-							{previewResult.startsWith("info:")
-								? previewResult.slice(5)
-								: previewResult.startsWith("= ")
-									? previewResult.slice(2)
-									: previewResult}
-						</span>
-					</div>
+						<div x={["flex items-center gap-2"]}>
+							{/* Only show "=" for numeric results, not for info messages */}
+							{!previewResult.startsWith("info:") && (
+								<span x={["text-blue-600 dark:text-blue-400", "font-mono text-sm"]}>=</span>
+							)}
+							<span x={["text-blue-700 dark:text-blue-300", "font-mono text-sm font-medium"]}>
+								{previewResult.startsWith("info:")
+									? previewResult.slice(5)
+									: previewResult.startsWith("= ")
+										? previewResult.slice(2)
+										: previewResult}
+							</span>
+						</div>
 					</div>
 				</div>
 			)}

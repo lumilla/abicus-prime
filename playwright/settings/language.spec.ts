@@ -69,12 +69,9 @@ test.describe("Language Settings", () => {
 			await expect(page.getByRole("button", { name: "Finnish", exact: true })).toBeVisible();
 			await page.getByRole("button", { name: "Finnish", exact: true }).click();
 
-			const storedValue = await page.evaluate(() =>
-				localStorage.getItem("abicus-language")
-			);
+			const storedValue = await page.evaluate(() => localStorage.getItem("abicus-language"));
 			expect(storedValue).toBe("fi");
 		});
-		
 	});
 
 	test.describe("Translated UI Elements", () => {

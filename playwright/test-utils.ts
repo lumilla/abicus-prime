@@ -90,11 +90,7 @@ export class CalculatorHelpers {
 		await this.calculate(expression);
 		const rawDisplay = await this.getExpression();
 		const normalize = (s: string) =>
-			s
-				.replaceAll("−", "-")
-				.replaceAll("⋅", "*")
-				.replaceAll("\u00A0", " ")
-				.replace(/\s+/g, "");
+			s.replaceAll("−", "-").replaceAll("⋅", "*").replaceAll("\u00A0", " ").replace(/\s+/g, "");
 		expect(normalize(rawDisplay)).toBe(normalize(expectedDisplay || expression));
 		await expect(this.getResult()).toHaveText(expectedResult);
 	}

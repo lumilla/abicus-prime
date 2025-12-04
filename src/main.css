@@ -5,11 +5,11 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-	--color-abi-blue-3: #EDF6FE;
-	--color-abi-blue-2: #CCDFFD;
+	--color-abi-blue-3: #edf6fe;
+	--color-abi-blue-2: #ccdffd;
 	--color-abi-blue-1: #365488;
-	--color-abi-lgrey: #E5EAF1;
-	--color-abi-dgrey: #C5C5C5;
+	--color-abi-lgrey: #e5eaf1;
+	--color-abi-dgrey: #c5c5c5;
 	/* Dark mode variants */
 	--color-abi-dark-blue-3: #1a2332;
 	--color-abi-dark-blue-2: #2d3748;
@@ -176,7 +176,9 @@ html[data-window-size="large"] body {
 	bottom: 0;
 	background-color: var(--color-abi-lgrey);
 	border-radius: 0.375rem;
-	transition: left 0.5s ease-in-out, width 0.5s ease-in-out;
+	transition:
+		left 0.5s ease-in-out,
+		width 0.5s ease-in-out;
 	z-index: 0;
 }
 
@@ -200,7 +202,9 @@ html[data-window-size="large"] body {
 
 /* Window size transition for browser mode */
 .window-animated {
-	transition: width 0.5s ease-in-out, height 0.5s ease-in-out;
+	transition:
+		width 0.5s ease-in-out,
+		height 0.5s ease-in-out;
 }
 
 /* Font size - uses CSS custom property set by JS */
@@ -211,12 +215,24 @@ html[data-window-size="large"] body {
 }
 
 /* Apply scaling to text sizes based on the custom font size */
-.text-xs { font-size: calc(0.75rem * var(--font-scale)) !important; }
-.text-sm { font-size: calc(0.875rem * var(--font-scale)) !important; }
-.text-base { font-size: calc(1rem * var(--font-scale)) !important; }
-.text-lg { font-size: calc(1.125rem * var(--font-scale)) !important; }
-.text-xl { font-size: calc(1.25rem * var(--font-scale)) !important; }
-.text-2xl { font-size: calc(1.5rem * var(--font-scale)) !important; }
+.text-xs {
+	font-size: calc(0.75rem * var(--font-scale)) !important;
+}
+.text-sm {
+	font-size: calc(0.875rem * var(--font-scale)) !important;
+}
+.text-base {
+	font-size: calc(1rem * var(--font-scale)) !important;
+}
+.text-lg {
+	font-size: calc(1.125rem * var(--font-scale)) !important;
+}
+.text-xl {
+	font-size: calc(1.25rem * var(--font-scale)) !important;
+}
+.text-2xl {
+	font-size: calc(1.5rem * var(--font-scale)) !important;
+}
 
 /* Fullscreen (large window) mode - scale up pocket calculator buttons */
 html[data-window-size="large"] .keypad-btn {

@@ -58,7 +58,9 @@ function* prettiedCharacters(tokens: Token[], decimalSeparator: DecimalSeparator
 		const rhs = tokens[i + 1] ?? null;
 
 		const formattedToken = match(cur)
-			.with({ type: "litr" }, token => addThousandSeparators(token.value.toFixed().replace(".", decimalSeparator), decimalSeparator))
+			.with({ type: "litr" }, token =>
+				addThousandSeparators(token.value.toFixed().replace(".", decimalSeparator), decimalSeparator),
+			)
 			.with({ type: "lbrk" }, () => "(")
 			.with({ type: "rbrk" }, () => ")")
 			.with({ type: "semi" }, () => ";")

@@ -15,9 +15,26 @@ export type UserFunctionsMap = Map<string, UserFunction>;
 
 /** Reserved names that cannot be used for user functions */
 const RESERVED_NAMES = new Set([
-	"sin", "cos", "tan", "asin", "acos", "atan",
-	"arcsin", "arccos", "arctan", "log", "lg", "ln",
-	"sqrt", "root", "fact", "ans", "mem", "ind", "pi", "e",
+	"sin",
+	"cos",
+	"tan",
+	"asin",
+	"acos",
+	"atan",
+	"arcsin",
+	"arccos",
+	"arctan",
+	"log",
+	"lg",
+	"ln",
+	"sqrt",
+	"root",
+	"fact",
+	"ans",
+	"mem",
+	"ind",
+	"pi",
+	"e",
 ]);
 
 /**
@@ -34,7 +51,10 @@ export function parseFunctionDefinition(expression: string): UserFunction | null
 
 	// Use semicolon as parameter separator
 	const params = paramsStr
-		? paramsStr.split(";").map(p => p.trim()).filter(p => p.length > 0)
+		? paramsStr
+				.split(";")
+				.map(p => p.trim())
+				.filter(p => p.length > 0)
 		: [];
 
 	// Validate params: valid identifiers and no duplicates

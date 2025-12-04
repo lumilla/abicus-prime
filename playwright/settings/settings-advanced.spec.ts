@@ -32,9 +32,7 @@ test.describe.skip("Advanced Settings (Deprecated)", () => {
 			await page.getByRole("button", { name: ".", exact: true }).click();
 			await settings.close();
 
-			const storedValue = await page.evaluate(() =>
-				localStorage.getItem("abicus-decimal-separator")
-			);
+			const storedValue = await page.evaluate(() => localStorage.getItem("abicus-decimal-separator"));
 			expect(storedValue).toBe(".");
 		});
 
@@ -64,9 +62,7 @@ test.describe.skip("Advanced Settings (Deprecated)", () => {
 			await settings.close();
 
 			// Verify dark mode is applied (check for dark class on html element)
-			const htmlClass = await page.evaluate(() =>
-				document.documentElement.classList.contains("dark")
-			);
+			const htmlClass = await page.evaluate(() => document.documentElement.classList.contains("dark"));
 			expect(htmlClass).toBe(true);
 		});
 
@@ -84,9 +80,7 @@ test.describe.skip("Advanced Settings (Deprecated)", () => {
 			await settings.close();
 
 			// Verify dark mode is removed
-			const htmlClass = await page.evaluate(() =>
-				document.documentElement.classList.contains("dark")
-			);
+			const htmlClass = await page.evaluate(() => document.documentElement.classList.contains("dark"));
 			expect(htmlClass).toBe(false);
 		});
 
@@ -97,9 +91,7 @@ test.describe.skip("Advanced Settings (Deprecated)", () => {
 			await page.getByRole("button", { name: "Dark", exact: true }).click();
 			await settings.close();
 
-			const storedValue = await page.evaluate(() =>
-				localStorage.getItem("abicus-dark-mode")
-			);
+			const storedValue = await page.evaluate(() => localStorage.getItem("abicus-dark-mode"));
 			expect(storedValue).toBe("true");
 		});
 
@@ -112,9 +104,7 @@ test.describe.skip("Advanced Settings (Deprecated)", () => {
 
 			await page.reload();
 
-			const htmlClass = await page.evaluate(() =>
-				document.documentElement.classList.contains("dark")
-			);
+			const htmlClass = await page.evaluate(() => document.documentElement.classList.contains("dark"));
 			expect(htmlClass).toBe(true);
 		});
 	});
@@ -126,9 +116,7 @@ test.describe.skip("Advanced Settings (Deprecated)", () => {
 			await settings.open();
 
 			// Get initial font size
-			const initialFontSize = await page.evaluate(() =>
-				localStorage.getItem("abicus-font-size") || "16"
-			);
+			const initialFontSize = await page.evaluate(() => localStorage.getItem("abicus-font-size") || "16");
 
 			// Find and click the increase button (+ button for font size)
 			const increaseButton = page.locator("button", { hasText: "+" }).first();
@@ -136,9 +124,7 @@ test.describe.skip("Advanced Settings (Deprecated)", () => {
 
 			await settings.close();
 
-			const newFontSize = await page.evaluate(() =>
-				localStorage.getItem("abicus-font-size")
-			);
+			const newFontSize = await page.evaluate(() => localStorage.getItem("abicus-font-size"));
 			expect(parseInt(newFontSize || "16")).toBeGreaterThan(parseInt(initialFontSize));
 		});
 
@@ -152,9 +138,7 @@ test.describe.skip("Advanced Settings (Deprecated)", () => {
 			await increaseButton.click();
 			await increaseButton.click();
 
-			const increasedFontSize = await page.evaluate(() =>
-				localStorage.getItem("abicus-font-size") || "16"
-			);
+			const increasedFontSize = await page.evaluate(() => localStorage.getItem("abicus-font-size") || "16");
 
 			// Now decrease
 			const decreaseButton = page.locator("button", { hasText: "−" }).first();
@@ -162,9 +146,7 @@ test.describe.skip("Advanced Settings (Deprecated)", () => {
 
 			await settings.close();
 
-			const newFontSize = await page.evaluate(() =>
-				localStorage.getItem("abicus-font-size")
-			);
+			const newFontSize = await page.evaluate(() => localStorage.getItem("abicus-font-size"));
 			expect(parseInt(newFontSize || "16")).toBeLessThan(parseInt(increasedFontSize));
 		});
 	});
