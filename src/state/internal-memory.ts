@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { useState, useEffect } from "preact/hooks";
+import { useState } from "preact/hooks";
 
 const STORAGE_KEY_IND = "abicus-memory-ind";
 const STORAGE_KEY_ANS = "abicus-memory-ans";
