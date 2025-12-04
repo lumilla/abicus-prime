@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
+import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import * as child from "child_process";
 import { readFileSync } from "fs";
@@ -10,7 +11,7 @@ const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf-8"));
 const appVersion = packageJson.version;
 
 export default defineConfig({
-	plugins: [tsconfigPaths(), preact()],
+	plugins: [tsconfigPaths(), tailwindcss(), preact()],
 
 	resolve: {
 		alias: {

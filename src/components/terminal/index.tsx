@@ -4,19 +4,26 @@ import { useState, useEffect, useRef } from "preact/hooks";
 import { JSX } from "preact";
 import { calculate } from "#/calculator";
 import { useTranslation } from "#/i18n/hook";
+import { parseFunctionDefinition } from "#/state/user-functions";
 
 const APP_VERSION = __APP_VERSION__;
 
-type HistoryItem = {
-	expression: string;
-	result: string;
-	timestamp: number;
-};
-
 export default function Terminal() {
-	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory } = useCalculator();
+	const {
+		memory,
+		angleUnit,
+		buffer,
+		sharedHistory,
+		pushSharedHistory,
+		clearSharedHistory,
+		userFunctions,
+		tryDefineFunction,
+		clearFunctions,
+		windowSize,
+		decimalSeparator,
+	} = useCalculator();
 	const { t } = useTranslation();
-	const history = sharedHistory as HistoryItem[];
+	const history = sharedHistory;
 	const [historyIndex, setHistoryIndex] = useState(-1);
 	const [tempInput, setTempInput] = useState("");
 	const [previewResult, setPreviewResult] = useState<string | null>(null);
@@ -36,7 +43,10 @@ export default function Terminal() {
 	// Auto-scroll to bottom when history changes
 	useEffect(() => {
 		if (terminalRef.current) {
-			terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+			terminalRef.current.scrollTo({
+				top: terminalRef.current.scrollHeight,
+				behavior: "smooth",
+			});
 		}
 	}, [history]);
 
@@ -78,14 +88,38 @@ export default function Terminal() {
 			return;
 		}
 
-		// Calculate preview safely without mutating memory
-		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
-		if (result.isOk()) {
-			setPreviewResult("= " + formatResult(result.value));
-		} else {
-			setPreviewResult(t("terminal.error"));
+		// Check if it's a function definition - no "=" prefix for non-numeric output
+		const funcDef = parseFunctionDefinition(buffer.value);
+		if (funcDef) {
+			const paramsStr = funcDef.params.join(", ");
+			setPreviewResult("info:" + t("terminal.functionDefined", { name: funcDef.name, params: paramsStr }));
+			return;
 		}
-	}, [buffer.value, memory.ans, memory.ind, angleUnit, t]);
+
+		// Check for special commands - mark as info (non-numeric)
+		const trimmed = buffer.value.trim().toLowerCase();
+		if (trimmed === "clear" || trimmed === "cls") {
+			setPreviewResult("info:" + t("terminal.clearHistory"));
+			return;
+		}
+		if (trimmed === "functions" || trimmed === "funcs" || trimmed === "fn") {
+			const count = userFunctions.size;
+			setPreviewResult("info:" + (count > 0 ? t("terminal.functionsCount", { count }) : t("terminal.noFunctions")));
+			return;
+		}
+		if (trimmed === "clearfn" || trimmed === "clearfunctions") {
+			setPreviewResult("info:" + t("terminal.clearFunctions"));
+			return;
+		}
+
+		// Calculate preview safely without mutating memory
+		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
+		if (result.isOk()) {
+			setPreviewResult("= " + formatResult(result.value, decimalSeparator));
+		} else {
+			setPreviewResult("info:" + t("terminal.error"));
+		}
+	}, [buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, t, decimalSeparator]);
 
 	const handleSubmit = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
 		e.preventDefault();
@@ -102,18 +136,79 @@ export default function Terminal() {
 			return;
 		}
 
+		// List defined functions
+		if (trimmedInput === "functions" || trimmedInput === "funcs" || trimmedInput === "fn") {
+			let resultString: string;
+			if (userFunctions.size === 0) {
+				resultString = t("terminal.noFunctions");
+			} else {
+				const funcList = Array.from(userFunctions.values())
+					.map(f => `${f.name}(${f.params.join(", ")}) = ${f.body}`)
+					.join("\n  ");
+				resultString = `${t("terminal.definedFunctions")}\n  ${funcList}`;
+			}
+
+			pushSharedHistory({
+				expression: buffer.value,
+				result: resultString,
+				timestamp: Date.now(),
+				isNumericResult: false,
+			});
+
+			buffer.empty();
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+
+		// Clear all functions
+		if (trimmedInput === "clearfn" || trimmedInput === "clearfunctions") {
+			const count = userFunctions.size;
+			clearFunctions();
+
+			pushSharedHistory({
+				expression: buffer.value,
+				result: t("terminal.functionsCleared", { count }),
+				timestamp: Date.now(),
+				isNumericResult: false,
+			});
+
+			buffer.empty();
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+
+		// Check if it's a function definition
+		const funcDef = tryDefineFunction(buffer.value);
+		if (funcDef) {
+			const paramsStr = funcDef.params.length > 0 ? `(${funcDef.params.join(", ")})` : "()";
+			pushSharedHistory({
+				expression: buffer.value,
+				result: t("terminal.functionSaved", { name: funcDef.name, params: paramsStr }),
+				timestamp: Date.now(),
+				isNumericResult: false,
+			});
+
+			buffer.empty();
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+
 		// Prevent submission if preview shows an error
-		if (previewResult === t("terminal.error")) {
+		const errorMessage = t("terminal.error");
+		if (previewResult?.includes(errorMessage)) {
 			return;
 		}
 
 		// Calculate directly without using the shared buffer
-		const calculationResult = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
+		const calculationResult = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
 
 		let resultString: string;
 		if (calculationResult.isOk()) {
 			const result = calculationResult.value;
-			resultString = "= " + formatResult(result);
+			resultString = "= " + formatResult(result, decimalSeparator);
 			// Update the answer memory
 			memory.setAns(result);
 		} else {
@@ -124,6 +219,7 @@ export default function Terminal() {
 			expression: buffer.value,
 			result: resultString,
 			timestamp: Date.now(),
+			isNumericResult: calculationResult.isOk(),
 		});
 
 		buffer.empty();
@@ -205,7 +301,11 @@ export default function Terminal() {
 		}
 	};
 
-	const handleDoubleClickResult = (result: string) => {
+	const handleDoubleClickResult = (result: string, isNumericResult?: boolean) => {
+		// Only allow double-click copy for numeric results
+		if (isNumericResult === false) {
+			return;
+		}
 		// Remove the "= " prefix if it exists, and put the result in input
 		const cleanResult = result.startsWith("= ") ? result.slice(2) : result;
 		buffer.set(cleanResult);
@@ -218,19 +318,18 @@ export default function Terminal() {
 
 	return (
 		<div
+			className={!isTauri ? "window-animated" : undefined}
 			x={
 				isTauri
 					? ["w-full", "h-full", "bg-transparent", "flex flex-col", "font-mono"]
 					: [
-							"w-96",
-							"h-[456px]",
 							"bg-white dark:bg-gray-800",
-							"rounded-md",
-							"border border-abi-dgrey dark:border-abi-dark-dgrey",
+							...(windowSize !== "large" ? ["rounded-md", "border border-abi-dgrey dark:border-abi-dark-dgrey"] : []),
 							"flex flex-col",
 							"font-mono",
 						]
 			}
+			style={!isTauri ? { width: "var(--app-width)", height: "var(--app-height)" } : undefined}
 		>
 			{/* Header */}
 			{!isTauri && (
@@ -253,6 +352,7 @@ export default function Terminal() {
 				x={[
 					"flex-1",
 					"overflow-y-auto",
+					"custom-scrollbar",
 					...(isTauri ? ["px-6 py-2"] : ["px-4 py-2"]),
 					"text-sm",
 					"space-y-1",
@@ -284,8 +384,12 @@ export default function Terminal() {
 							]}
 						>
 							<span
-								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
-								onDblClick={() => handleDoubleClickResult(item.result)}
+								x={[
+									...(item.isNumericResult !== false
+										? ["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]
+										: ["px-1 -mx-1"]),
+								]}
+								onDblClick={() => handleDoubleClickResult(item.result, item.isNumericResult)}
 							>
 								{item.result}
 							</span>
@@ -294,23 +398,33 @@ export default function Terminal() {
 				))}
 			</div>
 			{/* Live preview - attached directly to input */}
-			<div
-				x={[
-					"transition-opacity duration-700 ease-in-out",
-					previewResult ? "opacity-100" : "opacity-0",
-					"bg-blue-500/10 dark:bg-blue-400/10",
-					"border-t border-b border-blue-400/40 dark:border-blue-300/30",
-					"px-4 py-3",
-					...(isTauri ? ["px-6"] : []),
-				]}
-			>
-				<div x={["flex items-center gap-2"]}>
-					<span x={["text-blue-600 dark:text-blue-400", "font-mono text-sm"]}>=</span>
-					<span x={["text-blue-700 dark:text-blue-300", "font-mono text-sm font-medium"]}>
-						{previewResult ? (previewResult.startsWith("= ") ? previewResult.slice(2) : previewResult) : ""}
-					</span>
+			{previewResult && (
+				<div x={["overflow-hidden"]}>
+					<div
+						className="preview-animate"
+						x={[
+							"bg-blue-500/10 dark:bg-blue-400/10",
+							"border-t border-b border-blue-400/40 dark:border-blue-300/30",
+							"px-4 py-3",
+							...(isTauri ? ["px-6"] : []),
+						]}
+					>
+						<div x={["flex items-center gap-2"]}>
+							{/* Only show "=" for numeric results, not for info messages */}
+							{!previewResult.startsWith("info:") && (
+								<span x={["text-blue-600 dark:text-blue-400", "font-mono text-sm"]}>=</span>
+							)}
+							<span x={["text-blue-700 dark:text-blue-300", "font-mono text-sm font-medium"]}>
+								{previewResult.startsWith("info:")
+									? previewResult.slice(5)
+									: previewResult.startsWith("= ")
+										? previewResult.slice(2)
+										: previewResult}
+							</span>
+						</div>
+					</div>
 				</div>
-			</div>{" "}
+			)}
 			{/* Input Area */}
 			<form onSubmit={handleSubmit}>
 				<div

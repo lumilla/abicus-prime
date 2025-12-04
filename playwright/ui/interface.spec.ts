@@ -108,6 +108,24 @@ test.describe("Calculator Interface", () => {
 				expect(await settings.isRadiansSelected()).toBe(true);
 				expect(await settings.isDegreesSelected()).toBe(false);
 			});
+
+			test("angle unit persists in localStorage across page reloads", async ({ page }) => {
+				const settings = new SettingsHelpers(page);
+
+				// Switch to radians
+				await settings.open();
+				await settings.setRadians();
+				await settings.close();
+
+				// Verify localStorage
+				const storedValue = await page.evaluate(() => localStorage.getItem("abicus-angle-unit"));
+				expect(storedValue).toBe("rad");
+
+				// Reload and check
+				await page.reload();
+				await settings.open();
+				expect(await settings.isRadiansSelected()).toBe(true);
+			});
 		});
 
 		test.describe("Interface Mode Settings", () => {
@@ -151,6 +169,24 @@ test.describe("Calculator Interface", () => {
 				await settings.open();
 				await expect(page.getByRole("button", { name: "Terminal", exact: true })).toBeDisabled();
 				await expect(page.getByRole("button", { name: "Pocket", exact: true })).not.toBeDisabled();
+			});
+
+			test("interface mode persists in localStorage across page reloads", async ({ page }) => {
+				const settings = new SettingsHelpers(page);
+
+				// Switch to terminal mode
+				await settings.open();
+				await settings.setTerminalMode();
+				await settings.close();
+
+				// Verify localStorage
+				const storedValue = await page.evaluate(() => localStorage.getItem("abicus-interface-mode"));
+				expect(storedValue).toBe("terminal");
+
+				// Reload and check
+				await page.reload();
+				await settings.open();
+				await expect(page.getByRole("button", { name: "Terminal", exact: true })).toBeDisabled();
 			});
 		});
 	});

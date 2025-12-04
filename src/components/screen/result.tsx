@@ -2,11 +2,11 @@ import { useCalculator } from "#/state";
 import { formatResult } from "#/utils/format-result";
 
 export default function Result() {
-	const { buffer, memory } = useCalculator();
+	const { buffer, memory, decimalSeparator } = useCalculator();
 
 	// Show output when there's no error, buffer is clean, and buffer has content
 	const shouldShowOutput = !buffer.isErr && !buffer.isDirty && buffer.value.trim() !== "";
-	const formattedOutput = formatResult(memory.ans);
+	const formattedOutput = formatResult(memory.ans, decimalSeparator);
 
 	return (
 		<div

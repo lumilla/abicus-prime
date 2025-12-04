@@ -1,6 +1,7 @@
 import { useRef, useState } from "preact/hooks";
 
 import prettify from "#/utils/prettify-expression";
+import type { DecimalSeparator } from "./types";
 
 export type BufferHandle = ReturnType<typeof useBuffer>;
 export default function useBuffer() {
@@ -23,8 +24,8 @@ export default function useBuffer() {
 		return l !== r;
 	}
 
-	function clean() {
-		setBuffer(buffer => prettify(buffer) ?? buffer);
+	function clean(decimalSeparator: DecimalSeparator = ",") {
+		setBuffer(buffer => prettify(buffer, decimalSeparator) ?? buffer);
 		setDirty(false);
 		setErr(false);
 	}

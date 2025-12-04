@@ -5,6 +5,7 @@ import * as keyLabel from "./special-key-labels";
 
 export default function Keypad() {
 	const calculator = useCalculator();
+	const { decimalSeparator } = calculator;
 
 	function onClickMemIn() {
 		if (!calculator.buffer.isDirty && !calculator.buffer.isErr) {
@@ -25,7 +26,11 @@ export default function Keypad() {
 	return (
 		<>
 			<div>
-				<div x={["inline-grid grid-cols-5 gap-2", "w-96"]}>
+				<div
+					className="window-animated"
+					style={{ width: "var(--app-width)", maxWidth: "480px" }}
+					x={["inline-grid grid-cols-5 gap-2"]}
+				>
 					{/* Row #1 */}
 					<RawKey tint="d-blue" onClick={onClickMemIn} label={keyLabel.memIn} />
 					<BasicKey tint="d-blue" input="M" label={keyLabel.memOut} />
@@ -70,7 +75,7 @@ export default function Keypad() {
 
 					{/* Row #7 */}
 					<BasicKey input="0" className="col-span-2" />
-					<BasicKey input="," />
+					<BasicKey input={decimalSeparator} />
 					<OperatorKey tint="grey" symbol="/" />
 					<BasicKey input="π" />
 

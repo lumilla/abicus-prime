@@ -6,11 +6,28 @@ import { formatResult } from "#/utils/format-result";
 
 import useBuffer, { BufferHandle } from "./internal-buffer";
 import useMemory, { MemoryHandle } from "./internal-memory";
+import { UserFunction, UserFunctionsMap, parseFunctionDefinition } from "./user-functions";
+import type { DecimalSeparator } from "./types";
 
 type InterfaceMode = "pocket" | "terminal";
-type Language = "fi" | "sv" | "en";
+type Language = "fi" | "sv" | "en" | "se";
+type FontSize = number;
+type WindowSize = "small" | "medium" | "large";
+export type { DecimalSeparator } from "./types";
 
-export type TerminalHistoryItem = { expression: string; result: string; timestamp: number };
+// Font size limits (in points)
+const FONT_SIZE_MIN = 10;
+const FONT_SIZE_MAX = 32;
+const FONT_SIZE_DEFAULT = 16;
+
+export type TerminalHistoryItem = {
+	expression: string;
+	result: string;
+	timestamp: number;
+	isFunction?: boolean; // Mark function definitions for special styling
+	isNumericResult?: boolean; // True if the result is a numeric value that can be reused
+};
+export type { UserFunction } from "./user-functions";
 
 type CalculatorContext = {
 	/** Handle to the calculator's input buffer */
@@ -33,6 +50,17 @@ type CalculatorContext = {
 	/** Clear terminal history (legacy - keeping for compatibility) */
 	clearTerminalHistory(): void;
 
+	/** User-defined functions */
+	userFunctions: UserFunctionsMap;
+	/** Define a new user function */
+	defineFunction(func: UserFunction): void;
+	/** Remove a user function by name */
+	removeFunction(name: string): void;
+	/** Clear all user-defined functions */
+	clearFunctions(): void;
+	/** Try to parse and define a function from an expression. Returns the function if defined, null otherwise */
+	tryDefineFunction(expression: string): UserFunction | null;
+
 	/** Unit to use in trigonometric functions */
 	angleUnit: AngleUnit;
 	/** Switch to using radians */
@@ -49,6 +77,21 @@ type CalculatorContext = {
 	isDarkMode: boolean;
 	/** Set dark mode to a specific value */
 	setDarkMode: (value: boolean) => void;
+
+	/** Font size preference */
+	fontSize: FontSize;
+	/** Set font size */
+	setFontSize: (size: FontSize) => void;
+
+	/** Window size preference (Tauri only) */
+	windowSize: WindowSize;
+	/** Set window size */
+	setWindowSize: (size: WindowSize) => void;
+
+	/** Decimal separator preference */
+	decimalSeparator: DecimalSeparator;
+	/** Set decimal separator */
+	setDecimalSeparator: (separator: DecimalSeparator) => void;
 
 	/** Current language */
 	language: Language;
@@ -88,8 +131,16 @@ export function useCalculator() {
 }
 
 export default function CalculatorProvider({ children }: { children: ComponentChildren }) {
-	const [angleUnit, setAngleUnit] = useState<AngleUnit>("deg");
-	const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("pocket");
+	const [angleUnit, setAngleUnit] = useState<AngleUnit>(() => {
+		if (typeof window === "undefined") return "deg";
+		const saved = localStorage.getItem("abicus-angle-unit");
+		return (saved as AngleUnit) || "deg";
+	});
+	const [interfaceMode, setInterfaceModeState] = useState<InterfaceMode>(() => {
+		if (typeof window === "undefined") return "pocket";
+		const saved = localStorage.getItem("abicus-interface-mode");
+		return (saved as InterfaceMode) || "pocket";
+	});
 
 	// Initialize language with saved preference or default to Finnish
 	const [language, setLanguageState] = useState<Language>(() => {
@@ -111,13 +162,64 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
 	});
 
+	// Initialize font size with saved preference or default to 16pt
+	const [fontSize, setFontSizeState] = useState<FontSize>(() => {
+		if (typeof window === "undefined") return FONT_SIZE_DEFAULT;
+		const saved = localStorage.getItem("abicus-font-size");
+		if (saved) {
+			const parsed = parseInt(saved, 10);
+			if (!isNaN(parsed) && parsed >= FONT_SIZE_MIN && parsed <= FONT_SIZE_MAX) {
+				return parsed;
+			}
+		}
+		return FONT_SIZE_DEFAULT;
+	});
+
+	// Initialize window size with saved preference or default to medium
+	const [windowSize, setWindowSizeState] = useState<WindowSize>(() => {
+		if (typeof window === "undefined") return "medium";
+		const saved = localStorage.getItem("abicus-window-size");
+		return (saved as WindowSize) || "medium";
+	});
+
+	// Initialize decimal separator with saved preference or default to comma
+	const [decimalSeparator, setDecimalSeparatorState] = useState<DecimalSeparator>(() => {
+		if (typeof window === "undefined") return ",";
+		const saved = localStorage.getItem("abicus-decimal-separator");
+		return (saved as DecimalSeparator) || ",";
+	});
+
 	const [showSettings, setShowSettings] = useState(false);
 	const [terminalHistory, setTerminalHistory] = useState<{ expression: string; result: string; timestamp: number }[]>(
 		[],
 	);
 	const [sharedHistory, setSharedHistory] = useState<{ expression: string; result: string; timestamp: number }[]>([]);
+	const [userFunctions, setUserFunctions] = useState<UserFunctionsMap>(() => {
+		if (typeof window === "undefined") return new Map();
+		try {
+			const saved = localStorage.getItem("abicus-user-functions");
+			if (saved) {
+				const parsed = JSON.parse(saved) as [string, UserFunction][];
+				return new Map(parsed);
+			}
+		} catch {
+			// Ignore parse errors
+		}
+		return new Map();
+	});
 	const buffer = useBuffer();
 	const memory = useMemory();
+
+	// Persist user functions to localStorage
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		try {
+			const entries = Array.from(userFunctions.entries());
+			localStorage.setItem("abicus-user-functions", JSON.stringify(entries));
+		} catch {
+			// Ignore storage errors
+		}
+	}, [userFunctions]);
 
 	// Apply dark mode class to document
 	useEffect(() => {
@@ -144,10 +246,47 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		return () => mediaQuery.removeEventListener("change", handleChange);
 	}, []); // Run once on mount
 
+	// Apply font size via CSS custom property (unitless for CSS calc to work)
+	useEffect(() => {
+		document.documentElement.style.setProperty("--app-font-size", String(fontSize));
+		document.documentElement.setAttribute("data-font-size", String(fontSize));
+	}, [fontSize]);
+
+	// Apply window size - via Tauri API for desktop, CSS variable for browser
+	useEffect(() => {
+		// Always set the data attribute for CSS
+		document.documentElement.setAttribute("data-window-size", windowSize);
+
+		// Also apply via Tauri API for desktop app
+		const applyTauriWindowSize = async () => {
+			if (typeof window === "undefined" || !("__TAURI_INTERNALS__" in window)) return;
+
+			try {
+				const { getCurrentWindow } = await import("@tauri-apps/api/window");
+				const { LogicalSize } = await import("@tauri-apps/api/dpi");
+				const currentWindow = getCurrentWindow();
+
+				const windowSizeMap: Record<WindowSize, { width: number; height: number }> = {
+					small: { width: 340, height: 520 },
+					medium: { width: 420, height: 620 },
+					large: { width: 520, height: 760 },
+				};
+
+				const size = windowSizeMap[windowSize];
+				await currentWindow.setSize(new LogicalSize(size.width, size.height));
+			} catch {
+				// Ignore errors if Tauri API is not available
+			}
+		};
+
+		applyTauriWindowSize();
+	}, [windowSize]);
+
 	function clearAll() {
 		buffer.empty();
 		memory.empty();
 		clearSharedHistory();
+		clearFunctions();
 	}
 
 	function pushTerminalHistory(item: { expression: string; result: string; timestamp: number }) {
@@ -169,15 +308,43 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		setTerminalHistory([]);
 	}
 
+	function defineFunction(func: UserFunction) {
+		setUserFunctions(prev => {
+			const newMap = new Map(prev);
+			newMap.set(func.name, func);
+			return newMap;
+		});
+	}
+
+	function removeFunction(name: string) {
+		setUserFunctions(prev => {
+			const newMap = new Map(prev);
+			newMap.delete(name);
+			return newMap;
+		});
+	}
+
+	function clearFunctions() {
+		setUserFunctions(new Map());
+	}
+
+	function tryDefineFunction(expression: string): UserFunction | null {
+		const func = parseFunctionDefinition(expression);
+		if (func) {
+			defineFunction(func);
+		}
+		return func;
+	}
+
 	function setLanguage(value: Language) {
 		setLanguageState(value);
 		localStorage.setItem("abicus-language", value);
 	}
 
 	function crunch(saveToInd = false) {
-		buffer.clean();
+		buffer.clean(decimalSeparator);
 
-		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
+		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
 		if (result.isErr()) {
 			buffer.setErr(true);
 			return;
@@ -190,7 +357,7 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 
 		// Add to shared history when in pocket mode
 		if (interfaceMode === "pocket" && buffer.value.trim()) {
-			const resultString = "= " + formatResult(value);
+			const resultString = "= " + formatResult(value, decimalSeparator);
 			pushSharedHistory({
 				expression: buffer.value,
 				result: resultString,
@@ -213,26 +380,56 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 				terminalHistory,
 				pushTerminalHistory,
 				clearTerminalHistory,
+				userFunctions,
+				defineFunction,
+				removeFunction,
+				clearFunctions,
+				tryDefineFunction,
 				crunch,
 
 				angleUnit,
 				radsOn() {
 					buffer.makeDirty();
 					setAngleUnit("rad");
+					localStorage.setItem("abicus-angle-unit", "rad");
 				},
 				degsOn() {
 					buffer.makeDirty();
 					setAngleUnit("deg");
+					localStorage.setItem("abicus-angle-unit", "deg");
 				},
 
 				interfaceMode,
-				setInterfaceMode,
+				setInterfaceMode(mode: InterfaceMode) {
+					setInterfaceModeState(mode);
+					localStorage.setItem("abicus-interface-mode", mode);
+				},
 
 				isDarkMode,
 				setDarkMode: (value: boolean) => {
 					setIsDarkMode(value);
 					// Save preference to localStorage when manually set
 					localStorage.setItem("abicus-dark-mode", JSON.stringify(value));
+				},
+
+				fontSize,
+				setFontSize: (size: FontSize) => {
+					// Clamp to valid range
+					const clampedSize = Math.max(FONT_SIZE_MIN, Math.min(FONT_SIZE_MAX, size));
+					setFontSizeState(clampedSize);
+					localStorage.setItem("abicus-font-size", String(clampedSize));
+				},
+
+				windowSize,
+				setWindowSize: (size: WindowSize) => {
+					setWindowSizeState(size);
+					localStorage.setItem("abicus-window-size", size);
+				},
+
+				decimalSeparator,
+				setDecimalSeparator: (separator: DecimalSeparator) => {
+					setDecimalSeparatorState(separator);
+					localStorage.setItem("abicus-decimal-separator", separator);
 				},
 
 				language,

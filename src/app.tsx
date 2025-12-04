@@ -52,7 +52,7 @@ const prefetchComponents = (currentMode: string, isInTauri: boolean) => {
 };
 
 export default function App() {
-	const { showSettings, interfaceMode, openSettings } = useCalculator();
+	const { showSettings, interfaceMode, openSettings, windowSize } = useCalculator();
 	// Make Tauri detection synchronous to avoid layout flicker
 	const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -67,7 +67,7 @@ export default function App() {
 	}, [interfaceMode, isTauri]); // Re-run if mode or environment changes
 
 	if (isTauri) {
-		// Tauri layout - full window with rounded container
+		// Tauri layout
 		return (
 			<div
 				x={[
@@ -128,11 +128,11 @@ export default function App() {
 		);
 	}
 
-	// Browser layout - centered with max width (original layout restored)
+	// Browser layout
 	return (
 		<>
-			<div x={["max-w-sm", "flex justify-center"]}>
-				<div x={["relative", "w-full"]}>
+			<div x={["flex justify-center", "transition-all duration-500 ease-in-out"]}>
+				<div x={["relative"]}>
 					{/* Settings Button */}
 					{!showSettings && (
 						<button
@@ -142,19 +142,18 @@ export default function App() {
 								"top-0 right-0",
 								"z-10",
 								"p-2",
-								"transition-all duration-300",
+								"transition-opacity duration-500 ease-in-out",
 								"flex items-center justify-center",
-								"hover:scale-110",
 							]}
 							title="Open Settings"
 						>
 							<img
 								src={gearIcon}
 								alt="Settings"
+								style={{ width: "calc(1rem * var(--font-scale))", height: "calc(1rem * var(--font-scale))" }}
 								x={[
-									"w-4 h-4",
-									"transition-transform duration-500 ease-in-out",
-									"hover:rotate-180",
+									"transition-all duration-700 ease-in-out",
+									"hover:rotate-180 hover:scale-110",
 									"opacity-60 hover:opacity-100",
 									"dark:invert",
 								]}
@@ -178,7 +177,7 @@ export default function App() {
 						) : (
 							<div key="calculator" className="fade-in-slow">
 								<Suspense fallback={<div x={["opacity-0"]} />}>
-									<div x={["flex flex-col gap-4"]}>
+									<div x={["flex flex-col gap-4", ...(windowSize === "large" ? ["items-center", "w-full"] : [])]}>
 										<Screen />
 										<Keypad />
 									</div>

@@ -4,22 +4,31 @@ import { translations, LanguageCode, DEFAULT_LANGUAGE, supportedLanguages } from
 const STORAGE_KEY = "abicus-language";
 
 // Get the translation for a specific key and language
-function getTranslation(key: string, language: LanguageCode): string {
+function getTranslation(key: string, language: LanguageCode, params?: Record<string, string | number>): string {
 	const langTable = translations[language];
 	const defaultTable = translations[DEFAULT_LANGUAGE];
 
+	let result: string;
+
 	// Prefer the language table value when present and a string.
 	if (langTable && typeof langTable[key] === "string") {
-		return langTable[key];
+		result = langTable[key];
+	} else if (defaultTable && typeof defaultTable[key] === "string") {
+		// Fallback to default language table if present.
+		result = defaultTable[key];
+	} else {
+		// Final fallback: return the key itself.
+		result = String(key);
 	}
 
-	// Fallback to default language table if present.
-	if (defaultTable && typeof defaultTable[key] === "string") {
-		return defaultTable[key];
+	// Interpolate parameters like {{name}} or {{count}}
+	if (params) {
+		for (const [paramKey, paramValue] of Object.entries(params)) {
+			result = result.replace(new RegExp(`\\{\\{${paramKey}\\}\\}`, "g"), String(paramValue));
+		}
 	}
 
-	// Final fallback: return the key itself.
-	return String(key);
+	return result;
 }
 
 // Get the stored language preference or default
@@ -47,9 +56,9 @@ function setStoredLanguage(language: LanguageCode): void {
 export function useTranslation() {
 	const [currentLanguage, setCurrentLanguage] = useState<LanguageCode>(getStoredLanguage);
 
-	// Translation function with type safety
-	const t = (key: string): string => {
-		return getTranslation(key, currentLanguage);
+	// Translation function with type safety and parameter interpolation
+	const t = (key: string, params?: Record<string, string | number>): string => {
+		return getTranslation(key, currentLanguage, params);
 	};
 
 	// Function to change language
