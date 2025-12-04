@@ -9,9 +9,14 @@ import useMemory, { MemoryHandle } from "./internal-memory";
 import { UserFunction, UserFunctionsMap, parseFunctionDefinition } from "./user-functions";
 
 type InterfaceMode = "pocket" | "terminal";
-type Language = "fi" | "sv" | "en";
-type FontSize = "small" | "medium" | "large";
+type Language = "fi" | "sv" | "en" | "se";
+type FontSize = number;
 type WindowSize = "small" | "medium" | "large";
+
+// Font size limits (in points)
+const FONT_SIZE_MIN = 10;
+const FONT_SIZE_MAX = 32;
+const FONT_SIZE_DEFAULT = 16;
 
 export type TerminalHistoryItem = {
 	expression: string;
@@ -150,11 +155,17 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
 	});
 
-	// Initialize font size with saved preference or default to medium
+	// Initialize font size with saved preference or default to 16pt
 	const [fontSize, setFontSizeState] = useState<FontSize>(() => {
-		if (typeof window === "undefined") return "medium";
+		if (typeof window === "undefined") return FONT_SIZE_DEFAULT;
 		const saved = localStorage.getItem("abicus-font-size");
-		return (saved as FontSize) || "medium";
+		if (saved) {
+			const parsed = parseInt(saved, 10);
+			if (!isNaN(parsed) && parsed >= FONT_SIZE_MIN && parsed <= FONT_SIZE_MAX) {
+				return parsed;
+			}
+		}
+		return FONT_SIZE_DEFAULT;
 	});
 
 	// Initialize window size with saved preference or default to medium
@@ -221,9 +232,10 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		return () => mediaQuery.removeEventListener("change", handleChange);
 	}, []); // Run once on mount
 
-	// Apply font size via data attribute (does not change root font-size)
+	// Apply font size via CSS custom property (unitless for CSS calc to work)
 	useEffect(() => {
-		document.documentElement.setAttribute("data-font-size", fontSize);
+		document.documentElement.style.setProperty("--app-font-size", String(fontSize));
+		document.documentElement.setAttribute("data-font-size", String(fontSize));
 	}, [fontSize]);
 
 	// Apply window size - via Tauri API for desktop, CSS variable for browser
@@ -388,8 +400,10 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 
 				fontSize,
 				setFontSize: (size: FontSize) => {
-					setFontSizeState(size);
-					localStorage.setItem("abicus-font-size", size);
+					// Clamp to valid range
+					const clampedSize = Math.max(FONT_SIZE_MIN, Math.min(FONT_SIZE_MAX, size));
+					setFontSizeState(clampedSize);
+					localStorage.setItem("abicus-font-size", String(clampedSize));
 				},
 
 				windowSize,

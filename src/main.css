@@ -37,25 +37,22 @@
 	animation: fadeIn 0.8s ease-in-out forwards;
 }
 
-/* Preview slide animation */
-@keyframes slideDown {
-	from {
-		opacity: 0;
-		max-height: 0;
-		padding-top: 0;
-		padding-bottom: 0;
-	}
-	to {
-		opacity: 1;
-		max-height: 100px;
-		padding-top: 0.75rem;
-		padding-bottom: 0.75rem;
-	}
+/* I AM GOING INSANE, I HAVE TRIED TO FIX THIS FOR 3 HOURS NOW AND IT JUST WONT WORK */
+/* SO NOW IT JUST LOOKS LIKE CRAP BUT AT LEAST IT WORKS */
+/* Preview fade-in animation */
+.preview-animate {
+	animation: previewSlideIn 0.6s ease-in-out both;
 }
 
-.preview-animate {
-	animation: slideDown 0.4s ease-in-out forwards;
-	overflow: hidden;
+@keyframes previewSlideIn {
+	from {
+		transform: translateY(100%);
+		opacity: 0 !important;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1 !important;
+	}
 }
 
 /* Browser-specific styles for vertical centering */
@@ -206,24 +203,20 @@ html[data-window-size="large"] body {
 	transition: width 0.5s ease-in-out, height 0.5s ease-in-out;
 }
 
-/* Font size presets - override text sizes directly */
-/* Small font size */
-[data-font-size="small"] .text-xs { font-size: 0.65rem !important; }
-[data-font-size="small"] .text-sm { font-size: 0.75rem !important; }
-[data-font-size="small"] .text-base { font-size: 0.875rem !important; }
-[data-font-size="small"] .text-lg { font-size: 1rem !important; }
-[data-font-size="small"] .text-xl { font-size: 1.1rem !important; }
-[data-font-size="small"] .text-2xl { font-size: 1.25rem !important; }
+/* Font size - uses CSS custom property set by JS */
+/* Scale factor: font-size / 16 (default) - must be unitless for calc to work */
+:root {
+	--app-font-size: 16;
+	--font-scale: calc(var(--app-font-size) / 16);
+}
 
-/* Medium font size (default - no override needed) */
-
-/* Large font size */
-[data-font-size="large"] .text-xs { font-size: 0.85rem !important; }
-[data-font-size="large"] .text-sm { font-size: 1rem !important; }
-[data-font-size="large"] .text-base { font-size: 1.15rem !important; }
-[data-font-size="large"] .text-lg { font-size: 1.3rem !important; }
-[data-font-size="large"] .text-xl { font-size: 1.45rem !important; }
-[data-font-size="large"] .text-2xl { font-size: 1.75rem !important; }
+/* Apply scaling to text sizes based on the custom font size */
+.text-xs { font-size: calc(0.75rem * var(--font-scale)) !important; }
+.text-sm { font-size: calc(0.875rem * var(--font-scale)) !important; }
+.text-base { font-size: calc(1rem * var(--font-scale)) !important; }
+.text-lg { font-size: calc(1.125rem * var(--font-scale)) !important; }
+.text-xl { font-size: calc(1.25rem * var(--font-scale)) !important; }
+.text-2xl { font-size: calc(1.5rem * var(--font-scale)) !important; }
 
 /* Fullscreen (large window) mode - scale up pocket calculator buttons */
 html[data-window-size="large"] .keypad-btn {

@@ -387,15 +387,16 @@ export default function Terminal() {
 			</div>
 			{/* Live preview - attached directly to input */}
 			{previewResult && (
-				<div
-					className="preview-animate"
-					x={[
-						"bg-blue-500/10 dark:bg-blue-400/10",
-						"border-t border-b border-blue-400/40 dark:border-blue-300/30",
-						"px-4",
-						...(isTauri ? ["px-6"] : []),
-					]}
-				>
+				<div x={["overflow-hidden"]}>
+					<div
+						className="preview-animate"
+						x={[
+							"bg-blue-500/10 dark:bg-blue-400/10",
+							"border-t border-b border-blue-400/40 dark:border-blue-300/30",
+							"px-4 py-3",
+							...(isTauri ? ["px-6"] : []),
+						]}
+					>
 					<div x={["flex items-center gap-2"]}>
 						{/* Only show "=" for numeric results, not for info messages */}
 						{!previewResult.startsWith("info:") && (
@@ -409,8 +410,9 @@ export default function Terminal() {
 									: previewResult}
 						</span>
 					</div>
+					</div>
 				</div>
-			)}{" "}
+			)}
 			{/* Input Area */}
 			<form onSubmit={handleSubmit}>
 				<div

@@ -150,8 +150,8 @@ export default function App() {
 							<img
 								src={gearIcon}
 								alt="Settings"
+								style={{ width: "calc(1rem * var(--font-scale))", height: "calc(1rem * var(--font-scale))" }}
 								x={[
-									"w-4 h-4",
 									"transition-all duration-700 ease-in-out",
 									"hover:rotate-180 hover:scale-110",
 									"opacity-60 hover:opacity-100",

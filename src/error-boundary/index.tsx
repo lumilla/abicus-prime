@@ -30,18 +30,24 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 		angleUnit: "unknown",
 		isDarkMode: "unknown" as string | boolean,
 		language: "unknown",
-		showSettings: "unknown",
+		fontSize: "unknown",
+		windowSize: "unknown",
 	};
 
 	try {
 		const darkMode = localStorage.getItem("abicus-dark-mode");
 		const language = localStorage.getItem("abicus-language");
+		const interfaceMode = localStorage.getItem("abicus-interface-mode");
+		const angleUnit = localStorage.getItem("abicus-angle-unit");
+		const fontSize = localStorage.getItem("abicus-font-size");
+		const windowSize = localStorage.getItem("abicus-window-size");
 		calculatorSettings = {
-			interfaceMode: "pocket", // Default since terminal isn't persisted
-			angleUnit: "deg", // Default since not persisted
+			interfaceMode: interfaceMode || "pocket",
+			angleUnit: angleUnit || "deg",
 			isDarkMode: darkMode ? JSON.parse(darkMode) : "unknown",
 			language: language || "fi",
-			showSettings: "unknown", // Can't determine from localStorage
+			fontSize: fontSize || "16",
+			windowSize: windowSize || "medium",
 		};
 	} catch (_e) {
 		// Fallback values already set
@@ -98,6 +104,8 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 							: "unknown"}
 				</span>
 				<span>Language: {calculatorSettings.language}</span>
+				<span>Font Size: {calculatorSettings.fontSize}pt</span>
+				<span>Window Size: {calculatorSettings.windowSize}</span>
 				<span>--- Message ---</span>
 				<span>{message}</span>
 				<span>--- Last Values ---</span>

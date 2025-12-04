@@ -5,8 +5,10 @@ import { useState, useEffect, useRef } from "preact/hooks";
 const APP_VERSION = __APP_VERSION__;
 const GIT_HASH = __GIT_HASH__;
 
-// Font size options
-const FONT_SIZES = ["small", "medium", "large"] as const;
+// Font size limits (in points)
+const FONT_SIZE_MIN = 10;
+const FONT_SIZE_MAX = 32;
+const FONT_SIZE_STEP = 1;
 
 // Window size options (Tauri only)
 const WINDOW_SIZES = ["small", "medium", "large"] as const;
@@ -113,11 +115,10 @@ export default function SettingsPage() {
 					<h2 x={["text-base font-semibold text-+ dark:text-white"]}>{t("settings.title")}</h2>
 					<button
 						onClick={closeSettings}
+						style={{ width: "calc(1.75rem * var(--font-scale))", height: "calc(1.75rem * var(--font-scale))", fontSize: "calc(1.25rem * var(--font-scale))" }}
 						x={[
 							"text-abi-dgrey hover:text-black dark:text-abi-dark-dgrey dark:hover:text-white",
 							"transition-colors",
-							"text-xl",
-							"w-7 h-7",
 							"flex items-center justify-center",
 						]}
 					>
@@ -357,32 +358,66 @@ export default function SettingsPage() {
 					<h3 x={["text-sm font-medium text-black dark:text-white mb-1.5"]}>{t("settings.fontSize")}</h3>
 					<div
 						x={[
-							"flex",
+							"flex items-center",
 							"border border-abi-dgrey dark:border-abi-dark-dgrey",
-							"divide-x divide-abi-dgrey dark:divide-abi-dark-dgrey",
 							"rounded-md overflow-hidden",
 							"w-full",
 						]}
 					>
-						{FONT_SIZES.map(size => (
-							<button
-								key={size}
-								onClick={() => setFontSize(size)}
-								disabled={fontSize === size}
-								x={[
-									"settings-btn",
-									"flex-1 px-3 py-1.5",
-									"text-sm",
-									"transition-all",
-									"disabled:cursor-default",
-									fontSize === size
-										? "bg-abi-lgrey dark:bg-abi-dark-lgrey text-black dark:text-white"
-										: "bg-white dark:bg-gray-800 text-abi-dgrey dark:text-abi-dark-dgrey hover:text-black dark:hover:text-white",
-								]}
-							>
-								{t(`settings.fontSize.${size}`)}
-							</button>
-						))}
+						<button
+							onClick={() => setFontSize(Math.max(FONT_SIZE_MIN, fontSize - FONT_SIZE_STEP))}
+							disabled={fontSize <= FONT_SIZE_MIN}
+							x={[
+								"settings-btn",
+								"px-4 py-1.5",
+								"text-lg font-medium",
+								"transition-all",
+								"border-r border-abi-dgrey dark:border-abi-dark-dgrey",
+								fontSize <= FONT_SIZE_MIN
+									? "bg-white dark:bg-gray-800 text-abi-lgrey dark:text-abi-dark-lgrey cursor-not-allowed"
+									: "bg-white dark:bg-gray-800 text-abi-dgrey dark:text-abi-dark-dgrey hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700",
+							]}
+						>
+							−
+						</button>
+						<div
+							onWheel={(e) => {
+								e.preventDefault();
+								if (e.deltaY < 0) {
+									setFontSize(Math.min(FONT_SIZE_MAX, fontSize + FONT_SIZE_STEP));
+								} else if (e.deltaY > 0) {
+									setFontSize(Math.max(FONT_SIZE_MIN, fontSize - FONT_SIZE_STEP));
+								}
+							}}
+							x={[
+								"flex-1",
+								"text-center",
+								"py-1.5",
+								"text-sm",
+								"bg-white dark:bg-gray-800",
+								"text-black dark:text-white",
+								"cursor-ns-resize",
+								"select-none",
+							]}
+						>
+							{fontSize} pt
+						</div>
+						<button
+							onClick={() => setFontSize(Math.min(FONT_SIZE_MAX, fontSize + FONT_SIZE_STEP))}
+							disabled={fontSize >= FONT_SIZE_MAX}
+							x={[
+								"settings-btn",
+								"px-4 py-1.5",
+								"text-lg font-medium",
+								"transition-all",
+								"border-l border-abi-dgrey dark:border-abi-dark-dgrey",
+								fontSize >= FONT_SIZE_MAX
+									? "bg-white dark:bg-gray-800 text-abi-lgrey dark:text-abi-dark-lgrey cursor-not-allowed"
+									: "bg-white dark:bg-gray-800 text-abi-dgrey dark:text-abi-dark-dgrey hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700",
+							]}
+						>
+							+
+						</button>
 					</div>
 				</div>
 
