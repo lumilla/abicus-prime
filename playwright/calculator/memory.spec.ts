@@ -132,6 +132,30 @@ test.describe("Memory Operations", () => {
 		});
 	});
 
+	test.describe("Memory Persistence", () => {
+		test("memory persists in localStorage across page reloads", async ({ page }) => {
+			const calc = new CalculatorHelpers(page);
+			const memory = new MemoryHelpers(page);
+
+			// Store value in memory
+			await memory.storeInMemory("123");
+			await expect(calc.getResult()).toHaveText("123");
+
+			// Verify localStorage has the value
+			const storedValue = await page.evaluate(() => localStorage.getItem("abicus-memory-ind"));
+			expect(storedValue).toBe("123");
+
+			// Reload page
+			await page.reload();
+
+			// Memory should still be available after reload
+			await memory.recallMemory();
+			await page.getByRole("button", { name: "=" }).click();
+			expect(await calc.getExpression()).toBe("M");
+			await expect(calc.getResult()).toHaveText("123");
+		});
+	});
+
 	test.describe("Memory and ANS Interaction", () => {
 		test("can use both M and ANS in same expression", async ({ page }) => {
 			const calc = new CalculatorHelpers(page);
