@@ -29,6 +29,14 @@
 	"terminal.title": "Abicus Prime Pääte",
 	"terminal.placeholder": "Syötä laskutoimitus...",
 	"terminal.error": "Virhe",
+	"terminal.functionDefined": "Määritä funktio {{name}}({{params}})",
+	"terminal.functionSaved": "✓ Funktio {{name}}{{params}} määritetty",
+	"terminal.definedFunctions": "Määritetyt funktiot:",
+	"terminal.noFunctions": "Ei määritettyjä funktioita",
+	"terminal.functionsCount": "{{count}} funktio(ta) määritetty",
+	"terminal.functionsCleared": "✓ Poistettu {{count}} funktio(ta)",
+	"terminal.clearHistory": "Tyhjennä historia",
+	"terminal.clearFunctions": "Tyhjennä kaikki funktiot",
 
 	"common.close": "Sulje"
 }

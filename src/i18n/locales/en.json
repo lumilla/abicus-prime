@@ -29,6 +29,14 @@
 	"terminal.title": "Abicus Prime Terminal",
 	"terminal.placeholder": "Enter calculation...",
 	"terminal.error": "Error",
+	"terminal.functionDefined": "Define function {{name}}({{params}})",
+	"terminal.functionSaved": "✓ Function {{name}}{{params}} defined",
+	"terminal.definedFunctions": "Defined functions:",
+	"terminal.noFunctions": "No functions defined",
+	"terminal.functionsCount": "{{count}} function(s) defined",
+	"terminal.functionsCleared": "✓ Cleared {{count}} function(s)",
+	"terminal.clearHistory": "Clear history",
+	"terminal.clearFunctions": "Clear all functions",
 
 	"common.close": "Close"
 }

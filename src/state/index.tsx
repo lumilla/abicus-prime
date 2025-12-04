@@ -6,11 +6,13 @@ import { formatResult } from "#/utils/format-result";
 
 import useBuffer, { BufferHandle } from "./internal-buffer";
 import useMemory, { MemoryHandle } from "./internal-memory";
+import { UserFunction, UserFunctionsMap, parseFunctionDefinition } from "./user-functions";
 
 type InterfaceMode = "pocket" | "terminal";
 type Language = "fi" | "sv" | "en";
 
 export type TerminalHistoryItem = { expression: string; result: string; timestamp: number };
+export type { UserFunction } from "./user-functions";
 
 type CalculatorContext = {
 	/** Handle to the calculator's input buffer */
@@ -32,6 +34,17 @@ type CalculatorContext = {
 	pushTerminalHistory(item: TerminalHistoryItem): void;
 	/** Clear terminal history (legacy - keeping for compatibility) */
 	clearTerminalHistory(): void;
+
+	/** User-defined functions */
+	userFunctions: UserFunctionsMap;
+	/** Define a new user function */
+	defineFunction(func: UserFunction): void;
+	/** Remove a user function by name */
+	removeFunction(name: string): void;
+	/** Clear all user-defined functions */
+	clearFunctions(): void;
+	/** Try to parse and define a function from an expression. Returns the function if defined, null otherwise */
+	tryDefineFunction(expression: string): UserFunction | null;
 
 	/** Unit to use in trigonometric functions */
 	angleUnit: AngleUnit;
@@ -124,8 +137,32 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		[],
 	);
 	const [sharedHistory, setSharedHistory] = useState<{ expression: string; result: string; timestamp: number }[]>([]);
+	const [userFunctions, setUserFunctions] = useState<UserFunctionsMap>(() => {
+		if (typeof window === "undefined") return new Map();
+		try {
+			const saved = localStorage.getItem("abicus-user-functions");
+			if (saved) {
+				const parsed = JSON.parse(saved) as [string, UserFunction][];
+				return new Map(parsed);
+			}
+		} catch {
+			// Ignore parse errors
+		}
+		return new Map();
+	});
 	const buffer = useBuffer();
 	const memory = useMemory();
+
+	// Persist user functions to localStorage
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		try {
+			const entries = Array.from(userFunctions.entries());
+			localStorage.setItem("abicus-user-functions", JSON.stringify(entries));
+		} catch {
+			// Ignore storage errors
+		}
+	}, [userFunctions]);
 
 	// Apply dark mode class to document
 	useEffect(() => {
@@ -156,6 +193,7 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		buffer.empty();
 		memory.empty();
 		clearSharedHistory();
+		clearFunctions();
 	}
 
 	function pushTerminalHistory(item: { expression: string; result: string; timestamp: number }) {
@@ -177,6 +215,34 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		setTerminalHistory([]);
 	}
 
+	function defineFunction(func: UserFunction) {
+		setUserFunctions(prev => {
+			const newMap = new Map(prev);
+			newMap.set(func.name, func);
+			return newMap;
+		});
+	}
+
+	function removeFunction(name: string) {
+		setUserFunctions(prev => {
+			const newMap = new Map(prev);
+			newMap.delete(name);
+			return newMap;
+		});
+	}
+
+	function clearFunctions() {
+		setUserFunctions(new Map());
+	}
+
+	function tryDefineFunction(expression: string): UserFunction | null {
+		const func = parseFunctionDefinition(expression);
+		if (func) {
+			defineFunction(func);
+		}
+		return func;
+	}
+
 	function setLanguage(value: Language) {
 		setLanguageState(value);
 		localStorage.setItem("abicus-language", value);
@@ -185,7 +251,7 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 	function crunch(saveToInd = false) {
 		buffer.clean();
 
-		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
+		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
 		if (result.isErr()) {
 			buffer.setErr(true);
 			return;
@@ -221,6 +287,11 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 				terminalHistory,
 				pushTerminalHistory,
 				clearTerminalHistory,
+				userFunctions,
+				defineFunction,
+				removeFunction,
+				clearFunctions,
+				tryDefineFunction,
 				crunch,
 
 				angleUnit,

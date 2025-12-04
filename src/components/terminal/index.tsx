@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "preact/hooks";
 import { JSX } from "preact";
 import { calculate } from "#/calculator";
 import { useTranslation } from "#/i18n/hook";
+import { parseFunctionDefinition } from "#/state/user-functions";
 
 const APP_VERSION = __APP_VERSION__;
 
@@ -11,10 +12,11 @@ type HistoryItem = {
 	expression: string;
 	result: string;
 	timestamp: number;
+	isFunction?: boolean; // Mark function definitions for special styling
 };
 
 export default function Terminal() {
-	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory } = useCalculator();
+	const { memory, angleUnit, buffer, sharedHistory, pushSharedHistory, clearSharedHistory, userFunctions, tryDefineFunction, clearFunctions } = useCalculator();
 	const { t } = useTranslation();
 	const history = sharedHistory as HistoryItem[];
 	const [historyIndex, setHistoryIndex] = useState(-1);
@@ -78,14 +80,38 @@ export default function Terminal() {
 			return;
 		}
 
+		// Check if it's a function definition
+		const funcDef = parseFunctionDefinition(buffer.value);
+		if (funcDef) {
+			const paramsStr = funcDef.params.join(", ");
+			setPreviewResult(t("terminal.functionDefined", { name: funcDef.name, params: paramsStr }));
+			return;
+		}
+
+		// Check for special commands
+		const trimmed = buffer.value.trim().toLowerCase();
+		if (trimmed === "clear" || trimmed === "cls") {
+			setPreviewResult(t("terminal.clearHistory"));
+			return;
+		}
+		if (trimmed === "functions" || trimmed === "funcs" || trimmed === "fn") {
+			const count = userFunctions.size;
+			setPreviewResult(count > 0 ? t("terminal.functionsCount", { count }) : t("terminal.noFunctions"));
+			return;
+		}
+		if (trimmed === "clearfn" || trimmed === "clearfunctions") {
+			setPreviewResult(t("terminal.clearFunctions"));
+			return;
+		}
+
 		// Calculate preview safely without mutating memory
-		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
+		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
 		if (result.isOk()) {
 			setPreviewResult("= " + formatResult(result.value));
 		} else {
 			setPreviewResult(t("terminal.error"));
 		}
-	}, [buffer.value, memory.ans, memory.ind, angleUnit, t]);
+	}, [buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, t]);
 
 	const handleSubmit = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
 		e.preventDefault();
@@ -102,13 +128,70 @@ export default function Terminal() {
 			return;
 		}
 
+		// List defined functions
+		if (trimmedInput === "functions" || trimmedInput === "funcs" || trimmedInput === "fn") {
+			let resultString: string;
+			if (userFunctions.size === 0) {
+				resultString = t("terminal.noFunctions");
+			} else {
+				const funcList = Array.from(userFunctions.values())
+					.map(f => `${f.name}(${f.params.join(", ")}) = ${f.body}`)
+					.join("\n  ");
+				resultString = `${t("terminal.definedFunctions")}\n  ${funcList}`;
+			}
+
+			pushSharedHistory({
+				expression: buffer.value,
+				result: resultString,
+				timestamp: Date.now(),
+			});
+
+			buffer.empty();
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+
+		// Clear all functions
+		if (trimmedInput === "clearfn" || trimmedInput === "clearfunctions") {
+			const count = userFunctions.size;
+			clearFunctions();
+
+			pushSharedHistory({
+				expression: buffer.value,
+				result: t("terminal.functionsCleared", { count }),
+				timestamp: Date.now(),
+			});
+
+			buffer.empty();
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+
+		// Check if it's a function definition
+		const funcDef = tryDefineFunction(buffer.value);
+		if (funcDef) {
+			const paramsStr = funcDef.params.length > 0 ? `(${funcDef.params.join(", ")})` : "()";
+			pushSharedHistory({
+				expression: buffer.value,
+				result: t("terminal.functionSaved", { name: funcDef.name, params: paramsStr }),
+				timestamp: Date.now(),
+			});
+
+			buffer.empty();
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+
 		// Prevent submission if preview shows an error
 		if (previewResult === t("terminal.error")) {
 			return;
 		}
 
 		// Calculate directly without using the shared buffer
-		const calculationResult = calculate(buffer.value, memory.ans, memory.ind, angleUnit);
+		const calculationResult = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
 
 		let resultString: string;
 		if (calculationResult.isOk()) {

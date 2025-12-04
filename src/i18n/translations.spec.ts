@@ -113,13 +113,18 @@ describe("i18n translations data", () => {
 		});
 
 		test("no translations contain placeholder text", () => {
-			const placeholderPatterns = [/TODO/i, /FIXME/i, /\[.*\]/, /\{.*\}/, /xxx/i, /placeholder/i];
+			// Note: {{param}} style template parameters are allowed for interpolation
+			const placeholderPatterns = [/TODO/i, /FIXME/i, /\[.*\]/, /xxx/i, /placeholder/i];
+			// Pattern for invalid single braces (but not valid {{param}} templates)
+			const invalidBracePattern = /(?<!\{)\{(?!\{)[^}]*\}(?!\})/;
 
 			for (const langTranslations of Object.values(translations)) {
 				for (const value of Object.values(langTranslations)) {
 					for (const pattern of placeholderPatterns) {
 						expect(pattern.test(value)).toBe(false);
 					}
+					// Check for single braces (invalid) but allow {{param}} (valid templates)
+					expect(invalidBracePattern.test(value)).toBe(false);
 				}
 			}
 		});

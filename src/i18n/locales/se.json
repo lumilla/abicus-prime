@@ -29,6 +29,14 @@
 	"terminal.title": "Abicus Prime Terminála",
 	"terminal.placeholder": "Čális rehkenastima...",
 	"terminal.error": "Meattáhus",
+	"terminal.functionDefined": "Ráhkat funkšuvnna {{name}}({{params}})",
+	"terminal.functionSaved": "✓ Funkšuvdna {{name}}{{params}} definerejuvvon",
+	"terminal.definedFunctions": "Definerejuvvon funkšuvnnat:",
+	"terminal.noFunctions": "Ii leat definerejuvvon funkšuvdna",
+	"terminal.functionsCount": "{{count}} funkšuvdna definerejuvvon",
+	"terminal.functionsCleared": "✓ Sihkkojuvvon {{count}} funkšuvdna",
+	"terminal.clearHistory": "Čielga historjá",
+	"terminal.clearFunctions": "Buhtte buot funkšuvnnaid",
 
 	"common.close": "Gidde"
 }
