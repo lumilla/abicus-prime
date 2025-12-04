@@ -6,6 +6,33 @@ A work-in-progress fork of Digabi/Abicus with the goal of implementing major UX 
 
 **Note:** Just like Abicus Prime itself, this README is a work in progress.
 
+## How Abicus Prime differs from digabi/abicus
+
+Abicus Prime is derived from the upstream [digabi/abicus](https://github.com/digabi/abicus) project. It is developed independently and aims to explore improvements, refactors, and UX experiments while respecting the original work. The exact legal and technical relationship should be verified by reviewing the commit history and license files in both repositories.
+
+The following is a list of potential differences between Abicus Prime and the upstream project. Items marked with **[VERIFY]** are placeholders that maintainers should confirm or replace with accurate information:
+
+| Area | Potential Differences | Status |
+|------|----------------------|--------|
+| **Primary goal or focus** | UX improvements and modernization experiments | **[VERIFY]** |
+| **Notable refactors or architecture changes** | _Placeholder: Describe any significant code restructuring_ | **[VERIFY]** |
+| **Language/tech stack** | TypeScript usage, potential Rust/WASM modules | **[VERIFY]** |
+| **Dependency and build system** | Packaging differences, Dockerfile changes | **[VERIFY]** |
+| **API/CLI/behavioral differences** | _Placeholder: List any breaking changes or API modifications_ | **[VERIFY]** |
+| **Test coverage and CI** | _Placeholder: Describe any differences in testing approach or CI pipelines_ | **[VERIFY]** |
+| **License and compatibility** | MIT-licensed upstream code; see License section below for usage terms | **[VERIFY]** |
+| **Migration notes** | _Placeholder: How to migrate or pin to original abicus behavior, if applicable_ | **[VERIFY]** |
+
+### How to help
+
+Contributors and maintainers are encouraged to update this comparison section with verified, concrete information. To contribute:
+
+1. Review the differences between this repository and the [upstream digabi/abicus](https://github.com/digabi/abicus).
+2. Replace **[VERIFY]** placeholders with accurate details based on your findings.
+3. Submit a pull request with your updates, clearly describing what was verified or changed.
+
+Your help in keeping this documentation accurate and up-to-date is greatly appreciated!
+
 ## Affiliation and Attribution
 
 This fork is entirely independent. The maintainer (@j3r0github) is **not**
