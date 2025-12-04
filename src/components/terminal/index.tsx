@@ -13,6 +13,7 @@ type HistoryItem = {
 	result: string;
 	timestamp: number;
 	isFunction?: boolean; // Mark function definitions for special styling
+	isNumericResult?: boolean; // True if the result is a numeric value that can be reused
 };
 
 export default function Terminal() {
@@ -80,27 +81,27 @@ export default function Terminal() {
 			return;
 		}
 
-		// Check if it's a function definition
+		// Check if it's a function definition - no "=" prefix for non-numeric output
 		const funcDef = parseFunctionDefinition(buffer.value);
 		if (funcDef) {
 			const paramsStr = funcDef.params.join(", ");
-			setPreviewResult(t("terminal.functionDefined", { name: funcDef.name, params: paramsStr }));
+			setPreviewResult("info:" + t("terminal.functionDefined", { name: funcDef.name, params: paramsStr }));
 			return;
 		}
 
-		// Check for special commands
+		// Check for special commands - mark as info (non-numeric)
 		const trimmed = buffer.value.trim().toLowerCase();
 		if (trimmed === "clear" || trimmed === "cls") {
-			setPreviewResult(t("terminal.clearHistory"));
+			setPreviewResult("info:" + t("terminal.clearHistory"));
 			return;
 		}
 		if (trimmed === "functions" || trimmed === "funcs" || trimmed === "fn") {
 			const count = userFunctions.size;
-			setPreviewResult(count > 0 ? t("terminal.functionsCount", { count }) : t("terminal.noFunctions"));
+			setPreviewResult("info:" + (count > 0 ? t("terminal.functionsCount", { count }) : t("terminal.noFunctions")));
 			return;
 		}
 		if (trimmed === "clearfn" || trimmed === "clearfunctions") {
-			setPreviewResult(t("terminal.clearFunctions"));
+			setPreviewResult("info:" + t("terminal.clearFunctions"));
 			return;
 		}
 
@@ -144,6 +145,7 @@ export default function Terminal() {
 				expression: buffer.value,
 				result: resultString,
 				timestamp: Date.now(),
+				isNumericResult: false,
 			});
 
 			buffer.empty();
@@ -161,6 +163,7 @@ export default function Terminal() {
 				expression: buffer.value,
 				result: t("terminal.functionsCleared", { count }),
 				timestamp: Date.now(),
+				isNumericResult: false,
 			});
 
 			buffer.empty();
@@ -177,6 +180,7 @@ export default function Terminal() {
 				expression: buffer.value,
 				result: t("terminal.functionSaved", { name: funcDef.name, params: paramsStr }),
 				timestamp: Date.now(),
+				isNumericResult: false,
 			});
 
 			buffer.empty();
@@ -207,6 +211,7 @@ export default function Terminal() {
 			expression: buffer.value,
 			result: resultString,
 			timestamp: Date.now(),
+			isNumericResult: calculationResult.isOk(),
 		});
 
 		buffer.empty();
@@ -288,7 +293,11 @@ export default function Terminal() {
 		}
 	};
 
-	const handleDoubleClickResult = (result: string) => {
+	const handleDoubleClickResult = (result: string, isNumericResult?: boolean) => {
+		// Only allow double-click copy for numeric results
+		if (isNumericResult === false) {
+			return;
+		}
 		// Remove the "= " prefix if it exists, and put the result in input
 		const cleanResult = result.startsWith("= ") ? result.slice(2) : result;
 		buffer.set(cleanResult);
@@ -367,8 +376,12 @@ export default function Terminal() {
 							]}
 						>
 							<span
-								x={["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]}
-								onDblClick={() => handleDoubleClickResult(item.result)}
+								x={[
+									...(item.isNumericResult !== false
+										? ["cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-1 -mx-1 transition-colors"]
+										: ["px-1 -mx-1"]),
+								]}
+								onDblClick={() => handleDoubleClickResult(item.result, item.isNumericResult)}
 							>
 								{item.result}
 							</span>
@@ -388,9 +401,18 @@ export default function Terminal() {
 				]}
 			>
 				<div x={["flex items-center gap-2"]}>
-					<span x={["text-blue-600 dark:text-blue-400", "font-mono text-sm"]}>=</span>
+					{/* Only show "=" for numeric results, not for info messages */}
+					{previewResult && !previewResult.startsWith("info:") && (
+						<span x={["text-blue-600 dark:text-blue-400", "font-mono text-sm"]}>=</span>
+					)}
 					<span x={["text-blue-700 dark:text-blue-300", "font-mono text-sm font-medium"]}>
-						{previewResult ? (previewResult.startsWith("= ") ? previewResult.slice(2) : previewResult) : ""}
+						{previewResult
+							? previewResult.startsWith("info:")
+								? previewResult.slice(5)
+								: previewResult.startsWith("= ")
+									? previewResult.slice(2)
+									: previewResult
+							: ""}
 					</span>
 				</div>
 			</div>{" "}
