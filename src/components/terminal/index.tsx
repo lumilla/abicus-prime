@@ -31,7 +31,10 @@ export default function Terminal() {
 	// Auto-scroll to bottom when history changes
 	useEffect(() => {
 		if (terminalRef.current) {
-			terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+			terminalRef.current.scrollTo({
+				top: terminalRef.current.scrollHeight,
+				behavior: "smooth",
+			});
 		}
 	}, [history]);
 
@@ -303,6 +306,7 @@ export default function Terminal() {
 
 	return (
 		<div
+			className={!isTauri ? "window-animated" : undefined}
 			x={
 				isTauri
 					? ["w-full", "h-full", "bg-transparent", "flex flex-col", "font-mono"]
@@ -336,6 +340,7 @@ export default function Terminal() {
 				x={[
 					"flex-1",
 					"overflow-y-auto",
+					"custom-scrollbar",
 					...(isTauri ? ["px-6 py-2"] : ["px-4 py-2"]),
 					"text-sm",
 					"space-y-1",
@@ -381,32 +386,31 @@ export default function Terminal() {
 				))}
 			</div>
 			{/* Live preview - attached directly to input */}
-			<div
-				x={[
-					"transition-opacity duration-700 ease-in-out",
-					previewResult ? "opacity-100" : "opacity-0",
-					"bg-blue-500/10 dark:bg-blue-400/10",
-					"border-t border-b border-blue-400/40 dark:border-blue-300/30",
-					"px-4 py-3",
-					...(isTauri ? ["px-6"] : []),
-				]}
-			>
-				<div x={["flex items-center gap-2"]}>
-					{/* Only show "=" for numeric results, not for info messages */}
-					{previewResult && !previewResult.startsWith("info:") && (
-						<span x={["text-blue-600 dark:text-blue-400", "font-mono text-sm"]}>=</span>
-					)}
-					<span x={["text-blue-700 dark:text-blue-300", "font-mono text-sm font-medium"]}>
-						{previewResult
-							? previewResult.startsWith("info:")
+			{previewResult && (
+				<div
+					className="preview-animate"
+					x={[
+						"bg-blue-500/10 dark:bg-blue-400/10",
+						"border-t border-b border-blue-400/40 dark:border-blue-300/30",
+						"px-4",
+						...(isTauri ? ["px-6"] : []),
+					]}
+				>
+					<div x={["flex items-center gap-2"]}>
+						{/* Only show "=" for numeric results, not for info messages */}
+						{!previewResult.startsWith("info:") && (
+							<span x={["text-blue-600 dark:text-blue-400", "font-mono text-sm"]}>=</span>
+						)}
+						<span x={["text-blue-700 dark:text-blue-300", "font-mono text-sm font-medium"]}>
+							{previewResult.startsWith("info:")
 								? previewResult.slice(5)
 								: previewResult.startsWith("= ")
 									? previewResult.slice(2)
-									: previewResult
-							: ""}
-					</span>
+									: previewResult}
+						</span>
+					</div>
 				</div>
-			</div>{" "}
+			)}{" "}
 			{/* Input Area */}
 			<form onSubmit={handleSubmit}>
 				<div

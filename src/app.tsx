@@ -67,7 +67,7 @@ export default function App() {
 	}, [interfaceMode, isTauri]); // Re-run if mode or environment changes
 
 	if (isTauri) {
-		// Tauri layout - full window with rounded container
+		// Tauri layout
 		return (
 			<div
 				x={[
@@ -128,10 +128,10 @@ export default function App() {
 		);
 	}
 
-	// Browser layout - centered with dynamic size from CSS variable
+	// Browser layout
 	return (
 		<>
-			<div x={["flex justify-center", "transition-all duration-300"]}>
+			<div x={["flex justify-center", "transition-all duration-500 ease-in-out"]}>
 				<div x={["relative"]}>
 					{/* Settings Button */}
 					{!showSettings && (
@@ -142,9 +142,8 @@ export default function App() {
 								"top-0 right-0",
 								"z-10",
 								"p-2",
-								"transition-all duration-300",
+								"transition-opacity duration-500 ease-in-out",
 								"flex items-center justify-center",
-								"hover:scale-110",
 							]}
 							title="Open Settings"
 						>
@@ -153,8 +152,8 @@ export default function App() {
 								alt="Settings"
 								x={[
 									"w-4 h-4",
-									"transition-transform duration-500 ease-in-out",
-									"hover:rotate-180",
+									"transition-all duration-700 ease-in-out",
+									"hover:rotate-180 hover:scale-110",
 									"opacity-60 hover:opacity-100",
 									"dark:invert",
 								]}

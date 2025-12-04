@@ -7,6 +7,7 @@ export default function Screen() {
 	return (
 		<>
 			<div
+				className="window-animated"
 				style={{ width: "var(--app-width)", maxWidth: "480px" }}
 				x={[
 					"relative",

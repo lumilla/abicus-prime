@@ -95,6 +95,7 @@ export default function SettingsPage() {
 
 	return (
 		<div
+			className={!isTauri ? "window-animated" : undefined}
 			x={
 				isTauri
 					? ["w-full", "h-full", "bg-transparent", "flex flex-col"]
