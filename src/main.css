@@ -1,9 +1,7 @@
 @import "tailwindcss";
 
-/* AFAIK the lint errors here are false positives */
-@custom-variant dark {
-	&:where(.dark, .dark *);
-}
+/* I genuinely don't understand why this breaks every 5 minutes and why the linter is throwing a fit about it, but whatever. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
 	--color-abi-blue-3: #EDF6FE;

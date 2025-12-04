@@ -102,7 +102,7 @@ export default function Terminal() {
 		if (result.isOk()) {
 			setPreviewResult("= " + formatResult(result.value));
 		} else {
-			setPreviewResult(t("terminal.error"));
+			setPreviewResult("info:" + t("terminal.error"));
 		}
 	}, [buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, t]);
 
@@ -182,7 +182,8 @@ export default function Terminal() {
 		}
 
 		// Prevent submission if preview shows an error
-		if (previewResult === t("terminal.error")) {
+		const errorMessage = t("terminal.error");
+		if (previewResult?.includes(errorMessage)) {
 			return;
 		}
 
