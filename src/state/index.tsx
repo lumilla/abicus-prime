@@ -88,8 +88,16 @@ export function useCalculator() {
 }
 
 export default function CalculatorProvider({ children }: { children: ComponentChildren }) {
-	const [angleUnit, setAngleUnit] = useState<AngleUnit>("deg");
-	const [interfaceMode, setInterfaceMode] = useState<InterfaceMode>("pocket");
+	const [angleUnit, setAngleUnit] = useState<AngleUnit>(() => {
+		if (typeof window === "undefined") return "deg";
+		const saved = localStorage.getItem("abicus-angle-unit");
+		return (saved as AngleUnit) || "deg";
+	});
+	const [interfaceMode, setInterfaceModeState] = useState<InterfaceMode>(() => {
+		if (typeof window === "undefined") return "pocket";
+		const saved = localStorage.getItem("abicus-interface-mode");
+		return (saved as InterfaceMode) || "pocket";
+	});
 
 	// Initialize language with saved preference or default to Finnish
 	const [language, setLanguageState] = useState<Language>(() => {
@@ -219,14 +227,19 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 				radsOn() {
 					buffer.makeDirty();
 					setAngleUnit("rad");
+					localStorage.setItem("abicus-angle-unit", "rad");
 				},
 				degsOn() {
 					buffer.makeDirty();
 					setAngleUnit("deg");
+					localStorage.setItem("abicus-angle-unit", "deg");
 				},
 
 				interfaceMode,
-				setInterfaceMode,
+				setInterfaceMode(mode: InterfaceMode) {
+					setInterfaceModeState(mode);
+					localStorage.setItem("abicus-interface-mode", mode);
+				},
 
 				isDarkMode,
 				setDarkMode: (value: boolean) => {
