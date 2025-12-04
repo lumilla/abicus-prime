@@ -28,7 +28,7 @@
 	"settings.version": "Abicus Prime Laskin",
 
 	"error.title": "Jotain meni pieleen!",
-	"error.description": "Välittäthän alla olevan virheviestin Abitti-tukeen.",
+	"error.description": "Välitäthän alla olevan virheviestin Abitti-tukeen.",
 	"error.restart": "Uudelleenkäynnistä",
 	"error.imageAlt": "Virhe",
 	"error.usertriggerederror": "Käyttäjän laukaisema virhe testausta varten",
