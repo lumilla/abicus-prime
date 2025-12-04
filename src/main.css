@@ -1,6 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-abi-blue-3: #EDF6FE;
+	--color-abi-blue-2: #CCDFFD;
+	--color-abi-blue-1: #365488;
+	--color-abi-lgrey: #E5EAF1;
+	--color-abi-dgrey: #C5C5C5;
+	/* Dark mode variants */
+	--color-abi-dark-blue-3: #1a2332;
+	--color-abi-dark-blue-2: #2d3748;
+	--color-abi-dark-blue-1: #7c9cc7;
+	--color-abi-dark-lgrey: #374151;
+	--color-abi-dark-dgrey: #6b7280;
+}
 
 @font-face {
 	font-family: "Jost";
