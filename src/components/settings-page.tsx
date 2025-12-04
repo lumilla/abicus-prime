@@ -114,7 +114,7 @@ export default function SettingsPage() {
 			{/* Header */}
 			{!isTauri && (
 				<div x={["flex items-center justify-between", "p-3", "border-b border-abi-lgrey dark:border-abi-dark-lgrey"]}>
-					<h2 x={["text-base font-semibold text-+ dark:text-white"]}>{t("settings.title")}</h2>
+					<h2 x={["text-base font-semibold text-black dark:text-white"]}>{t("settings.title")}</h2>
 					<button
 						onClick={closeSettings}
 						style={{
