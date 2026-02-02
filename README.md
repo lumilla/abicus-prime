@@ -8,7 +8,7 @@ A work-in-progress fork of Digabi/Abicus with the goal of implementing major UX 
 
 ## Affiliation and Attribution
 
-This fork is entirely independent. The maintainer (@j3r0github) is **not**
+This fork is entirely independent. The maintainer (@lumilla) is **not**
 directly affiliated with the Finnish Matriculation Examination Board
 (Ylioppilastutkintolautakunta), the Digabi project, or any upstream maintainers.
 
@@ -24,7 +24,7 @@ or for **evaluative, non-production purposes**. _In such cases, the software is
 provided as-is, without any warranties or guarantees of any kind._
 
 However **no permission is granted to use this repository or its contents in
-production or redistribute it without explicit authorization from @j3r0github.**
+production or redistribute it without explicit authorization from @lumilla.**
 If you'd like to request broader access, please open a GitHub issue.
 
 Why? Because this code is **not production-ready**, and **I don't want it shared
