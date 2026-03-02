@@ -42,13 +42,20 @@
 	"terminal.placeholder": "Ange beräkning...",
 	"terminal.error": "Fel",
 	"terminal.functionDefined": "Definiera funktion {{name}}({{params}})",
-	"terminal.functionSaved": "✓ Funktion {{name}}{{params}} definierad",
+	"terminal.functionSaved": "Funktion {{name}}{{params}} definierad",
 	"terminal.definedFunctions": "Definierade funktioner:",
 	"terminal.noFunctions": "Inga funktioner definierade",
 	"terminal.functionsCount": "{{count}} funktion(er) definierade",
-	"terminal.functionsCleared": "✓ Rensat {{count}} funktion(er)",
+	"terminal.functionsCleared": "Rensat {{count}} funktion(er)",
 	"terminal.clearHistory": "Rensa historik",
 	"terminal.clearFunctions": "Rensa alla funktioner",
+	"terminal.constantDefined": "Definiera konstant {{name}} = {{body}}",
+	"terminal.constantSaved": "Konstant {{name}} = {{body}} definierad",
+	"terminal.definedConstants": "Definierade konstanter:",
+	"terminal.noConstants": "Inga konstanter definierade",
+	"terminal.constantsCount": "{{count}} konstant(er) definierade",
+	"terminal.constantsCleared": "Rensat {{count}} konstant(er)",
+	"terminal.clearConstants": "Rensa alla konstanter",
 
 	"common.close": "Stäng"
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "preact/hooks";
 import { JSX } from "preact";
 import { calculate } from "#/calculator";
 import { useTranslation } from "#/i18n/hook";
-import { parseFunctionDefinition } from "#/state/user-functions";
+import { parseFunctionDefinition, parseConstantDefinition } from "#/state/user-functions";
 
 const APP_VERSION = __APP_VERSION__;
 
@@ -19,6 +19,9 @@ export default function Terminal() {
 		userFunctions,
 		tryDefineFunction,
 		clearFunctions,
+		userConstants,
+		tryDefineConstant,
+		clearConstants,
 		windowSize,
 		decimalSeparator,
 	} = useCalculator();
@@ -96,6 +99,13 @@ export default function Terminal() {
 			return;
 		}
 
+		// Check if it's a constant definition
+		const constDef = parseConstantDefinition(buffer.value);
+		if (constDef) {
+			setPreviewResult("info:" + t("terminal.constantDefined", { name: constDef.name, body: constDef.body }));
+			return;
+		}
+
 		// Check for special commands - mark as info (non-numeric)
 		const trimmed = buffer.value.trim().toLowerCase();
 		if (trimmed === "clear" || trimmed === "cls") {
@@ -111,15 +121,24 @@ export default function Terminal() {
 			setPreviewResult("info:" + t("terminal.clearFunctions"));
 			return;
 		}
+		if (trimmed === "consts" || trimmed === "constants") {
+			const count = userConstants.size;
+			setPreviewResult("info:" + (count > 0 ? t("terminal.constantsCount", { count }) : t("terminal.noConstants")));
+			return;
+		}
+		if (trimmed === "clearconsts" || trimmed === "clearconstants") {
+			setPreviewResult("info:" + t("terminal.clearConstants"));
+			return;
+		}
 
 		// Calculate preview safely without mutating memory
-		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
+		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, userConstants);
 		if (result.isOk()) {
 			setPreviewResult("= " + formatResult(result.value, decimalSeparator));
 		} else {
 			setPreviewResult("info:" + t("terminal.error"));
 		}
-	}, [buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, t, decimalSeparator]);
+	}, [buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, userConstants, t, decimalSeparator]);
 
 	const handleSubmit = (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
 		e.preventDefault();
@@ -179,6 +198,49 @@ export default function Terminal() {
 			return;
 		}
 
+		// List defined constants
+		if (trimmedInput === "consts" || trimmedInput === "constants") {
+			let resultString: string;
+			if (userConstants.size === 0) {
+				resultString = t("terminal.noConstants");
+			} else {
+				const constList = Array.from(userConstants.values())
+					.map(c => `${c.name} = ${c.body}`)
+					.join("\n  ");
+				resultString = `${t("terminal.definedConstants")}\n  ${constList}`;
+			}
+
+			pushSharedHistory({
+				expression: buffer.value,
+				result: resultString,
+				timestamp: Date.now(),
+				isNumericResult: false,
+			});
+
+			buffer.empty();
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+
+		// Clear all constants
+		if (trimmedInput === "clearconsts" || trimmedInput === "clearconstants") {
+			const count = userConstants.size;
+			clearConstants();
+
+			pushSharedHistory({
+				expression: buffer.value,
+				result: t("terminal.constantsCleared", { count }),
+				timestamp: Date.now(),
+				isNumericResult: false,
+			});
+
+			buffer.empty();
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+
 		// Check if it's a function definition
 		const funcDef = tryDefineFunction(buffer.value);
 		if (funcDef) {
@@ -196,6 +258,22 @@ export default function Terminal() {
 			return;
 		}
 
+		// Check if it's a constant definition
+		const constDef = tryDefineConstant(buffer.value);
+		if (constDef) {
+			pushSharedHistory({
+				expression: buffer.value,
+				result: t("terminal.constantSaved", { name: constDef.name, body: constDef.body }),
+				timestamp: Date.now(),
+				isNumericResult: false,
+			});
+
+			buffer.empty();
+			setHistoryIndex(-1);
+			setTempInput("");
+			return;
+		}
+
 		// Prevent submission if preview shows an error
 		const errorMessage = t("terminal.error");
 		if (previewResult?.includes(errorMessage)) {
@@ -203,7 +281,7 @@ export default function Terminal() {
 		}
 
 		// Calculate directly without using the shared buffer
-		const calculationResult = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
+		const calculationResult = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, userConstants);
 
 		let resultString: string;
 		if (calculationResult.isOk()) {

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { setupPage, CalculatorHelpers, SettingsHelpers } from "../test-utils";
+import { setupPage, CalculatorHelpers, SettingsHelpers, formatNumberForTest } from "../test-utils";
 
 test.beforeEach(async ({ page }) => {
 	await setupPage(page);
@@ -44,7 +44,8 @@ test.describe("Mathematical Functions", () => {
 			await calc.calculate("sin(1.5708)", "button");
 			const result = await calc.getResult().textContent();
 			// The calculator returns something very close to 1 (or exactly 0.99999...)
-			const numResult = parseFloat(result!.replace(",", "."));
+			// Remove thousand separators (U+202F) before parsing
+			const numResult = parseFloat(result!.replace(/[\s\u202F\u00A0]/g, "").replace(",", "."));
 			expect(numResult).toBeGreaterThan(0.999);
 		});
 	});
@@ -95,7 +96,7 @@ test.describe("Mathematical Functions", () => {
 			await page.getByRole("button", { name: "=" }).click();
 			expect(await calc.getExpression()).toBe("√(3 ; 8)");
 			// Calculator shows the actual result, not the expected 2
-			await expect(calc.getResult()).toHaveText("1,14720269043987708947");
+			await expect(calc.getResult()).toHaveText(formatNumberForTest("1,14720269043987708947"));
 		});
 	});
 

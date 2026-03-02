@@ -42,13 +42,20 @@
 	"terminal.placeholder": "Enter calculation...",
 	"terminal.error": "Error",
 	"terminal.functionDefined": "Define function {{name}}({{params}})",
-	"terminal.functionSaved": "✓ Function {{name}}{{params}} defined",
+	"terminal.functionSaved": "Function {{name}}{{params}} defined",
 	"terminal.definedFunctions": "Defined functions:",
 	"terminal.noFunctions": "No functions defined",
 	"terminal.functionsCount": "{{count}} function(s) defined",
-	"terminal.functionsCleared": "✓ Cleared {{count}} function(s)",
+	"terminal.functionsCleared": "Cleared {{count}} function(s)",
 	"terminal.clearHistory": "Clear history",
 	"terminal.clearFunctions": "Clear all functions",
+	"terminal.constantDefined": "Define constant {{name}} = {{body}}",
+	"terminal.constantSaved": "Constant {{name}} = {{body}} defined",
+	"terminal.definedConstants": "Defined constants:",
+	"terminal.noConstants": "No constants defined",
+	"terminal.constantsCount": "{{count}} constant(s) defined",
+	"terminal.constantsCleared": "Cleared {{count}} constant(s)",
+	"terminal.clearConstants": "Clear all constants",
 
 	"common.close": "Close"
 }

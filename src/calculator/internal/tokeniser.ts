@@ -51,8 +51,11 @@ const tokenMatchers = [
 	// - When adding new types, remember to mark the `type` property `as const` for TypeScript.
 
 	[
-		// Unsigned numeric literal: "0", "123", "25.6", etc...
-		/^((\d+[,.]\d+)|([1-9]\d*)|0)/,
+		// Unsigned numeric literal: "0", "123", "25.6", "4.655462e+79", etc...
+		// The mess that is  ([eE][+-]?\d+) should capture scientific notation; it needs at least
+		// one digit after the optional sign so that a bare "e" (the mathematical constant) is
+		// never still distinct from the part of a number.
+		/^(((\d+[,.]\d+)|([1-9]\d*)|0)([eE][+-]?\d+)?)/,
 		str => ({
 			type: "litr" as const,
 			value: new Decimal(str.replace(",", ".")),

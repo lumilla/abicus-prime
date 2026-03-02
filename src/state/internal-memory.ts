@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 import { useState } from "preact/hooks";
+import { loadString, saveString } from "#/utils/local-storage";
 
 const STORAGE_KEY_IND = "abicus-memory-ind";
 const STORAGE_KEY_ANS = "abicus-memory-ans";
@@ -9,23 +10,19 @@ function zero() {
 }
 
 function loadFromStorage(key: string): Decimal {
-	try {
-		const stored = localStorage.getItem(key);
-		if (stored !== null) {
+	const stored = loadString(key);
+	if (stored !== null) {
+		try {
 			return new Decimal(stored);
+		} catch {
+			// Ignore parse errors
 		}
-	} catch {
-		// Ignore storage errors
 	}
 	return zero();
 }
 
 function saveToStorage(key: string, value: Decimal) {
-	try {
-		localStorage.setItem(key, value.toString());
-	} catch {
-		// Ignore storage errors
-	}
+	saveString(key, value.toString());
 }
 
 export type MemoryHandle = ReturnType<typeof useMemory>;

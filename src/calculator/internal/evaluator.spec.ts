@@ -320,6 +320,30 @@ describe("Using degrees in arcus functions", () => {
 	});
 });
 
+run("Logarithm (default base 10)", [
+	[[t.log10, t.lbrk, litr(100), t.rbrk], d(2)],
+	[[t.log10, t.lbrk, litr(1000), t.rbrk], d(3)],
+	[[t.log10, t.lbrk, litr(1), t.rbrk], d(0)],
+	[[t.log10, t.lbrk, litr(10), t.rbrk], d(1)],
+]);
+
+run("Logarithm with explicit base", [
+	[[t.log10, t.lbrk, litr(1000), t.semi, litr(10), t.rbrk], d(3)],
+	[[t.log10, t.lbrk, litr(8), t.semi, litr(2), t.rbrk], d(3)],
+	[[t.log10, t.lbrk, litr(1024), t.semi, litr(2), t.rbrk], d(10)],
+	[[t.log10, t.lbrk, litr(27), t.semi, litr(3), t.rbrk], d(3)],
+	[[t.log10, t.lbrk, litr(1), t.semi, litr(7), t.rbrk], d(0)],
+]);
+
+fail("Logarithm errors", [
+	[t.log10, t.lbrk, litr(0), t.rbrk],
+	[t.log10, t.lbrk, t.sub, litr(1), t.rbrk],
+	[t.log10, t.lbrk, litr(10), t.semi, litr(1), t.rbrk],
+	[t.log10, t.lbrk, litr(10), t.semi, litr(0), t.rbrk],
+	[t.log10, t.lbrk, litr(10), t.semi, t.sub, litr(2), t.rbrk],
+	[t.log10, t.lbrk, litr(10), t.semi, litr(2), t.semi, litr(3), t.rbrk], // this is the wrong number of args
+]);
+
 describe("Syntax Errors", () => {
 	fail("Arithmetic", [
 		[litr(10), t.add, t.add, litr(10)],

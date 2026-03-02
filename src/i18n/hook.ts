@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import { translations, LanguageCode, DEFAULT_LANGUAGE, supportedLanguages } from "./translations";
+import { loadString, saveString } from "#/utils/local-storage";
 
 const STORAGE_KEY = "abicus-language";
 
@@ -33,24 +34,16 @@ function getTranslation(key: string, language: LanguageCode, params?: Record<str
 
 // Get the stored language preference or default
 function getStoredLanguage(): LanguageCode {
-	try {
-		const stored = localStorage.getItem(STORAGE_KEY);
-		if (stored && stored in translations) {
-			return stored;
-		}
-	} catch {
-		// localStorage might not be available
+	const stored = loadString(STORAGE_KEY);
+	if (stored && stored in translations) {
+		return stored as LanguageCode;
 	}
 	return DEFAULT_LANGUAGE;
 }
 
 // Store the language preference
 function setStoredLanguage(language: LanguageCode): void {
-	try {
-		localStorage.setItem(STORAGE_KEY, language);
-	} catch {
-		// localStorage might not be available
-	}
+	saveString(STORAGE_KEY, language);
 }
 
 export function useTranslation() {

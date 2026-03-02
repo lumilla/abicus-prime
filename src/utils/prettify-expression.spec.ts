@@ -1,4 +1,5 @@
 import prettify from "./prettify-expression";
+import { THOUSAND_SEPARATOR as S } from "./format-number";
 
 // Note that the minus and times symbols are written as "-" and "*" here
 // but they're actually rendered as "−" and "⋅" by the prettifier function;
@@ -16,8 +17,8 @@ run("Basic spacing rules", [
 
 run("Number literals", [
 	["123+321", "123 + 321"],
-	["1000+2000", "1 000 + 2 000"],
-	["123456.789", "123 456,789"],
+	["1000+2000", `1${S}000 + 2${S}000`],
+	["123456.789", `123${S}456,789`],
 	["1.00000", "1"],
 	["0,10000", "0,1"],
 	["123,456", "123,456"],

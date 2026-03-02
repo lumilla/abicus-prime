@@ -118,6 +118,20 @@ export default function evaluate(tokens: Token[], ans: Decimal, ind: Decimal, an
 										: radicand.pow(ONE.div(degree)),
 							);
 						})
+						.with("log10", () => {
+							// log(x)        -> log base 10 of x
+							// log(x; base)  -> log base <base> of x
+							if (args.length < 1) return err("NOT_ENOUGH_ARGS" as const);
+							if (args.length > 2) return err("TOO_MANY_ARGS" as const);
+
+							const x = args[0]!;
+							const base = args[1] ?? new Decimal(10);
+
+							// Base needs to be a positive number other than 1
+							if (base.lte(0) || base.eq(1)) return err("NOT_A_NUMBER" as const);
+
+							return ok(x.logarithm(base));
+						})
 						.otherwise(funcName => {
 							if (args.length < 1) return err("NOT_ENOUGH_ARGS" as const);
 							if (args.length > 1) return err("TOO_MANY_ARGS" as const);
@@ -177,13 +191,13 @@ export default function evaluate(tokens: Token[], ans: Decimal, ind: Decimal, an
 				.with({ type: "oper", name: "-" }, () => evalExpr(2).map(right => left.value.sub(right)))
 				.with({ type: "oper", name: "*" }, () => evalExpr(3).map(right => left.value.mul(right)))
 				.with({ type: "oper", name: "/" }, () => evalExpr(3).map(right => left.value.div(right)))
-			.with({ type: "oper", name: "^" }, () =>
-				evalExpr(3).andThen(right => {
-					// 0^0 is undefined
-					if (left.value.isZero() && right.isZero()) return err("NOT_A_NUMBER" as const);
-					return ok(left.value.pow(right));
-				})
-			)
+				.with({ type: "oper", name: "^" }, () =>
+					evalExpr(3).andThen(right => {
+						// 0^0 is undefined
+						if (left.value.isZero() && right.isZero()) return err("NOT_A_NUMBER" as const);
+						return ok(left.value.pow(right));
+					}),
+				)
 				.with({ type: "fact" }, () => {
 					if (left.value.isNeg() || !left.value.isInteger()) {
 						return err("NOT_A_NUMBER" as const);

@@ -1,6 +1,31 @@
 import { Page, expect } from "@playwright/test";
 
 /**
+ * Narrow no-break space used as digit-group separator (same as in src/utils/format-number.ts)
+ */
+export const THOUSAND_SEPARATOR = "\u202F";
+
+/**
+ * Format a decimal number string with thousand separators for test assertions
+ * Groups decimal digits: every 3 from the left (e.g., "0,123456789" becomes "0,123\u202F456\u202F789")
+ */
+export function formatNumberForTest(numStr: string, decimalSeparator: string = ","): string {
+	const [integerPart = "", decimalPart] = numStr.split(decimalSeparator);
+
+	// Group decimal digits: every 3 from the left
+	let result: string;
+	if (decimalPart !== undefined) {
+		const groupedDecimal =
+			decimalPart.length > 3 ? decimalPart.replace(/(\d{3})(?=\d)/g, `$1${THOUSAND_SEPARATOR}`) : decimalPart;
+		result = `${integerPart}${decimalSeparator}${groupedDecimal}`;
+	} else {
+		result = integerPart;
+	}
+
+	return result;
+}
+
+/**
  * Sets up the page with English language for consistent test experience
  */
 export async function setupPage(page: Page) {

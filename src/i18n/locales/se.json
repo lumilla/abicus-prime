@@ -42,13 +42,20 @@
 	"terminal.placeholder": "Čális rehkenastima...",
 	"terminal.error": "Meattáhus",
 	"terminal.functionDefined": "Ráhkat funkšuvnna {{name}}({{params}})",
-	"terminal.functionSaved": "✓ Funkšuvdna {{name}}{{params}} definerejuvvon",
+	"terminal.functionSaved": "Funkšuvdna {{name}}{{params}} definerejuvvon",
 	"terminal.definedFunctions": "Definerejuvvon funkšuvnnat:",
 	"terminal.noFunctions": "Ii leat definerejuvvon funkšuvdna",
 	"terminal.functionsCount": "{{count}} funkšuvdna definerejuvvon",
-	"terminal.functionsCleared": "✓ Sihkkojuvvon {{count}} funkšuvdna",
+	"terminal.functionsCleared": "Sihkkojuvvon {{count}} funkšuvdna",
 	"terminal.clearHistory": "Čielga historjá",
 	"terminal.clearFunctions": "Buhtte buot funkšuvnnaid",
+	"terminal.constantDefined": "Ráhkat konstaŋtta {{name}} = {{body}}",
+	"terminal.constantSaved": "Konstaŋtta {{name}} = {{body}} definerejuvvon",
+	"terminal.definedConstants": "Definerejuvvon konstaŋttát:",
+	"terminal.noConstants": "Ii leat definerejuvvon konstaŋttat",
+	"terminal.constantsCount": "{{count}} konstaŋtta definerejuvvon",
+	"terminal.constantsCleared": "Sihkkojuvvon {{count}} konstaŋtta",
+	"terminal.clearConstants": "Buhtte buot konstaŋttaid",
 
 	"common.close": "Gidde"
 }

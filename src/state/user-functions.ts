@@ -3,6 +3,9 @@
  *
  * Allows users to define custom functions like `f(x) = 2*x`
  * and use them in subsequent calculations like `f(5)` -> 10
+ *
+ * Also supports user-defined constants like `tau = 2*pi`
+ * which are expanded in expressions before tokenising.
  */
 
 export type UserFunction = {
@@ -13,7 +16,14 @@ export type UserFunction = {
 
 export type UserFunctionsMap = Map<string, UserFunction>;
 
-/** Reserved names that cannot be used for user functions */
+export type UserConstant = {
+	name: string;
+	body: string;
+};
+
+export type UserConstantsMap = Map<string, UserConstant>;
+
+/** Reserved names that cannot be used for user functions or user constants */
 const RESERVED_NAMES = new Set([
 	"sin",
 	"cos",
@@ -66,6 +76,60 @@ export function parseFunctionDefinition(expression: string): UserFunction | null
 	}
 
 	return { name, params, body };
+}
+
+/**
+ * Parses an expression like `tau=2*pi` into a UserConstant, or returns null.
+ * A constant definition has no parentheses (which distinguishes it from a function definition).
+ */
+export function parseConstantDefinition(expression: string): UserConstant | null {
+	const expr = expression.replace(/\s/g, "");
+
+	// Must be: identifier = body (no parentheses after the name)
+	const match = /^([a-zA-Z_][a-zA-Z0-9_]*)=(.+)$/.exec(expr);
+	if (!match) return null;
+
+	const [, name, body] = match;
+	if (!name || !body || RESERVED_NAMES.has(name.toLowerCase())) return null;
+
+	return { name, body };
+}
+
+/**
+ * Substitutes all user-defined constants in an expression, iterating until stable
+ * to handle constants that reference other constants (e.g. `a = 2`, `b = 3*a`).
+ *
+ * Returns `null` if the depth limit is exceeded (likely circular reference).
+ */
+export function expandUserConstants(
+	expression: string,
+	constants: UserConstantsMap,
+	maxDepth: number = 10,
+): string | null {
+	if (constants.size === 0) return expression;
+
+	let result = expression;
+	let changed = true;
+	let depth = 0;
+
+	// Sort by name length descending to avoid partial replacements of shorter names first
+	const sorted = [...constants.values()].sort((a, b) => b.name.length - a.name.length);
+
+	while (changed) {
+		if (depth++ >= maxDepth) return null; // Circular reference
+		changed = false;
+
+		for (const constant of sorted) {
+			const pattern = new RegExp(`\\b${constant.name}\\b`, "g");
+			const next = result.replace(pattern, `(${constant.body})`);
+			if (next !== result) {
+				result = next;
+				changed = true;
+			}
+		}
+	}
+
+	return result;
 }
 
 /**

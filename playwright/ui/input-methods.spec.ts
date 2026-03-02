@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { setupPage, CalculatorHelpers, SettingsHelpers, SelectionHelpers } from "../test-utils";
+import { setupPage, CalculatorHelpers, SettingsHelpers, SelectionHelpers, formatNumberForTest } from "../test-utils";
 
 test.beforeEach(async ({ page }) => {
 	await setupPage(page);
@@ -59,7 +59,7 @@ test.describe("Input Methods", () => {
 			// Test that trigonometric function now uses radians
 			await calc.calculate("sin(1.5708)", "equals"); // π/2 ≈ 1.5708
 			// Calculator shows high precision result close to 1
-			await expect(calc.getResult()).toHaveText("0,999999999993253782134");
+			await expect(calc.getResult()).toHaveText(formatNumberForTest("0,999999999993253782134"));
 		});
 	});
 
