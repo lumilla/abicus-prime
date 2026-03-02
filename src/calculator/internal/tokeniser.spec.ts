@@ -49,6 +49,18 @@ run("Disregard trailing zeros", [
 	],
 ]);
 
+run("Scientific notation", [
+	// block of scientific notation:
+	["4.655462e+79", [litr(d("4.655462e+79"))]],
+	["1.23e-10", [litr(d("1.23e-10"))]],
+	["2e5", [litr(d("2e5"))]],
+	["1e+25", [litr(d("1e+25"))]],
+	["1.23456789012345678901e-25", [litr(d("1.23456789012345678901e-25"))]],
+	["4,655462e+79", [litr(d("4.655462e+79"))]],
+	["1e+10+2", [litr(d("1e+10")), t.add, litr(2)]],
+	["4e", [litr(4), t.e]],
+]);
+
 run("Operators", [["2+3", [litr(2), t.add, litr(3)]]]);
 run("Brackets", [["2+(3+4)", [litr(2), t.add, t.lbrk, litr(3), t.add, litr(4), t.rbrk]]]);
 run("Semicolons", [["(8;3;2;1)", [t.lbrk, litr(8), t.semi, litr(3), t.semi, litr(2), t.semi, litr(1), t.rbrk]]]);
