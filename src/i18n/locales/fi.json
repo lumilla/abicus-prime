@@ -42,13 +42,20 @@
 	"terminal.placeholder": "Syötä laskutoimitus...",
 	"terminal.error": "Virhe",
 	"terminal.functionDefined": "Määritä funktio {{name}}({{params}})",
-	"terminal.functionSaved": "✓ Funktio {{name}}{{params}} määritetty",
+	"terminal.functionSaved": "Funktio {{name}}{{params}} määritetty",
 	"terminal.definedFunctions": "Määritetyt funktiot:",
 	"terminal.noFunctions": "Ei määritettyjä funktioita",
 	"terminal.functionsCount": "{{count}} funktio(ta) määritetty",
-	"terminal.functionsCleared": "✓ Poistettu {{count}} funktio(ta)",
+	"terminal.functionsCleared": "Poistettu {{count}} funktio(ta)",
 	"terminal.clearHistory": "Tyhjennä historia",
 	"terminal.clearFunctions": "Tyhjennä kaikki funktiot",
+	"terminal.constantDefined": "Määritä vakio {{name}} = {{body}}",
+	"terminal.constantSaved": "Vakio {{name}} = {{body}} määritetty",
+	"terminal.definedConstants": "Määritetyt vakiot:",
+	"terminal.noConstants": "Ei määritettyjä vakioita",
+	"terminal.constantsCount": "{{count}} vakio(ta) määritetty",
+	"terminal.constantsCleared": "Poistettu {{count}} vakio(ta)",
+	"terminal.clearConstants": "Tyhjennä kaikki vakiot",
 
 	"common.close": "Sulje"
 }

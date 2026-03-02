@@ -3,10 +3,18 @@ import { createContext, ComponentChildren } from "preact";
 import { useContext, useState, useEffect } from "preact/hooks";
 import { AngleUnit, calculate } from "#/calculator";
 import { formatResult } from "#/utils/format-result";
+import { loadString, saveString, loadJSON, saveJSON, removeKey } from "#/utils/local-storage";
 
 import useBuffer, { BufferHandle } from "./internal-buffer";
 import useMemory, { MemoryHandle } from "./internal-memory";
-import { UserFunction, UserFunctionsMap, parseFunctionDefinition } from "./user-functions";
+import {
+	UserFunction,
+	UserFunctionsMap,
+	parseFunctionDefinition,
+	UserConstant,
+	UserConstantsMap,
+	parseConstantDefinition,
+} from "./user-functions";
 import type { DecimalSeparator } from "./types";
 
 type InterfaceMode = "pocket" | "terminal";
@@ -14,6 +22,7 @@ type Language = "fi" | "sv" | "en" | "se";
 type FontSize = number;
 type WindowSize = "small" | "medium" | "large";
 export type { DecimalSeparator } from "./types";
+export type { UserFunction, UserConstant } from "./user-functions";
 
 // Font size limits (in points)
 const FONT_SIZE_MIN = 10;
@@ -27,7 +36,6 @@ export type TerminalHistoryItem = {
 	isFunction?: boolean; // Mark function definitions for special styling
 	isNumericResult?: boolean; // True if the result is a numeric value that can be reused
 };
-export type { UserFunction } from "./user-functions";
 
 type CalculatorContext = {
 	/** Handle to the calculator's input buffer */
@@ -60,6 +68,17 @@ type CalculatorContext = {
 	clearFunctions(): void;
 	/** Try to parse and define a function from an expression. Returns the function if defined, null otherwise */
 	tryDefineFunction(expression: string): UserFunction | null;
+
+	/** User-defined constants */
+	userConstants: UserConstantsMap;
+	/** Define a new user constant */
+	defineConstant(constant: UserConstant): void;
+	/** Remove a user constant by name */
+	removeConstant(name: string): void;
+	/** Clear all user-defined constants */
+	clearConstants(): void;
+	/** Try to parse and define a constant from an expression. Returns the constant if defined, null otherwise */
+	tryDefineConstant(expression: string): UserConstant | null;
 
 	/** Unit to use in trigonometric functions */
 	angleUnit: AngleUnit;
@@ -131,95 +150,54 @@ export function useCalculator() {
 }
 
 export default function CalculatorProvider({ children }: { children: ComponentChildren }) {
-	const [angleUnit, setAngleUnit] = useState<AngleUnit>(() => {
-		if (typeof window === "undefined") return "deg";
-		const saved = localStorage.getItem("abicus-angle-unit");
-		return (saved as AngleUnit) || "deg";
-	});
-	const [interfaceMode, setInterfaceModeState] = useState<InterfaceMode>(() => {
-		if (typeof window === "undefined") return "pocket";
-		const saved = localStorage.getItem("abicus-interface-mode");
-		return (saved as InterfaceMode) || "pocket";
-	});
+	const [angleUnit, setAngleUnit] = useState<AngleUnit>(() => (loadString("abicus-angle-unit") as AngleUnit) || "deg");
+	const [interfaceMode, setInterfaceModeState] = useState<InterfaceMode>(
+		() => (loadString("abicus-interface-mode") as InterfaceMode) || "pocket",
+	);
+	const [language, setLanguageState] = useState<Language>(() => (loadString("abicus-language") as Language) || "fi");
 
-	// Initialize language with saved preference or default to Finnish
-	const [language, setLanguageState] = useState<Language>(() => {
-		if (typeof window === "undefined") return "fi";
-		const saved = localStorage.getItem("abicus-language");
-		return (saved as Language) || "fi";
-	});
-
-	// Initialize dark mode with OS preference or saved preference
 	const [isDarkMode, setIsDarkMode] = useState(() => {
+		const saved = loadString("abicus-dark-mode");
+		if (saved !== null) return JSON.parse(saved) as boolean;
 		if (typeof window === "undefined") return false;
-
-		const saved = localStorage.getItem("abicus-dark-mode");
-		if (saved !== null) {
-			return JSON.parse(saved);
-		}
-
-		// Use OS preference if no saved preference
 		return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
 	});
 
-	// Initialize font size with saved preference or default to 16pt
 	const [fontSize, setFontSizeState] = useState<FontSize>(() => {
-		if (typeof window === "undefined") return FONT_SIZE_DEFAULT;
-		const saved = localStorage.getItem("abicus-font-size");
+		const saved = loadString("abicus-font-size");
 		if (saved) {
 			const parsed = parseInt(saved, 10);
-			if (!isNaN(parsed) && parsed >= FONT_SIZE_MIN && parsed <= FONT_SIZE_MAX) {
-				return parsed;
-			}
+			if (!isNaN(parsed) && parsed >= FONT_SIZE_MIN && parsed <= FONT_SIZE_MAX) return parsed;
 		}
 		return FONT_SIZE_DEFAULT;
 	});
-
-	// Initialize window size with saved preference or default to medium
-	const [windowSize, setWindowSizeState] = useState<WindowSize>(() => {
-		if (typeof window === "undefined") return "medium";
-		const saved = localStorage.getItem("abicus-window-size");
-		return (saved as WindowSize) || "medium";
-	});
-
-	// Initialize decimal separator with saved preference or default to comma
-	const [decimalSeparator, setDecimalSeparatorState] = useState<DecimalSeparator>(() => {
-		if (typeof window === "undefined") return ",";
-		const saved = localStorage.getItem("abicus-decimal-separator");
-		return (saved as DecimalSeparator) || ",";
-	});
+	const [windowSize, setWindowSizeState] = useState<WindowSize>(
+		() => (loadString("abicus-window-size") as WindowSize) || "medium",
+	);
+	const [decimalSeparator, setDecimalSeparatorState] = useState<DecimalSeparator>(
+		() => (loadString("abicus-decimal-separator") as DecimalSeparator) || ",",
+	);
 
 	const [showSettings, setShowSettings] = useState(false);
 	const [terminalHistory, setTerminalHistory] = useState<{ expression: string; result: string; timestamp: number }[]>(
-		[],
+		() => loadJSON<{ expression: string; result: string; timestamp: number }[]>("abicus-terminal-history", []),
 	);
-	const [sharedHistory, setSharedHistory] = useState<{ expression: string; result: string; timestamp: number }[]>([]);
-	const [userFunctions, setUserFunctions] = useState<UserFunctionsMap>(() => {
-		if (typeof window === "undefined") return new Map();
-		try {
-			const saved = localStorage.getItem("abicus-user-functions");
-			if (saved) {
-				const parsed = JSON.parse(saved) as [string, UserFunction][];
-				return new Map(parsed);
-			}
-		} catch {
-			// Ignore parse errors
-		}
-		return new Map();
-	});
+	const [sharedHistory, setSharedHistory] = useState<{ expression: string; result: string; timestamp: number }[]>(() =>
+		loadJSON<{ expression: string; result: string; timestamp: number }[]>("abicus-shared-history", []),
+	);
+	const [userFunctions, setUserFunctions] = useState<UserFunctionsMap>(
+		() => new Map(loadJSON<[string, UserFunction][]>("abicus-user-functions", [])),
+	);
+	const [userConstants, setUserConstants] = useState<UserConstantsMap>(
+		() => new Map(loadJSON<[string, UserConstant][]>("abicus-user-constants", [])),
+	);
 	const buffer = useBuffer();
 	const memory = useMemory();
 
-	// Persist user functions to localStorage
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-		try {
-			const entries = Array.from(userFunctions.entries());
-			localStorage.setItem("abicus-user-functions", JSON.stringify(entries));
-		} catch {
-			// Ignore storage errors
-		}
-	}, [userFunctions]);
+	useEffect(() => saveJSON("abicus-user-functions", Array.from(userFunctions.entries())), [userFunctions]);
+	useEffect(() => saveJSON("abicus-user-constants", Array.from(userConstants.entries())), [userConstants]);
+	useEffect(() => saveJSON("abicus-terminal-history", terminalHistory), [terminalHistory]);
+	useEffect(() => saveJSON("abicus-shared-history", sharedHistory), [sharedHistory]);
 
 	// Apply dark mode class to document
 	useEffect(() => {
@@ -233,9 +211,7 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 	// Listen for OS color scheme changes (only if no saved preference exists)
 	useEffect(() => {
 		if (typeof window === "undefined") return;
-
-		const savedPreference = localStorage.getItem("abicus-dark-mode");
-		if (savedPreference !== null) return; // Don't listen if user has saved preference
+		if (loadString("abicus-dark-mode") !== null) return;
 
 		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 		const handleChange = (e: MediaQueryListEvent) => {
@@ -287,6 +263,7 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		memory.empty();
 		clearSharedHistory();
 		clearFunctions();
+		clearConstants();
 	}
 
 	function pushTerminalHistory(item: { expression: string; result: string; timestamp: number }) {
@@ -295,6 +272,7 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 
 	function clearTerminalHistory() {
 		setTerminalHistory([]);
+		removeKey("abicus-terminal-history");
 	}
 
 	function pushSharedHistory(item: { expression: string; result: string; timestamp: number }) {
@@ -306,6 +284,8 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 	function clearSharedHistory() {
 		setSharedHistory([]);
 		setTerminalHistory([]);
+		removeKey("abicus-shared-history");
+		removeKey("abicus-terminal-history");
 	}
 
 	function defineFunction(func: UserFunction) {
@@ -336,15 +316,43 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 		return func;
 	}
 
+	function defineConstant(constant: UserConstant) {
+		setUserConstants(prev => {
+			const newMap = new Map(prev);
+			newMap.set(constant.name, constant);
+			return newMap;
+		});
+	}
+
+	function removeConstant(name: string) {
+		setUserConstants(prev => {
+			const newMap = new Map(prev);
+			newMap.delete(name);
+			return newMap;
+		});
+	}
+
+	function clearConstants() {
+		setUserConstants(new Map());
+	}
+
+	function tryDefineConstant(expression: string): UserConstant | null {
+		const constant = parseConstantDefinition(expression);
+		if (constant) {
+			defineConstant(constant);
+		}
+		return constant;
+	}
+
 	function setLanguage(value: Language) {
 		setLanguageState(value);
-		localStorage.setItem("abicus-language", value);
+		saveString("abicus-language", value);
 	}
 
 	function crunch(saveToInd = false) {
 		buffer.clean(decimalSeparator);
 
-		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions);
+		const result = calculate(buffer.value, memory.ans, memory.ind, angleUnit, userFunctions, userConstants);
 		if (result.isErr()) {
 			buffer.setErr(true);
 			return;
@@ -385,55 +393,58 @@ export default function CalculatorProvider({ children }: { children: ComponentCh
 				removeFunction,
 				clearFunctions,
 				tryDefineFunction,
-				crunch,
+				userConstants,
+				defineConstant,
+				removeConstant,
+				clearConstants,
+				tryDefineConstant,
 
 				angleUnit,
 				radsOn() {
 					buffer.makeDirty();
 					setAngleUnit("rad");
-					localStorage.setItem("abicus-angle-unit", "rad");
+					saveString("abicus-angle-unit", "rad");
 				},
 				degsOn() {
 					buffer.makeDirty();
 					setAngleUnit("deg");
-					localStorage.setItem("abicus-angle-unit", "deg");
+					saveString("abicus-angle-unit", "deg");
 				},
 
 				interfaceMode,
 				setInterfaceMode(mode: InterfaceMode) {
 					setInterfaceModeState(mode);
-					localStorage.setItem("abicus-interface-mode", mode);
+					saveString("abicus-interface-mode", mode);
 				},
 
 				isDarkMode,
 				setDarkMode: (value: boolean) => {
 					setIsDarkMode(value);
-					// Save preference to localStorage when manually set
-					localStorage.setItem("abicus-dark-mode", JSON.stringify(value));
+					saveJSON("abicus-dark-mode", value);
 				},
 
 				fontSize,
 				setFontSize: (size: FontSize) => {
-					// Clamp to valid range
 					const clampedSize = Math.max(FONT_SIZE_MIN, Math.min(FONT_SIZE_MAX, size));
 					setFontSizeState(clampedSize);
-					localStorage.setItem("abicus-font-size", String(clampedSize));
+					saveString("abicus-font-size", String(clampedSize));
 				},
 
 				windowSize,
 				setWindowSize: (size: WindowSize) => {
 					setWindowSizeState(size);
-					localStorage.setItem("abicus-window-size", size);
+					saveString("abicus-window-size", size);
 				},
 
 				decimalSeparator,
 				setDecimalSeparator: (separator: DecimalSeparator) => {
 					setDecimalSeparatorState(separator);
-					localStorage.setItem("abicus-decimal-separator", separator);
+					saveString("abicus-decimal-separator", separator);
 				},
 
 				language,
 				setLanguage,
+				crunch,
 
 				showSettings,
 				openSettings() {

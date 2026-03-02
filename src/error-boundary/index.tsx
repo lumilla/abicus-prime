@@ -1,6 +1,7 @@
 import { Component, ComponentChildren } from "preact";
 import { useTranslation } from "#/i18n";
 import WarningIcon from "#/components/warning-icon";
+import { loadString, loadJSON } from "#/utils/local-storage";
 
 import { BUFFER_DEBUG, EXPR_DEBUG, INPUT_DEBUG } from "./constants";
 
@@ -24,37 +25,15 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 
 	const isUserTriggered = message && userTriggeredMessages.some(msg => message.includes(msg) || message === msg);
 
-	// Try to get calculator settings from localStorage as fallback
-	let calculatorSettings = {
-		interfaceMode: "unknown",
-		angleUnit: "unknown",
-		isDarkMode: "unknown" as string | boolean,
-		language: "unknown",
-		fontSize: "unknown",
-		windowSize: "unknown",
-		decimalSeparator: "unknown",
+	const calculatorSettings = {
+		interfaceMode: loadString("abicus-interface-mode"),
+		angleUnit: loadString("abicus-angle-unit"),
+		isDarkMode: loadJSON<string | boolean>("abicus-dark-mode", "unknown"),
+		language: loadString("abicus-language"),
+		fontSize: loadString("abicus-font-size"),
+		windowSize: loadString("abicus-window-size"),
+		decimalSeparator: loadString("abicus-decimal-separator"),
 	};
-
-	try {
-		const darkMode = localStorage.getItem("abicus-dark-mode");
-		const language = localStorage.getItem("abicus-language");
-		const interfaceMode = localStorage.getItem("abicus-interface-mode");
-		const angleUnit = localStorage.getItem("abicus-angle-unit");
-		const fontSize = localStorage.getItem("abicus-font-size");
-		const windowSize = localStorage.getItem("abicus-window-size");
-		const decimalSeparator = localStorage.getItem("abicus-decimal-separator");
-		calculatorSettings = {
-			interfaceMode: interfaceMode || "pocket",
-			angleUnit: angleUnit || "deg",
-			isDarkMode: darkMode ? JSON.parse(darkMode) : "unknown",
-			language: language || "fi",
-			fontSize: fontSize || "16",
-			windowSize: windowSize || "medium",
-			decimalSeparator: decimalSeparator || ",",
-		};
-	} catch (_e) {
-		// Fallback values already set
-	}
 
 	function onClickReload() {
 		location.reload();

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { setupPage, TerminalHelpers, SettingsHelpers } from "../test-utils";
+import { setupPage, TerminalHelpers, SettingsHelpers, formatNumberForTest } from "../test-utils";
 
 test.beforeEach(async ({ page }) => {
 	await setupPage(page);
@@ -195,7 +195,7 @@ test.describe("Terminal Mode", () => {
 			await terminal.submitCalculation("pi * 2");
 			await expect(page.locator("text=pi * 2").first()).toBeVisible();
 			// Result should contain pi*2 value (approximately 6.28)
-			await expect(page.locator("text=6,28318530717958647693").first()).toBeVisible();
+			await expect(page.locator(`text=${formatNumberForTest("6,28318530717958647693")}`).first()).toBeVisible();
 		});
 
 		test("double-click expression copies to input", async ({ page }) => {
@@ -285,7 +285,7 @@ test.describe("Terminal Mode", () => {
 
 			// Test radians
 			await terminal.submitCalculation("cos(1)");
-			await expect(page.locator(".ml-3").last()).toContainText("0,5403");
+			await expect(page.locator(".ml-3").last()).toContainText(formatNumberForTest("0,5403"));
 		});
 	});
 

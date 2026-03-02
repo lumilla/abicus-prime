@@ -1,23 +1,7 @@
 import { match, P } from "ts-pattern";
 import { tokenise, Token } from "#/calculator";
 import type { DecimalSeparator } from "#/state/types";
-
-/**
- * Adds thousand separators (spaces) to a number string
- * @param numStr - The number string to format
- * @param decimalSeparator - The decimal separator to use
- * @returns The formatted number string with thousand separators
- */
-function addThousandSeparators(numStr: string, decimalSeparator: DecimalSeparator = ","): string {
-	// Split into integer and decimal parts
-	const [integerPart, decimalPart] = numStr.split(decimalSeparator);
-
-	// Add spaces every 3 digits from the right in the integer part
-	const formattedInteger = integerPart?.replace(/\B(?=(\d{3})+(?!\d))/g, " ") ?? "";
-
-	// Return with decimal part if it exists
-	return decimalPart ? `${formattedInteger}${decimalSeparator}${decimalPart}` : formattedInteger;
-}
+import { addThousandSeparators } from "./format-number";
 
 /**
  * Takes in an unformatted expression (e.g. `1+2*(cos(2)/sqrt(pi))`) and gives out a "prettified"

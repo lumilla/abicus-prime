@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 import { formatResult } from "./format-result";
+import { THOUSAND_SEPARATOR as S } from "./format-number";
 import { calculate, AngleUnit } from "../calculator";
 
 const MAX_SIGNIFICANT_DIGITS = 21;
@@ -18,10 +19,15 @@ function testResultFormat(
 	expectedFormat: string,
 	angleUnit: AngleUnit = "rad",
 ) {
-	it(`${description}: "${expression}" → "${expectedFormat}"`, () => {
+	it(`${description}: "${expression}" results in "${expectedFormat}"`, () => {
 		const result = testCalculate(expression, angleUnit);
 		expect(formatResult(result)).toBe(expectedFormat);
 	});
+}
+
+/** Group decimal digits (from left, in threes) using S as separator - mirrors addThousandSeparators */
+function gd(digits: string): string {
+	return digits.length > 3 ? digits.replace(/(\d{3})(?=\d)/g, `$1${S}`) : digits;
 }
 
 describe("formatResult", () => {
@@ -41,19 +47,23 @@ describe("formatResult", () => {
 	});
 
 	describe("Significant digits", () => {
-		testResultFormat(`truncates to ${MAX_SIGNIFICANT_DIGITS}`, "1.234567890123456789012345", "1,23456789012345678901");
+		testResultFormat(
+			`truncates to ${MAX_SIGNIFICANT_DIGITS}`,
+			"1.234567890123456789012345",
+			`1,${gd("23456789012345678901")}`,
+		);
 	});
 
 	describe("Large numbers", () => {
 		testResultFormat(
 			"formats large number in exponential notation",
 			"1.23456789012345678901*10^25",
-			"1,23456789012345678901e+25",
+			`1,${gd("23456789012345678901")}e+25`,
 		);
 		testResultFormat(
 			"truncates to significant digits limit for large numbers",
 			"1.234567890123456789012345678901*10^25",
-			"1,23456789012345678901e+25",
+			`1,${gd("23456789012345678901")}e+25`,
 		);
 	});
 
@@ -61,12 +71,12 @@ describe("formatResult", () => {
 		testResultFormat(
 			"formats very small number in exponential notation",
 			"1.23456789012345678901*10^-25",
-			"1,23456789012345678901e-25",
+			`1,${gd("23456789012345678901")}e-25`,
 		);
 		testResultFormat(
 			"truncates to significant digits limit for small numbers",
 			"1.234567890123456789012345678901*10^-25",
-			"1,23456789012345678901e-25",
+			`1,${gd("23456789012345678901")}e-25`,
 		);
 	});
 
@@ -75,25 +85,25 @@ describe("formatResult", () => {
 		testResultFormat(
 			"rounds up with decimals",
 			`1.${"1".repeat(MAX_SIGNIFICANT_DIGITS - 1)}5`,
-			`1,${"1".repeat(MAX_SIGNIFICANT_DIGITS - 2)}2`,
+			`1,${gd("1".repeat(MAX_SIGNIFICANT_DIGITS - 2) + "2")}`,
 		);
 		testResultFormat(
 			"rounds down with large integers",
 			`${"1".repeat(MAX_SIGNIFICANT_DIGITS)}1`,
-			`1,${"1".repeat(MAX_SIGNIFICANT_DIGITS - 1)}e+${MAX_SIGNIFICANT_DIGITS}`,
+			`1,${gd("1".repeat(MAX_SIGNIFICANT_DIGITS - 1))}e+${MAX_SIGNIFICANT_DIGITS}`,
 		);
 		testResultFormat(
 			"rounds up large integers",
 			`${"1".repeat(MAX_SIGNIFICANT_DIGITS)}5`,
-			`1,${"1".repeat(MAX_SIGNIFICANT_DIGITS - 2)}2e+${MAX_SIGNIFICANT_DIGITS}`,
+			`1,${gd("1".repeat(MAX_SIGNIFICANT_DIGITS - 2) + "2")}e+${MAX_SIGNIFICANT_DIGITS}`,
 		);
 	});
 
 	describe("Exponential notation thresholds", () => {
 		testResultFormat(
-			`below large threshold (${MAX_SIGNIFICANT_DIGITS}) - no exponentia`,
+			`below large threshold (${MAX_SIGNIFICANT_DIGITS}) - no exponential`,
 			`1 * 10 ^ ${MAX_SIGNIFICANT_DIGITS - 1}`,
-			`100 000 000 000 000 000 000`,
+			`100${S}000${S}000${S}000${S}000${S}000${S}000`,
 		);
 		testResultFormat(
 			`at large threshold (${MAX_SIGNIFICANT_DIGITS}) - uses exponential`,
@@ -103,7 +113,7 @@ describe("formatResult", () => {
 		testResultFormat(
 			`above small threshold (-${NEGATIVE_EXPONENT_LIMIT}) - no exponential`,
 			`1 * 10 ^ -${NEGATIVE_EXPONENT_LIMIT - 1}`,
-			`0,${"0".repeat(NEGATIVE_EXPONENT_LIMIT - 2)}1`,
+			`0,${gd("0".repeat(NEGATIVE_EXPONENT_LIMIT - 2) + "1")}`,
 		);
 		testResultFormat(
 			`at small threshold (-${NEGATIVE_EXPONENT_LIMIT}) - uses exponential`,
