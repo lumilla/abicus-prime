@@ -64,7 +64,9 @@ run("Scientific notation", [
 run("Operators", [["2+3", [litr(2), t.add, litr(3)]]]);
 run("Brackets", [["2+(3+4)", [litr(2), t.add, t.lbrk, litr(3), t.add, litr(4), t.rbrk]]]);
 run("Semicolons", [["(8;3;2;1)", [t.lbrk, litr(8), t.semi, litr(3), t.semi, litr(2), t.semi, litr(1), t.rbrk]]]);
-run("Functions", [["sin cos tan root fact", [t.sin, t.cos, t.tan, t.root, t.factFunc]]]);
+run("Functions", [
+	["sin cos tan root fact ln log lg", [t.sin, t.cos, t.tan, t.root, t.factFunc, t.ln, t.log10, t.log10]],
+]);
 run("Function power notation", [
 	["sin^(-1)(1)", [t.asin, t.lbrk, litr(1), t.rbrk]],
 	["cos^(-1)(1)", [t.acos, t.lbrk, litr(1), t.rbrk]],
