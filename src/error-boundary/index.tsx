@@ -26,13 +26,13 @@ function ErrorBoundaryContent({ error, stack }: { error: any; stack: any }) {
 	const isUserTriggered = message && userTriggeredMessages.some(msg => message.includes(msg) || message === msg);
 
 	const calculatorSettings = {
-		interfaceMode: loadString("abicus-interface-mode", "unknown"),
-		angleUnit: loadString("abicus-angle-unit", "unknown"),
+		interfaceMode: loadString("abicus-interface-mode") ?? "unknown",
+		angleUnit: loadString("abicus-angle-unit") ?? "unknown",
 		isDarkMode: loadJSON<string | boolean>("abicus-dark-mode", "unknown"),
-		language: loadString("abicus-language", "unknown"),
-		fontSize: loadString("abicus-font-size", "unknown"),
-		windowSize: loadString("abicus-window-size", "unknown"),
-		decimalSeparator: loadString("abicus-decimal-separator", "unknown"),
+		language: loadString("abicus-language") ?? "unknown",
+		fontSize: loadString("abicus-font-size") ?? "unknown",
+		windowSize: loadString("abicus-window-size") ?? "unknown",
+		decimalSeparator: loadString("abicus-decimal-separator") ?? "unknown",
 	};
 
 	function onClickReload() {
